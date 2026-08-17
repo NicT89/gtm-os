@@ -1,0 +1,17 @@
+{
+  "name": "gtm-os",
+  "owner": {
+    "name": "Your Organization",
+    "url": "https://github.com/NicT89/gtm-os"
+  },
+  "metadata": {
+    "description": "An open, configurable AI-native GTM engine template, packaged as a deployable Claude plugin."
+  },
+  "plugins": [
+    {
+      "name": "gtm-os",
+      "source": "./",
+      "description": "Signal-based sourcing, tiered enrichment, personalized outreach preparation, and quality auditing, built on Apollo with Apify and Claude as the orchestration layer."
+    }
+  ]
+}

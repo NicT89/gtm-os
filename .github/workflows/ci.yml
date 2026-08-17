@@ -1,0 +1,60 @@
+name: ci
+
+# Repo integrity checks, run on every push and pull request.
+#
+# 1. manifests — both .claude-plugin JSON files must parse.
+# 2. skills — every skills/*/SKILL.md must have well-formed frontmatter whose
+#    name matches its directory. Bad frontmatter does not fail loudly at runtime;
+#    the skill just silently fails to load or trigger.
+# 3. tests — the deterministic scripts the skills depend on.
+#
+# Deliberately absent: a check that VERSION equals plugin.json's version. That
+# job used to live here (as version-check.yml) and was retired when release.yml
+# took over syncing the two automatically. Requiring them to match *before* merge
+# false-fails every release PR, since a release now bumps VERSION alone and the
+# manifest is updated after the merge. See MAINTAINING.md.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JSON manifests
+        run: |
+          jq empty .claude-plugin/plugin.json
+          jq empty .claude-plugin/marketplace.json
+
+  skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate skill frontmatter
+        run: python3 scripts/validate_skills.py
+
+      - name: Validate instance-config references
+        # No instance-config.json exists in CI, and that is fine: this asserts that
+        # every {KEY} the skills reference is a real key in the example schema, so a
+        # typo cannot ship as a confusing runtime "missing ID" failure.
+        run: python3 scripts/validate_instance_config.py
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run tests
+        run: python3 -m unittest discover -s tests -v

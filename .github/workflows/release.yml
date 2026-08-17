@@ -1,0 +1,116 @@
+name: Release on version change
+
+# Publishes a GitHub Release whenever the VERSION file changes on main.
+#
+# The version is a deliberate semantic-versioning decision made upstream (by the
+# Cowork agent / release package) and written into the VERSION file — this workflow
+# never invents or increments a version. It just tags v<VERSION> and publishes a
+# Release, using the matching "## [<version>]" section of CHANGELOG.md as the notes.
+#
+# Trigger: a push to main that changes VERSION. workflow_dispatch is also allowed so
+# you can publish the current VERSION on demand (e.g. the very first time).
+#
+# plugin.json's "version" field is kept in sync automatically here (see the "Sync
+# plugin.json" step below) — upstream packages only ever need to bump VERSION.
+#
+# See https://semver.org and
+# https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'VERSION'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # required to create tags, releases, and the sync commit
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read and validate version
+        id: v
+        run: |
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)*$'; then
+            echo "::error::VERSION '$VERSION' is not valid semantic versioning (MAJOR.MINOR.PATCH)."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Sync plugin.json to VERSION
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          PLUGIN_VERSION="$(jq -r '.version' .claude-plugin/plugin.json)"
+          if [ "$VERSION" = "$PLUGIN_VERSION" ]; then
+            echo "plugin.json already at $VERSION — nothing to sync."
+            exit 0
+          fi
+          jq --arg v "$VERSION" '.version = $v' .claude-plugin/plugin.json > .claude-plugin/plugin.json.tmp
+          mv .claude-plugin/plugin.json.tmp .claude-plugin/plugin.json
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .claude-plugin/plugin.json
+          git commit -m "chore: sync plugin.json to $VERSION [skip ci]"
+          git push origin HEAD:main
+
+      - name: Check whether this release already exists
+        id: exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ steps.v.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.v.outputs.tag }} already exists — nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish release
+        if: steps.exists.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.v.outputs.version }}"
+          TAG="${{ steps.v.outputs.tag }}"
+
+          # Release notes come from CHANGELOG.md — the curated notes are written there
+          # once and published verbatim, so there is no second file to keep in sync.
+          # Extract everything under "## [<version>]" up to the next "## [" heading.
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { flag = 1; next }
+            flag && /^## \[/ { exit }
+            flag { print }
+          ' CHANGELOG.md | sed -e '/./,$!d' > release-notes.md
+          # Trim trailing blank lines.
+          printf '%s\n' "$(cat release-notes.md)" > release-notes.md
+
+          # Target HEAD, not $GITHUB_SHA: the sync step above may have pushed a new
+          # commit onto main, which would make GITHUB_SHA stale.
+          TARGET="$(git rev-parse HEAD)"
+
+          # Test for real content, not file size: the trim above leaves a lone
+          # newline when the section is missing, which `[ -s ]` would call non-empty
+          # and publish as blank release notes.
+          if grep -q '[^[:space:]]' release-notes.md; then
+            echo "Using the CHANGELOG.md [$VERSION] section for release notes."
+            gh release create "$TAG" --target "$TARGET" --title "$TAG" --notes-file release-notes.md --latest
+          elif [ -f "CHANGES-${VERSION}.md" ]; then
+            # Legacy path. CHANGES-<version>.md is deprecated — put the notes in
+            # CHANGELOG.md instead. Kept so an older release still publishes.
+            echo "::warning::No CHANGELOG.md section for $VERSION; falling back to deprecated CHANGES-${VERSION}.md."
+            gh release create "$TAG" --target "$TARGET" --title "$TAG" --notes-file "CHANGES-${VERSION}.md" --latest
+          else
+            echo "::warning::No CHANGELOG.md section for $VERSION — generating notes from commit/PR history."
+            gh release create "$TAG" --target "$TARGET" --title "$TAG" --generate-notes --latest
+          fi
+          echo "Published $TAG."

@@ -1,0 +1,36 @@
+# Secrets. Never commit a real key. Connector credentials (Apollo, Apify, CB
+# Insights) belong in the environment or a local .env, never in this repo.
+# Audit with: git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'  -> must be empty.
+.env
+.env.*
+!.env.example
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Run artifacts, audit logs, and client data live in each user's own storage
+# (local folder or Google Drive), never in this repo. Ignore common local names
+# in case they are created inside a clone.
+audit-log*
+run-report*
+changelog.local*
+briefs/
+
+# ...except examples/, which is curated synthetic content, not run artifacts.
+# Without this, examples/audit-log-entry.md is silently swallowed by the rule above.
+!examples/**
+
+# Instance configuration: this deployment's CRM/Airtable IDs and field prefix.
+# Copy instance-config.example.json to create it. It describes one workspace,
+# never the template, and must not be committed here.
+instance-config.json
+gate_config.json
