@@ -1,64 +1,114 @@
 # GTM OS
 
-An open, configurable AI-native go-to-market playbook, packaged as a deployable plugin. Your team runs the machine; this plugin builds it.
+**An AI-native go-to-market engine you run yourself, as an installable Claude Code plugin.**
 
-The engine sources companies through buying signals (GTM hiring, fresh funding), enriches them in tiers, prepares research-grounded personalization, and audits every outreach asset before a single email sends. The pattern was built and operated against a live pipeline before being packaged as a template: every gate and defect check in this repo traces back to something that actually broke in production.
+GTM OS sources companies through buying signals, enriches them in tiers, prepares
+research-grounded personalization, and audits every outreach asset before a single
+email sends. You point it at your own CRM, Airtable, and scraping accounts; it never
+ships with anyone else's.
 
-## Skills
+The pattern was built and operated against a live pipeline before it was packaged.
+Every gate and defect check in this repo traces back to something that actually broke
+in production — the deprecated field that silently wrote a false "no posts" verdict,
+the catch-all addresses that damaged a sending domain, the workflow that reported
+success while matching nobody.
+
+## Install
+
+```
+/plugin marketplace add NicT89/gtm-os
+/plugin install gtm-os@gtm-os
+```
+
+Then run through [`SETUP.md`](SETUP.md) — connectors, the Airtable posts base, and
+`instance-config.json`. Nothing works until that config is filled in, and that is
+deliberate: a skill that guessed at an ID would write your data into someone else's
+workspace.
+
+## What it does
 
 | Skill | What it does |
 |---|---|
-| gtm-signal-scan | Weekly sourcing run: signal search, scoring, tiered enrichment, account/contact creation, list routing |
-| outreach-audit | Quality gate for sequences: personalization depth, merge tokens, honesty checks, A/B discipline, config defects |
-| provision-gtm-engine | Provisions the full engine for any company from a single URL: context brief, ICP, fields, lists, sequences |
-| gtm-blueprint | Composes the customized 30-day GTM plan behind the `<prefix> Blueprint` field (prefix set by `{INSTANCE_FIELD_PREFIX}`): motion classification, field-completeness gate, motion-specific templates |
-| scrape-linkedin-posts | Scrapes LinkedIn posts and comments for a person or company, writes them into the Airtable posts base, and pushes a summary back into Apollo. Runs standalone, in batch, or on a schedule; also called by gtm-signal-scan Step 6 |
-| jd-intake | Extracts a job posting from any URL and maps it onto the GTM onboarding template: Known/Unknown status per field, an extended-search task list, and an interview-question list |
+| `gtm-signal-scan` | Weekly sourcing run: signal search, scoring, tiered enrichment, account/contact creation, list routing |
+| `gtm-blueprint` | Composes a motion-classified 30-day GTM plan per target company, behind a hard field-completeness gate |
+| `outreach-audit` | Quality gate before enrollment: personalization depth, merge tokens, honesty rules, A/B discipline, config defects |
+| `provision-gtm-engine` | Provisions the whole engine for a company from a single URL: context brief, ICP, fields, lists, sequences |
+| `scrape-linkedin-posts` | Scrapes posts and comments into an Airtable base and pushes a digest back to the CRM. Standalone, batch, or scheduled |
+| `jd-intake` | Turns a job posting into structured intake: Known/Unknown per field, an extended-search list, and interview questions |
 
-## Setup
+## Who this is for
 
-[`SETUP.md`](SETUP.md) is the first-run walkthrough: connectors, the Airtable posts base,
-filling in `instance-config.json`, a one-target dry run, and the render environment. Every
-deployment-specific value lives in that one gitignored file — see
-[references/instance-config.md](references/instance-config.md) for what each key is.
+**A good fit** if you run outbound yourself, want the machine to be inspectable, and
+would rather own a system than rent a dashboard. You will be comfortable in a terminal
+and willing to create custom fields in your CRM.
 
-## Credits
+**A poor fit** if you want a no-code product, a managed service, or something that
+works without configuring your own connectors. The setup is real work — an afternoon,
+not a click.
 
-Every skill that spends Apollo credits states the total before spending and reports
-actual burn afterward. Search is free; reveals are not. See
-[references/apollo-credit-costs.md](references/apollo-credit-costs.md) for the full
-cost table and the score-before-you-reveal rule that keeps burn down.
+## Operating principles
 
-## What the output looks like
+These hold across every skill, and they are the reason the engine is trustworthy
+rather than merely fast:
+
+1. **Show, don't tell.** Every outreach claim must be true for the specific recipient
+   and grounded in captured research. If an email could be sent to a different company
+   unchanged, it has failed.
+2. **Human gates never automate away.** ICP sign-off, credit spend approval, and
+   pre-send review are gates, not steps.
+3. **Credit-consuming actions state their cost first** and report actual burn after.
+   Search is free; reveals are not. Ranking happens before spending.
+4. **Everything the agent creates is labeled**, and human-managed assets are never
+   edited by it.
+5. **Every run appends to an audit log**, and every defect found becomes a permanent
+   gate rather than a silent patch.
+
+## Connectors
+
+- **CRM** (required) — Apollo is the reference implementation: signal source, CRM,
+  enrichment, sequences, analytics.
+- **Apify** (required) — LinkedIn post and comment scraping.
+- **Airtable** (required) — the posts archive. Build it from
+  [`references/airtable-posts-base.md`](references/airtable-posts-base.md).
+- **CB Insights** (optional) — funding stage, named investors, commercial maturity.
+- **Brand Kit OS** (optional) — supplies structured brand voice, positioning, and
+  audience data as the seller-side context that `gtm-blueprint` composes against.
+  Without it, the engine falls back to your CRM's context center or a document you
+  name.
+- **Google Drive / Box / OneDrive** (optional) — file home for briefs and audit logs.
+  A local folder works too.
+
+## What output looks like
 
 [`examples/`](examples/) holds a sample scan report, audit-log entry, and composed
-blueprint, so you can see the shape of what a run produces before you run one. Every
-company and figure in that folder is synthetic; real run artifacts live in your own
-storage, never in this repo.
+blueprint. Every company and figure there is synthetic; real run artifacts live in
+your own storage, never in this repo.
 
-## Required connectors
-
-- **Apollo** (required): signal source, CRM, enrichment, sequences, analytics. Sign in with a work email; model training must be off.
-- **Apify** (required): LinkedIn posts and comments scraping (harvestapi/linkedin-profile-posts), used by the scrape-linkedin-posts skill.
-- **Airtable** (required): posts archive base for scraped LinkedIn posts, comments, and their links back to contacts/accounts. Used by scrape-linkedin-posts and read by gtm-signal-scan Step 6.
-- **Google Drive** (optional): canonical file home for briefs, JD library, and audit logs. Local folder storage works as the alternative; Box or OneDrive are supported substitutes.
+Cost discipline is documented in
+[`references/apollo-credit-costs.md`](references/apollo-credit-costs.md), including
+the score-before-you-reveal rule that keeps burn down.
 
 ## Versioning
 
-Canonical source: https://github.com/NicT89/gtm-os
+Canonical source: <https://github.com/NicT89/gtm-os>
 
-Every skill checks the repo's VERSION file against the local copy on invocation and notifies you when an update is available (it never blocks work). For belt-and-suspenders freshness, create a monthly scheduled task in your Claude instance: "Compare the VERSION file at https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION against the locally installed gtm-os plugin version and notify me if they differ."
+Every skill compares this repo's `VERSION` against your installed copy on invocation
+and tells you when an update exists. **It notifies; it never blocks, and it never
+auto-updates** — re-run the install flow to pull a new version.
 
-## Operating principles (apply across all skills)
+## License
 
-1. Show, don't tell: every outreach claim must be true for the specific recipient and grounded in captured research.
-2. Human gates never automate away without measurement: ICP sign-off, credit spend approval, and pre-send quality review.
-3. Credit-consuming actions are confirmed with the user before spending, with totals stated upfront.
-4. Everything Claude creates in Apollo carries "[Claude]" in its name; human-managed assets are never edited.
-5. Every run appends findings to a local audit log; fixes become permanent gates, never silent patches.
+GTM OS is released under the **[PolyForm Noncommercial License 1.0.0](LICENSE)**.
 
-## File home
+- **Noncommercial use is free** — personal use, learning, research, and use by
+  nonprofit, educational, or government organizations. Keep the notices intact and
+  credit the source (see [`NOTICE`](NOTICE) for the exact line).
+- **Commercial use requires a separate license.** Running it on client pipelines,
+  bundling it into a paid offering, or operating it inside a for-profit company are
+  commercial purposes. Requests are welcome — the terms exist to prevent silent
+  commercial copying, not to prevent commercial use.
 
-On first use, choose where run artifacts live: a local folder Claude structures for you, or Google Drive (same structure, accessible across devices). Audit logs and feedback loops are stored locally per user; they are the personalized layer of the playbook and are never shared with the repo.
+Contact **Nicolas Thatcher — nthatcher@realblockai.com** to arrange one, or with any
+question about which side of the line you are on.
 
-Copyright [Your Organization]. Fill in your own copyright line and distribution terms before shipping this to your own clients or partners.
+Copyright © 2026 Nicolas Thatcher, Launch99 Agency.

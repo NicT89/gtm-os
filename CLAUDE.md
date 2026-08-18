@@ -1,5 +1,20 @@
 # Working on this repo
 
+**Are you here to USE the engine, or to CHANGE it?**
+
+- **To use it** — you want to run a signal scan, compose a blueprint, audit a
+  sequence, scrape posts: don't read this file. Install the plugin
+  (`/plugin marketplace add NicT89/gtm-os`, then `/plugin install gtm-os@gtm-os`),
+  work through [SETUP.md](SETUP.md), and invoke the skills by name or by describing
+  what you want. [README.md](README.md) is the overview.
+- **To set it up for a company from scratch** — the `provision-gtm-engine` skill
+  does that end to end from a single company URL, with human gates at ICP sign-off,
+  credit spend, and sequence activation. Start there rather than wiring things by
+  hand.
+- **To change the repo itself** — read on. Everything below is for that.
+
+---
+
 This repo *is* the GTM OS plugin. It ships prose playbooks (skills)
 plus a small amount of deterministic tooling. Editing it is editing what every
 installed copy executes, so the conventions below are load-bearing.
@@ -7,6 +22,11 @@ installed copy executes, so the conventions below are load-bearing.
 For the release process, see [MAINTAINING.md](MAINTAINING.md). For what the plugin
 does, see [README.md](README.md). This file is the part an agent needs before
 changing anything.
+
+Deployment-specific values are never written into skill bodies — they live in
+`instance-config.json` and are referenced as `{KEY}`. See
+[references/instance-config.md](references/instance-config.md) before adding any
+value that differs between installs.
 
 ## Layout
 
