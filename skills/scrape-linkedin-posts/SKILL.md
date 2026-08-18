@@ -9,7 +9,13 @@ Apify scrape, Airtable write with linked-record dedupe, Apollo push-back. One pi
 
 ## Scope per run
 
-Floor 10 total targets, ceiling 50, per run. Each target gets up to 5 posts and up to 10 comments per post, looking back 3 months. If asked for a single named person or company, that's a 1-target run and the floor does not apply.
+Floor 10 total targets, ceiling 50, per run. Each target gets ALL authored posts inside the 3-month lookback window (no per-target post cap, the window is the cap) and up to 15 comments per post. If asked for a single named person or company, that's a 1-target run and the floor does not apply.
+
+## Model / effort guidance
+
+First-time runs against a target (new Contacts/Company row, first CRM push for that record) should run at normal effort: dedupe, error recovery on schema mismatches, and the authored-vs-repost filter below all benefit from it, and a bad write is more expensive to fix than the tokens saved.
+
+Scheduled-refresh mode (re-scraping targets that already have a Contacts/Company row and a proven field mapping) is a reasonable candidate for a cheaper/faster model at low effort, now that the authored-post filter and dataset projection below are explicit rules rather than something to infer from the raw data shape each run.
 
 ## Step 1: Resolve targets
 
@@ -29,9 +35,13 @@ Base `{AIRTABLE_POSTS_BASE_ID}`. Five tables:
 
 - **Contacts** (`{AIRTABLE_TBL_CONTACTS}`): Name `{AIRTABLE_FLD_CONTACTS_NAME}`, LinkedIn URL `{AIRTABLE_FLD_CONTACTS_LINKEDIN_URL}`.
 - **Company** (`{AIRTABLE_TBL_COMPANY}`): Name `{AIRTABLE_FLD_COMPANY_NAME}`, LinkedIn URL `{AIRTABLE_FLD_COMPANY_LINKEDIN_URL}`.
-- **Person Post** (`{AIRTABLE_TBL_PERSON_POST}`): Post ID `{AIRTABLE_FLD_PERSON_POST_POST_ID}`, Person LinkedIn URL `{AIRTABLE_FLD_PERSON_POST_PERSON_LINKEDIN_URL}`, Company Name `{AIRTABLE_FLD_PERSON_POST_COMPANY_NAME}`, Post URL `{AIRTABLE_FLD_PERSON_POST_POST_URL}`, Post Content `{AIRTABLE_FLD_PERSON_POST_POST_CONTENT}`, Post Type `{AIRTABLE_FLD_PERSON_POST_POST_TYPE}`, Posted Date `{AIRTABLE_FLD_PERSON_POST_POSTED_DATE}`, Likes `{AIRTABLE_FLD_PERSON_POST_LIKES}`, Comments Count `{AIRTABLE_FLD_PERSON_POST_COMMENTS_COUNT}`, Shares `{AIRTABLE_FLD_PERSON_POST_SHARES}`, Scraped At `{AIRTABLE_FLD_PERSON_POST_SCRAPED_AT}`, Contact (link) `{AIRTABLE_FLD_PERSON_POST_CONTACT_LINK}`.
-- **Company Posts** (`{AIRTABLE_TBL_COMPANY_POSTS}`): Post ID `{AIRTABLE_FLD_COMPANY_POSTS_POST_ID}`, Company LinkedIn URL `{AIRTABLE_FLD_COMPANY_POSTS_COMPANY_LINKEDIN_URL}`, Post URL `{AIRTABLE_FLD_COMPANY_POSTS_POST_URL}`, Post Content `{AIRTABLE_FLD_COMPANY_POSTS_POST_CONTENT}`, Post Type `{AIRTABLE_FLD_COMPANY_POSTS_POST_TYPE}`, Posted Date `{AIRTABLE_FLD_COMPANY_POSTS_POSTED_DATE}`, Likes `{AIRTABLE_FLD_COMPANY_POSTS_LIKES}`, Comments Count `{AIRTABLE_FLD_COMPANY_POSTS_COMMENTS_COUNT}`, Shares `{AIRTABLE_FLD_COMPANY_POSTS_SHARES}`, Scraped At `{AIRTABLE_FLD_COMPANY_POSTS_SCRAPED_AT}`, Company (link) `{AIRTABLE_FLD_COMPANY_POSTS_COMPANY_LINK}`.
+- **Person Post** (`{AIRTABLE_TBL_PERSON_POST}`): Name (primary) `{AIRTABLE_FLD_PERSON_POST_NAME}`, Post ID `{AIRTABLE_FLD_PERSON_POST_POST_ID}`, Person LinkedIn URL `{AIRTABLE_FLD_PERSON_POST_PERSON_LINKEDIN_URL}`, Company Name `{AIRTABLE_FLD_PERSON_POST_COMPANY_NAME}`, Post URL `{AIRTABLE_FLD_PERSON_POST_POST_URL}`, Post Content `{AIRTABLE_FLD_PERSON_POST_POST_CONTENT}`, Post Type `{AIRTABLE_FLD_PERSON_POST_POST_TYPE}`, Posted Date `{AIRTABLE_FLD_PERSON_POST_POSTED_DATE}`, Likes `{AIRTABLE_FLD_PERSON_POST_LIKES}`, Comments Count `{AIRTABLE_FLD_PERSON_POST_COMMENTS_COUNT}`, Shares `{AIRTABLE_FLD_PERSON_POST_SHARES}`, Scraped At `{AIRTABLE_FLD_PERSON_POST_SCRAPED_AT}`, Contact (link) `{AIRTABLE_FLD_PERSON_POST_CONTACT_LINK}`.
+- **Company Posts** (`{AIRTABLE_TBL_COMPANY_POSTS}`): Name (primary) `{AIRTABLE_FLD_COMPANY_POSTS_NAME}`, Post ID `{AIRTABLE_FLD_COMPANY_POSTS_POST_ID}`, Company LinkedIn URL `{AIRTABLE_FLD_COMPANY_POSTS_COMPANY_LINKEDIN_URL}`, Post URL `{AIRTABLE_FLD_COMPANY_POSTS_POST_URL}`, Post Content `{AIRTABLE_FLD_COMPANY_POSTS_POST_CONTENT}`, Post Type `{AIRTABLE_FLD_COMPANY_POSTS_POST_TYPE}`, Posted Date `{AIRTABLE_FLD_COMPANY_POSTS_POSTED_DATE}`, Likes `{AIRTABLE_FLD_COMPANY_POSTS_LIKES}`, Comments Count `{AIRTABLE_FLD_COMPANY_POSTS_COMMENTS_COUNT}`, Shares `{AIRTABLE_FLD_COMPANY_POSTS_SHARES}`, Scraped At `{AIRTABLE_FLD_COMPANY_POSTS_SCRAPED_AT}`, Company (link) `{AIRTABLE_FLD_COMPANY_POSTS_COMPANY_LINK}`.
 - **Post Comments** (`{AIRTABLE_TBL_POST_COMMENTS}`): Comment ID `{AIRTABLE_FLD_POST_COMMENTS_COMMENT_ID}`, Commenter Name `{AIRTABLE_FLD_POST_COMMENTS_COMMENTER_NAME}`, Commenter LinkedIn URL `{AIRTABLE_FLD_POST_COMMENTS_COMMENTER_LINKEDIN_URL}`, Commenter Headline `{AIRTABLE_FLD_POST_COMMENTS_COMMENTER_HEADLINE}`, Comment Text `{AIRTABLE_FLD_POST_COMMENTS_COMMENT_TEXT}`, Commented At `{AIRTABLE_FLD_POST_COMMENTS_COMMENTED_AT}`, Person Post (link) `{AIRTABLE_FLD_POST_COMMENTS_PERSON_POST_LINK}`, Company Post (link) `{AIRTABLE_FLD_POST_COMMENTS_COMPANY_POST_LINK}`, Scraped At `{AIRTABLE_FLD_POST_COMMENTS_SCRAPED_AT}`.
+
+**The primary Name field carries the bare person or company name, nothing else.** On a Person Post row it is the person's first and last name exactly as it appears on their Contacts row; on a Company Posts row it is the company name. Never append a date, a post type, or any other suffix, and never leave it blank. History on this rule (2026-08-16): earlier engine versions wrote "First Last - YYYY-MM-DD" as a scannable per-row label, and a later version stopped writing Name at all. Both are wrong. Uniqueness and dedupe live on Post ID; the date lives in Posted Date.
+
+**Posted Date fields are bare dates, not datetimes.** Both Posted Date fields reject an ISO timestamp (e.g. `2026-07-23T16:27:31.250Z`) with a 422. Truncate the actor's `postedAt.date` to `YYYY-MM-DD` before writing. Commented At and Scraped At follow the same `YYYY-MM-DD` convention.
 
 Note: a base migrated from an earlier version of this schema may still show four deprecated fields in the UI — Person Post "Person Name", Company Posts "Company Name", and "Has Content" / "Comments Text" on both post tables. Never write to them. Airtable has no API for field deletion, so they can only be removed by hand by the base owner. A newly built base should never create them at all.
 
@@ -39,20 +49,28 @@ Before creating a Contacts or Company row, search the table for an existing row 
 
 ## Step 3: Run the Apify scrape
 
-Actor `harvestapi/linkedin-profile-posts`. One call per target batch. Parameters: 5 posts per profile, 10 comments per post, 3 month lookback window.
+Actor `{APIFY_POSTS_ACTOR}`. One call per target batch. Parameters: `maxPosts` 0 (all posts, the window is the cap), `postedLimit` "3months", `scrapeComments` true, `maxComments` 15.
+
+**The actor returns the target's full activity feed, not just their authored posts.** Roughly 80-90% of post items are typically things the target liked, commented on, or reposted from someone else, not things they wrote. Do not write these to Airtable or push them to the CRM; they will pollute the record with someone else's content attributed to the wrong person.
+
+**Project only the fields you need when reading the dataset.** `get-dataset-items` supports a `fields=` parameter; use it (e.g. `fields="type,id,postId,content,commentary,postedAt.date,createdAt,engagement,author.publicIdentifier,author.name,linkedinUrl,repostedBy.publicIdentifier,commentIds,actor.name,actor.linkedinUrl,actor.position"`) instead of pulling the full ~167-field item for every row. The unprojected pull runs well past the context-per-tool-call limit; projecting up front cuts the token cost of this step by roughly half.
 
 ## Step 4: Parse the dataset
+
+**Filter to authored posts first, before anything else.** Keep only items where `author.publicIdentifier` matches the target's LinkedIn slug (from the target's profile URL) AND `repostedBy` is null/absent. Items where `repostedBy.publicIdentifier` equals the target's slug are things they reposted or reacted to and get discarded, not written. Keep EVERY authored item that survives the filter (the 3-month window is the only cap), sorted by `postedAt.date` descending. Reposts and reactions are still worth reading before discarding: they often carry relationship intel (events, colleagues, investors) for the Step 7 report.
 
 Two item types come back: `type: "post"` and `type: "comment"`.
 
 - Post items: `id` (dedupe key = Post ID), `content`, `postedAt.date`, `postType`/repost detection, `engagement.likes`/`comments`/`shares`, `linkedinUrl`.
 - Comment items: `id` (dedupe key = Comment ID), `commentary` (text), `createdAt`, `actor.name`, `actor.linkedinUrl`, `actor.position` (headline, often null), `postId` (matches the parent post's own `id`, this is the join key back to Person Post/Company Posts).
 
-If a target has zero post items in the window, write one row with Post Type "No Content" and skip the comments step for that target entirely (there's nothing to have comments on).
+Comment-item return is INTERMITTENT (see the plugin root's `references/dependency-observations.md`): some runs return typed comment items with full commenter attribution, others return none despite `scrapeComments` being set. Handle both: when comment items arrive, write them; when they don't, note it in the Step 7 report. Never treat either behavior as guaranteed. Also expect the actor's returned comment count per post to run below the post's `engagement.comments` number: LinkedIn's public count includes replies-to-comments and comments the actor cannot fetch, so a gap between the two is normal and worth stating in the report, not a defect.
+
+If a target has zero authored post items in the window, write one row with Post Type "No Content" (Name still carries the bare person/company name) and skip the comments step for that target entirely (there's nothing to have comments on).
 
 ## Step 5: Write to Airtable, deduped and linked
 
-For each post: check Post ID against existing rows in the relevant table first, skip if found. Otherwise create the row and link it to the target's Contacts/Company record (single-item array in the Contact/Company link field).
+For each post: check Post ID against existing rows in the relevant table first, skip if found. Otherwise create the row, set Name to the bare person/company name, and link it to the target's Contacts/Company record (single-item array in the Contact/Company link field). Remember that Posted Date is a bare `YYYY-MM-DD` string.
 
 For each comment: check Comment ID against existing Post Comments rows first, skip if found. Otherwise create the row, populate exactly one of the Person Post / Company Post link fields (array of the one matching record ID, found by matching `postId` against the Post ID you just wrote or already had), leave the other link field empty.
 
@@ -83,12 +101,20 @@ For each target just scraped, build:
 
 `has_content: false` and `posts: []` if the target had no posts in the window.
 
-Match to the Apollo contact/account by linkedin_url. Push via `apollo_contacts_update` / `apollo_accounts_update`, passing only the record id and `typed_custom_fields`, nothing else (these calls overwrite whatever fields you pass, don't blank out unrelated fields). Skip and report, don't guess, if no confident Apollo match exists. If a company has no Apollo Account object at all (contacts exist but the account was never created), skip the account-level push and flag it, don't create one without asking first.
+Match to the Apollo contact/account by linkedin_url. Push via `apollo_contacts_update` / `apollo_accounts_update`, passing only the record id and `typed_custom_fields`, nothing else (these calls overwrite whatever fields you pass, don't blank out unrelated fields). This is a destructive write with no undo surfaced by the tool: double-check the record id and the authored-posts-only filter before calling it. Skip and report, don't guess, if no confident Apollo match exists. If a company has no Apollo Account object at all (contacts exist but the account was never created), skip the account-level push and flag it, don't create one without asking first.
 
 ## Step 7: Report
 
-Targets scraped, posts written (new vs already-existed), comments written, Apollo pushes (contacts succeeded/skipped, accounts succeeded/skipped with reasons), and anyone skipped in Step 1 for missing a LinkedIn URL.
+Targets scraped, posts written (new vs already-existed), comments written, the per-post gap between `engagement.comments` and comments actually captured, Apollo pushes (contacts succeeded/skipped, accounts succeeded/skipped with reasons), and anyone skipped in Step 1 for missing a LinkedIn URL. State whether comment items returned this run, and log that observation with the date to the plugin root's `references/dependency-observations.md`.
+
+Also surface relationship intel found in the discarded reposts and in commenter identities: events attended, hosts, colleagues, investors, and recurring commenters.
+
+## Breadcrumb mode (optional second-degree pass, human gate)
+
+The people tagged in a target's posts and the people commenting on them are relationship edges worth following: they reveal who the target builds with, buys from, and answers to. After a first-degree run, offer the user a breadcrumb pass: list the tagged/commenting people found (name, headline, relationship context), let the human select which to scrape, and run those as a normal batch. **Never auto-scrape second-degree targets.** Each one costs actor spend and Airtable rows, so the selection is always a human gate. Record the relationship context ("commented on X's July 2026 post about the partner event") in the run report and the audit log so the edge survives the run; if your base carries a free-text notes field on Contacts, write it there too, but never overwrite the LinkedIn URL field to make room for it.
 
 ## Scheduling
 
 This skill can be registered as a recurring scheduled task (via the `schedule` skill / scheduled-tasks tools) to run the "scheduled refresh" mode weekly or biweekly against the existing Contacts/Company tables, keeping post data current for personalization without a manual trigger each time.
+
+For scheduled-refresh runs specifically, this is the mode best suited to a cheaper/lower-effort model; see "Model / effort guidance" above. First-time runs against a new target should stay on a stronger model/effort setting.

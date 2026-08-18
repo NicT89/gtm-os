@@ -13,7 +13,7 @@ Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to t
 
 ## Phase 0: Company context brief (agent, ~1 hour)
 
-Scrape the site (home, pricing, careers, docs, blog). Extract: what they sell, their 2-3 distribution models and the buyer persona per model (most companies have multiple: a primary product for one persona and secondary channels like widgets, APIs, or partnerships for others), competitive frame, pricing model, GTM motion type (PLG free trial vs sales-led book-a-call, classify from the primary website CTA), public support channels, and review-site presence. Pull firmographics and hiring signals from Apollo. Draft ICP hypothesis v0.
+Scrape the site (home, pricing, careers, docs, blog) per the plugin root's `references/scraping-playbook.md` (Firecrawl default, markdown storage, sitemap-first). Extract: what they sell, their 2-3 distribution models and the buyer persona per model (most companies have multiple: a primary product for one persona and secondary channels like widgets, APIs, or partnerships for others), competitive frame, pricing model, GTM motion type (PLG free trial vs sales-led book-a-call, classify from the primary website CTA), public support channels, and review-site presence. Pull firmographics and hiring signals from Apollo; for recently merged or acquired companies treat the CRM's org record as a possible merge artifact (funding history, social links, and founding dates can mix both entities) and verify funding history and identity claims against primary press releases before citing them. Draft ICP hypothesis v0.
 **GATE 1: human signs off the ICP hypothesis before anything is built.**
 
 ## Phase 1: Signal design

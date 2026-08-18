@@ -12,23 +12,37 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-08-17
+## [1.4.0] - 2026-08-17
+
+Initial public release of GTM OS: a configurable, vendor-neutral AI-native
+go-to-market engine any team can install and point at their own CRM/Airtable/Apify
+instances via `instance-config.json`.
+
+**Why this starts at 1.4.0 rather than 0.1.0.** GTM OS is the generalized form of a
+private engine that had already shipped four releases against a live pipeline. The
+version line continues rather than restarting, so a version number means the same
+thing in both places. The engine is not new; only its public, deployment-neutral
+packaging is.
 
 ### Added
 
-Initial public release of the GTM OS template: a configurable, vendor-neutral
-AI-native go-to-market engine any team can install and point at their own
-CRM/Airtable/Apify instances via `instance-config.json`.
-
-- Five skills: `gtm-signal-scan` (weekly buying-signal sourcing, scoring, tiered
+- Six skills: `gtm-signal-scan` (weekly buying-signal sourcing, scoring, tiered
   enrichment, list routing, audit logging), `outreach-audit` (quality gate for
   sequences — personalization depth, merge tokens, honesty rules, A/B discipline,
   configuration defects), `provision-gtm-engine` (provisions the full engine for a
   new deployment from a single company URL, with human gates at ICP sign-off,
   credit spend, and sequence activation), `gtm-blueprint` (composes a motion-classified
   30-day GTM plan behind a configurable CRM field, gated on field completeness),
-  and `scrape-linkedin-posts` (LinkedIn post/comment scraping into an Airtable
-  posts base, with a digest pushed back into the CRM).
+  `scrape-linkedin-posts` (LinkedIn post/comment scraping into an Airtable
+  posts base, with a digest pushed back into the CRM), and `jd-intake` (turns a job
+  description into structured intake against the Known/Unknown status model).
+- `SETUP.md` — the first-run walkthrough: connectors, instance config, dry run, and
+  the local-vs-repo tokenization rule that keeps deployment values out of git.
+- `scripts/render_report.py` — PDF renderer for run reports and onboarding output.
+- References carried over from live operation: the onboarding template
+  (Known/Unknown status model), the scraping playbook, an MCP coverage map, and a
+  dated dependency-observations log recording which third-party behaviors have
+  proven intermittent.
 - Plugin-wide references: the canonical Apollo credit-cost table and
   score-before-you-reveal rule, the 12-signal buying-intent taxonomy, the portable
   Airtable posts-base schema, and the instance-config key reference.

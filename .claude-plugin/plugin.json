@@ -1,6 +1,6 @@
 {
   "name": "gtm-os",
-  "version": "0.1.0",
+  "version": "1.4.0",
   "description": "An open, configurable AI-native GTM engine template: signal-based sourcing, tiered enrichment, personalized outreach preparation, and quality auditing, built on Apollo with Apify and Claude as the orchestration layer.",
   "author": {
     "name": "Your Organization"

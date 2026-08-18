@@ -61,6 +61,10 @@ For each Excellent-tier contact compose the Opener and Blueprint fields per the 
 
 ## Step 7: Report and audit log
 
-Deliver: tier table with scores, contact roster with email statuses, credit burn by category (planned vs actual), send-risk and send-excluded flags, and companies excluded with reasons. Append findings to the local audit log; any defect found becomes a permanent gate in the next run.
+Deliver: tier table with scores, contact roster with email statuses, credit burn by category (planned vs actual), send-risk and send-excluded flags, and companies excluded with reasons.
+
+CRM-sync health check: for records touched this run in a CRM instance with sync enabled to another system, read back each record's sync-job status (on Apollo, the record's `crm_job`) and surface any failed pushes with the error text. Silent sync failures poison downstream personalization; a domain-collision failure looks exactly like success until someone reads the record.
+
+Append findings to the local audit log; any defect found becomes a permanent gate in the next run.
 
 Also emit a machine-readable run artifact, run-shape-<date>.json, alongside the audit log entry: {motion, run_date, filters_used, counts: {searched, scored, excellent, good, fair, accounts_created, people_ranked, people_revealed, contacts_created, send_excluded}, credits: {planned, spent, by_category}, signals: [gate tags per account], defects: []}. Runs become diffable over time and the file doubles as client reporting data. Remind the user: enrollment is their gate, after preview review.

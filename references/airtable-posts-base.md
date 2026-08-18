@@ -5,10 +5,10 @@ Airtable base, then pushes a digest back into the CRM. `gtm-signal-scan` Step 6 
 from the same base. This document is how you build that base in **your own** Airtable
 workspace.
 
-Nothing here is deployment-specific. The record IDs in the skill body are one
-deployment's; the *shape* below is the portable part. Build the shape, record your own
-IDs (see [Recording your instance IDs](#recording-your-instance-ids)), and the skill
-works against your workspace.
+Nothing here is deployment-specific. The skill body carries `{KEY}` placeholders, never
+IDs; the *shape* below is the portable part. Build the shape, record your own IDs in
+`instance-config.json` (see [Recording your instance IDs](#recording-your-instance-ids)),
+and the skill works against your workspace.
 
 **Field names do not have to match.** The skill addresses every field by its Airtable
 field ID, never by label. Name things whatever your team will understand — the
@@ -53,6 +53,7 @@ One row per post by a person.
 
 | Field | Type | Purpose |
 |---|---|---|
+| Name | Single line text (**primary**) | The author's bare first and last name, exactly as it appears on their `Contacts` row. See [The Name rule](#the-name-rule). |
 | Post ID | Single line text | **Dedupe key.** Apify's `id`. Checked before every create. |
 | Person LinkedIn URL | Single line text | Author's profile URL. |
 | Company Name | Single line text | Author's employer at scrape time. |
@@ -73,6 +74,7 @@ company-side join.
 
 | Field | Type | Purpose |
 |---|---|---|
+| Name | Single line text (**primary**) | The bare company name, exactly as it appears on its `Company` row. See [The Name rule](#the-name-rule). |
 | Post ID | Single line text | **Dedupe key.** |
 | Company LinkedIn URL | Single line text | Company page URL. |
 | Post URL | URL | Permalink. |
@@ -104,6 +106,30 @@ One row per comment, on either kind of post.
 **The two link fields are mutually exclusive.** Every comment row fills exactly one and
 leaves the other empty. The skill decides which by matching the comment's `postId`
 against the `Post ID` of the row it just wrote.
+
+## The Name rule
+
+Both post tables have a **primary** `Name` field, and it carries the bare person or
+company name, nothing else: `Jane Doe`, `Example Co`. Never a date suffix, never a post
+type, never blank.
+
+Two earlier versions of this engine got it wrong in opposite directions, which is why
+the rule is written down (observed 2026-08-16):
+
+- One wrote `First Last - YYYY-MM-DD` into `Name` as a scannable per-row label. That
+  makes every row look unique in the grid and hides duplicates from a human reader.
+- A later one stopped writing `Name` at all, leaving the primary field blank, which
+  makes the table unreadable and the linked-record pickers useless.
+
+Uniqueness and dedupe live on `Post ID`. The date lives in `Posted Date`. `Name` is
+the human label for "whose post is this", and repeating the parent's name is the
+point: it is what makes a filtered view of one person's posts legible.
+
+## Dates are bare dates
+
+Both `Posted Date` fields reject an ISO timestamp (`2026-07-23T16:27:31.250Z`) with a
+422. Truncate the actor's `postedAt.date` to `YYYY-MM-DD` before writing.
+`Commented At` and `Scraped At` follow the same convention.
 
 ## Do not create these fields
 
@@ -140,16 +166,18 @@ Airtable caps batch writes at 50 records per request; the skill batches accordin
 
 ## Recording your instance IDs
 
-Once the base exists, collect its IDs — these are what your deployment's skill
-configuration needs:
+Once the base exists, collect its IDs — these are what your deployment's
+`instance-config.json` needs:
 
 - **Base ID** — in the base URL: `airtable.com/appXXXXXXXXXXXXXX/...`
 - **Table IDs** (`tbl...`) and **field IDs** (`fld...`) — from the base's API
   documentation at `airtable.com/appXXXXXXXXXXXXXX/api/docs`, or via the Metadata API.
 
-Record them wherever your deployment keeps instance values. Until the instance-config
-extraction lands (roadmap v1.4.0), that means editing the ID block in
-`skills/scrape-linkedin-posts/SKILL.md` Step 2 to your own values.
+Write them into `instance-config.json` under the `AIRTABLE_*` keys, then run
+`python3 scripts/validate_instance_config.py`. The key list and where each value comes
+from are in [instance-config.md](instance-config.md). Never edit IDs into a SKILL.md —
+the skills resolve every ID from that file at run time, which is what keeps this repo
+free of any one workspace's identifiers.
 
 ## Verification
 
@@ -157,6 +185,8 @@ Before the first real run:
 
 - [ ] Five tables exist with the fields above, and the link fields resolve on both sides.
 - [ ] `Post Type` has all three options, including `No Content`.
+- [ ] Both post tables have `Name` as their **primary** field, and a dry-run row lands
+      the bare person/company name in it with no date suffix.
 - [ ] A manual test row in `Post Comments` can link to a `Person Post` row, and a
       second one to a `Company Posts` row.
 - [ ] Your API token has `data.records:read`, `data.records:write`, and

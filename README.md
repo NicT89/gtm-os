@@ -13,6 +13,14 @@ The engine sources companies through buying signals (GTM hiring, fresh funding),
 | provision-gtm-engine | Provisions the full engine for any company from a single URL: context brief, ICP, fields, lists, sequences |
 | gtm-blueprint | Composes the customized 30-day GTM plan behind the `<prefix> Blueprint` field (prefix set by `{INSTANCE_FIELD_PREFIX}`): motion classification, field-completeness gate, motion-specific templates |
 | scrape-linkedin-posts | Scrapes LinkedIn posts and comments for a person or company, writes them into the Airtable posts base, and pushes a summary back into Apollo. Runs standalone, in batch, or on a schedule; also called by gtm-signal-scan Step 6 |
+| jd-intake | Extracts a job posting from any URL and maps it onto the GTM onboarding template: Known/Unknown status per field, an extended-search task list, and an interview-question list |
+
+## Setup
+
+[`SETUP.md`](SETUP.md) is the first-run walkthrough: connectors, the Airtable posts base,
+filling in `instance-config.json`, a one-target dry run, and the render environment. Every
+deployment-specific value lives in that one gitignored file — see
+[references/instance-config.md](references/instance-config.md) for what each key is.
 
 ## Credits
 

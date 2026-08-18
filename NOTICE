@@ -1,0 +1,48 @@
+GTM OS
+Copyright (c) 2026 Nicolas Thatcher, Launch99 Agency.
+
+Licensed under the PolyForm Noncommercial License 1.0.0. See LICENSE.
+
+## Attribution
+
+The license requires you to keep this notice, the LICENSE file, and any other
+notices intact in copies and in works based on this software. If you fork,
+adapt, or build on GTM OS, keep the following line visible in your README or
+your project's about/credits surface:
+
+    Based on GTM OS by Nicolas Thatcher (Launch99 Agency) —
+    https://github.com/NicT89/gtm-os
+
+That is the whole ask for noncommercial use. Attribution is not a formality
+here: this project is shared so people can learn from and improve it, and
+visible credit is what makes that exchange work.
+
+## Commercial use
+
+Using this software in or for a business — including running it on a client's
+pipeline, bundling it into a paid offering, or operating it internally at a
+for-profit company — is a commercial purpose and is NOT covered by the
+noncommercial license.
+
+Commercial use requires a separate written license. To request one, contact:
+
+    Nicolas Thatcher — nthatcher@realblockai.com
+
+Requests are welcome. The intent of the noncommercial terms is to keep casual
+commercial copying from happening silently, not to prevent commercial use.
+
+## What "noncommercial" covers
+
+The license text is authoritative, but as a guide, these are permitted without
+asking: personal use, learning and experimentation, research, and use by a
+charitable, educational, or government organization for its own purposes.
+
+If you are unsure which side of the line you are on, ask. A short email is
+cheaper for both of us than a license dispute.
+
+## Third-party components
+
+GTM OS orchestrates external services (CRM, Airtable, Apify, CB Insights, and
+optionally Brand Kit OS). Those services carry their own terms, pricing, and
+data-handling obligations. This license covers GTM OS itself and grants no
+rights to them.
