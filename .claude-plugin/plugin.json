@@ -3,7 +3,8 @@
   "version": "1.4.0",
   "description": "An open, configurable AI-native GTM engine template: signal-based sourcing, tiered enrichment, personalized outreach preparation, and quality auditing, built on Apollo with Apify and Claude as the orchestration layer.",
   "author": {
-    "name": "Your Organization"
+    "name": "Nicolas Thatcher, Launch99 Agency",
+    "url": "https://github.com/NicT89"
   },
   "homepage": "https://github.com/NicT89/gtm-os",
   "repository": "https://github.com/NicT89/gtm-os",
