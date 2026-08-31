@@ -37,6 +37,7 @@ existing row.
 |---|---|---|
 | Name | Single line text | Person's name. Dedupe key (with LinkedIn URL). |
 | LinkedIn URL | Single line text or URL | Their profile URL. The join key to `Person Post`. |
+| Tracking | Single select | Options: `active`, `paused`, `archived`. Gates scheduled runs. See [The Tracking field](#the-tracking-field). |
 
 ### 2. Company
 
@@ -46,6 +47,7 @@ One row per company you scrape. Same shape as `Contacts`.
 |---|---|---|
 | Name | Single line text | Company name. Dedupe key (with LinkedIn URL). |
 | LinkedIn URL | Single line text or URL | Company page URL. Join key to `Company Posts`. |
+| Tracking | Single select | Options: `active`, `paused`, `archived`. Gates scheduled runs. See [The Tracking field](#the-tracking-field). |
 
 ### 3. Person Post
 
@@ -125,6 +127,31 @@ Uniqueness and dedupe live on `Post ID`. The date lives in `Posted Date`. `Name`
 the human label for "whose post is this", and repeating the parent's name is the
 point: it is what makes a filtered view of one person's posts legible.
 
+## The Tracking field
+
+`Contacts` and `Company` each carry a `Tracking` single-select with three options:
+`active`, `paused`, `archived`. It is the off switch for scheduled runs.
+
+**A recurring or scheduled `scrape-linkedin-posts` run touches only rows set to
+`active`.** Rows set to `paused` or `archived` are skipped and counted in the report.
+A manual run against a named target ignores Tracking entirely: a human asking for a
+target is the decision, and the override is reported so the setting can be corrected
+if it was not intentional.
+
+An **empty** Tracking value is treated as `active`, so a base built before this field
+existed keeps working. The skill reports how many rows were in scope by default
+rather than by explicit setting, which is the nudge to go set them.
+
+Why a field and not a deletion: without an off switch, the only way to stop a
+scheduled job from spending actor budget on closed deals, departed contacts, and
+out-of-scope companies is to delete their rows, which throws away the post history
+that made them worth scraping. `paused` keeps the data and stops the spend.
+`archived` says the row is kept for reference and will not come back.
+
+The keys are optional in `instance-config.json`
+(`AIRTABLE_FLD_CONTACTS_TRACKING`, `AIRTABLE_FLD_COMPANY_TRACKING`). Leave them empty
+and every row is in scope for every scheduled run, which is the pre-existing behavior.
+
 ## Dates are bare dates
 
 Both `Posted Date` fields reject an ISO timestamp (`2026-07-23T16:27:31.250Z`) with a
@@ -185,6 +212,8 @@ Before the first real run:
 
 - [ ] Five tables exist with the fields above, and the link fields resolve on both sides.
 - [ ] `Post Type` has all three options, including `No Content`.
+- [ ] `Contacts` and `Company` each have a `Tracking` single-select with `active`,
+      `paused`, and `archived`, and a paused row is skipped by a scheduled run.
 - [ ] Both post tables have `Name` as their **primary** field, and a dry-run row lands
       the bare person/company name in it with no date suffix.
 - [ ] A manual test row in `Post Comments` can link to a `Person Post` row, and a

@@ -52,6 +52,20 @@ OPTIONAL_KEYS = {
     "APOLLO_CF_CONTACT_PERSONA_INTELLIGENCE",
     "APOLLO_CF_CONTACT_HAS_LINKEDIN",
     "APOLLO_CF_CONTACT_STARTUP_SMB_FIT",
+    # Research Vault: optional. Empty means the Vault write steps in
+    # company-deep-research, gap-closer, event-attribution, and the fan-out
+    # harness skip cleanly and say so, rather than guessing a base.
+    "AIRTABLE_VAULT_BASE_ID",
+    "AIRTABLE_TBL_VAULT_FIELD_KEYS",
+    "AIRTABLE_TBL_VAULT_ENTITIES",
+    "AIRTABLE_TBL_VAULT_FACTS",
+    "AIRTABLE_TBL_VAULT_RUNS",
+    "AIRTABLE_TBL_VAULT_QUESTIONS",
+    # Tracking: optional. A posts base built before this field existed has no ID
+    # to supply; scrape-linkedin-posts then treats every row as in scope for a
+    # scheduled refresh and reports that it did so.
+    "AIRTABLE_FLD_CONTACTS_TRACKING",
+    "AIRTABLE_FLD_COMPANY_TRACKING",
 }
 
 # Single-brace {TOKEN}, not part of a {{merge token}}.
@@ -82,7 +96,7 @@ def check_references(schema_keys):
 
 def looks_like_id(key, value):
     """Plausibility only — we cannot verify an ID exists without calling the API."""
-    if key.startswith("AIRTABLE_POSTS_BASE_ID"):
+    if key.startswith("AIRTABLE_") and key.endswith("_BASE_ID"):
         return value.startswith("app")
     if key.startswith("AIRTABLE_TBL_"):
         return value.startswith("tbl")

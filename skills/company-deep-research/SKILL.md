@@ -5,7 +5,7 @@ description: Deep-research any company end to end and produce a sourced report: 
 
 # Company Deep Research
 
-Input: a company name, domain, or URL, optionally with a partially completed onboarding template from `jd-intake`. Output: a sourced research report, the template's Extended Search column filled with attribution, and an Ask list of what only the company can answer. Nothing is guessed. Every hard fact carries a source URL, every vendor estimate is labeled directional, and every unverifiable claim becomes an Ask instead of a sentence in the report.
+Input: a company name, domain, or URL, optionally with a partially completed onboarding template from `jd-intake`. Output: a sourced research report, the template's Extended Search column filled with attribution, an Ask list of what only the company can answer, and the same facts landed in the Research Vault with full provenance so the next run can diff against them. Nothing is guessed. Every hard fact carries a source URL, every vendor estimate is labeled directional, and every unverifiable claim becomes an Ask instead of a sentence in the report.
 
 ## Version check (run first, never block)
 
@@ -15,15 +15,21 @@ Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to t
 
 Firecrawl is the default extractor for everything on the web; see the plugin root's `references/scraping-playbook.md` for the extraction rules and why markdown is the storage format. Without it, fall back to search and plain fetch and state the degradation in the report: JS-rendered pages (ATS, app-shell marketing sites, docs portals) return page metadata and zero content on a plain fetch, so an empty extraction means "not extracted", never "not present". Without a CRM connector, the org map comes from the site and public profiles only and every count is reported Unknown rather than estimated. A missing connector narrows the report; it never licenses a guess.
 
+Without the Research Vault (`{AIRTABLE_VAULT_BASE_ID}` and its table keys empty), Steps 1 and 10 degrade to report-only: the report is still produced in full, no facts are written, and the run says plainly that nothing was persisted, so the next run has nothing to diff against. Do not substitute another base. When a connector is missing or its keys are empty, route the user to the `environment-setup` skill and the plugin root's `references/environment-setup.md`: a user who has not set a tool up has almost always still got the tool.
+
 ## Step 0: Scope and cost gate (human, before any paid call)
 
 Name the target, the sections in scope, and the TOTAL spend before spending it, costed from the plugin root's `references/apollo-credit-costs.md`: org enrichment and job postings (1 credit per company each), people match (1 credit per matched person, and only after the free people search has ranked reachability), Firecrawl scrape/search credits, and actor spend if Step 8 runs. Search is free and reveals are not, so rank the whole org for free and spend only on the people the run actually needs. Report actual burn by category at the end, not just a total.
+
+Open the run manifest before the first call, per the plugin root's `references/run-manifest.md`: write the step list ahead of execution, update each step on completion, and record spend into `spent_so_far` as it accrues. A run projected to exceed its stated cap STOPS and asks; it does not finish and apologize. This is what makes a dropped connector mid-run a resume rather than a restart.
 
 ## Step 1: Entity resolution and merge-artifact check
 
 Resolve to ONE legal entity before harvesting anything, and record the rebrand and acquisition chain as aliases on that single entity rather than as separate companies. When two entities are plausibly in scope (a parent and an acquired brand still trading under its own name), put both in front of the human and let them pick; researching the wrong one is a whole run wasted.
 
 Treat any enrichment-vendor org record for a company that merged, was acquired, or rebranded in the last ~24 months as a merge artifact until each field is verified against a primary source. This rule is from a live run: a vendor record for a B2B software company that had just acquired a smaller startup interleaved the acquired company's seed rounds into the acquirer's funding history and still pointed the LinkedIn URL at the acquired company's page. Cited as-is, outreach would have credited the wrong investors to the wrong company to the one reader who knows better. Duplicated stack categories after a merger (two warehouses, two CRMs, two ticketing systems) are evidence of unmerged heritage, not a contradiction to resolve: they become Asks.
+
+**Resolve into the Vault, not just in your head.** Search the Entities table by name, domain, AND aliases before creating anything; per the plugin root's `references/research-vault.md`, one real-world company is one Entity row, ever. A rebrand or acquisition updates `Aliases` on the existing row and never creates a second one. Then open the Run row (`run-YYYY-MM-DD-target`) before any fact is written: facts that arrive without a Run link fail review. Both rows exist before Step 2 starts, so every fact from here on has somewhere to attach.
 
 ## Step 2: Site sweep, sitemap first
 
@@ -66,3 +72,20 @@ Unknown template fields that research closed move into the Extended Search colum
 Writeback is gated and optional. With a CRM connected (`{CRM_PROVIDER}`) and the human's approval, write the condensed digest to the Research Company Profile field `{APOLLO_CF_CONTACT_RESEARCH_COMPANY_PROFILE}` for contacts on that account, resolving the key from `instance-config.json` per the plugin root's `references/instance-config.md`. If a CRM-side AI field already populates it, do NOT overwrite: reconcile, and flag any disagreement between this research and the AI field output for the human. If the key is missing, report the mapping and skip the write rather than guessing a field.
 
 Log the run, the credit burn, and any tool behaving differently than documented (dated) to the plugin root's `references/dependency-observations.md`.
+
+## Step 10: Write to the Research Vault
+
+The report is the deliverable; the Vault is the memory. A run that produces only a report cannot be diffed by the next one, which is the whole reason re-validation is cheap. Write after the Step 9 verification pass, so nothing unverified lands.
+
+Follow the plugin root's `references/research-vault.md` exactly. The parts that are non-negotiable:
+
+1. **Provenance complete or the write is rejected.** Every fact carries Source URL (or Method `inference` with "(inferred)" in the Value), Source Type, Method, Captured At, Agent, and Confidence. No exceptions, including for facts that feel obvious. An incomplete fact is dropped with its reason reported, never written with a blank.
+2. **Captured At is the capture date, not the write date**, when the two differ.
+3. **One fact, one Field Key.** The onboarding template taxonomy (A1-E7, plus `other`) is the join key between this research and the intake spine, so a fact that does not map to a field key maps to `other` rather than to a guessed neighbor.
+4. **Append and supersede; never edit a Value in place and never delete.** Before writing, query `current` facts for the same Entity plus Field Key. Supersede on CONTRADICTION or REPLACEMENT: write the new row with `Supersedes` pointing at the old one, then flip the old row to `superseded`. COEXIST on COMPLEMENT: two facts under one field key that are both true about different aspects both stay `current`. Identical value: write nothing.
+5. **Unclosed Asks become Questions rows**, one question per row, phrased ready to ask, routed by Persona Group. These are what `gap-closer` consumes; a multi-part Ask is split so each half can close independently.
+6. **Cost Summary is written only after the run completes**, in the fixed format the reference specifies. Pre-run estimates stay in Notes.
+
+**The change report is mechanical.** End the run by listing every superseded fact paired with its replacement. That list IS the re-validation report for this run: do not compose a separate narrative of what changed, and do not present a rerun as a fresh finding when it is a supersede.
+
+If the Vault keys are empty, skip this step, say explicitly that no facts were persisted and that the next run will therefore have no baseline to diff against, and point the user at `environment-setup`.

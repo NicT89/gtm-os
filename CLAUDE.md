@@ -7,6 +7,10 @@
   (`/plugin marketplace add NicT89/gtm-os`, then `/plugin install gtm-os@gtm-os`),
   work through [SETUP.md](SETUP.md), and invoke the skills by name or by describing
   what you want. [README.md](README.md) is the overview.
+- **To set up your own environment** — connectors, bases, `instance-config.json`: the
+  `environment-setup` skill drives it, over
+  [references/environment-setup.md](references/environment-setup.md). That module is the
+  single setup procedure; every skill routes there rather than carrying its own.
 - **To set it up for a company from scratch** — the `provision-gtm-engine` skill
   does that end to end from a single company URL, with human gates at ICP sign-off,
   credit spend, and sequence activation. Start there rather than wiring things by
@@ -34,6 +38,8 @@ value that differs between installs.
 .claude-plugin/    plugin.json + marketplace.json  (version lives in plugin.json)
 skills/<name>/     SKILL.md, plus optional references/ and scripts/
 references/        plugin-wide references shared across skills
+                   (environment-setup, research-vault, run-manifest, fanout-harness,
+                    airtable-posts-base, instance-config, mcp-coverage-map, ...)
 examples/          redacted sample outputs — the format anchors for the skills
 .github/workflows/ ci (every push/PR) + release (VERSION change on main)
 VERSION            the single source of truth users' version checks read
@@ -93,6 +99,14 @@ Four structural conventions every skill in this repo follows:
    burn after, costed from `references/apollo-credit-costs.md`.
 4. **Everything Claude creates in Apollo carries "[Claude]" in its name.**
    Human-managed assets are never edited.
+5. **Connector preflight routes to one place.** A skill that needs a connector says what
+   it degrades to without it and sends the user to the `environment-setup` skill and
+   [references/environment-setup.md](references/environment-setup.md). Do not write
+   setup instructions into a SKILL.md: they drift, and a user then gets a different
+   procedure depending on which skill they happened to run. The framing that module
+   enforces is load-bearing and belongs in any prose you add about it — **not set up does
+   not mean not owned.** Most users already have the tool and have simply never shaped it
+   for this engine, so probing beats asking and asking beats recommending a signup.
 
 ## Scripts
 
@@ -103,10 +117,20 @@ that shape and ship with tests under `tests/`.
 
 Run the tests with `python3 -m unittest discover -s tests -v`.
 
+`scripts/fanout_workflow.js` is the exception to that shape: it is a Workflow-tool
+orchestration script, not a CLI, so it has no exit codes and no unit tests. Its rules
+instead are that it stays **tokenized** (instance IDs arrive through `args` at call time,
+never in the file), it never reads the clock (`as_of_date` is passed in), and its writer
+stage is the single place the Vault provenance rules are enforced, so a researcher that
+emits a malformed fact fails validation instead of polluting the base. The contract is
+[references/fanout-harness.md](references/fanout-harness.md).
+
 ## Connectors
 
 Apollo is required; Apify, Airtable, Google Drive, and CB Insights are optional and
-each skill degrades explicitly when one is missing rather than guessing. Note that
+each skill degrades explicitly when one is missing rather than guessing. The Research
+Vault base is optional in the same way: with its keys empty, the research skills produce
+their reports and persist nothing, and say so. Note that
 interactively-authenticated MCP connectors may be unavailable in headless or
 scheduled runs — a skill that hard-stops on a missing connector will hard-stop
 there, which is correct behavior but worth knowing when scheduling a run.

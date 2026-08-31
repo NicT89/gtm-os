@@ -33,7 +33,7 @@ def valid_config():
     """A config that should pass: plausible IDs for every required key."""
     config = {}
     for key in SCHEMA_KEYS:
-        if key.startswith("AIRTABLE_POSTS_BASE_ID"):
+        if key.startswith("AIRTABLE_") and key.endswith("_BASE_ID"):
             config[key] = "app" + "a" * 14
         elif key.startswith("AIRTABLE_TBL_"):
             config[key] = "tbl" + "a" * 14
@@ -99,6 +99,25 @@ class ConfigCheck(unittest.TestCase):
         config["AIRTABLE_POSTS_BASE_ID"] = "tblWrongPrefix1"
         problems = validator.check_config(write_config(config), SCHEMA_KEYS)
         self.assertTrue(any("AIRTABLE_POSTS_BASE_ID" in p and "does not look like" in p for p in problems))
+
+    def test_malformed_vault_base_id_is_reported(self):
+        # The base-ID check is keyed on the _BASE_ID suffix, not on the posts
+        # base by name. A second base added later must be checked too, or it
+        # silently accepts a table ID where a base ID belongs.
+        config = valid_config()
+        config["AIRTABLE_VAULT_BASE_ID"] = "tblWrongPrefix1"
+        problems = validator.check_config(write_config(config), SCHEMA_KEYS)
+        self.assertTrue(any("AIRTABLE_VAULT_BASE_ID" in p and "does not look like" in p
+                            for p in problems))
+
+    def test_vault_keys_are_optional(self):
+        # An install that does not run the Research Vault leaves all six empty
+        # and must still validate; the skills degrade to report-only.
+        config = valid_config()
+        for key in SCHEMA_KEYS:
+            if "VAULT" in key:
+                config[key] = ""
+        self.assertEqual(validator.check_config(write_config(config), SCHEMA_KEYS), [])
 
     def test_malformed_crm_field_id_is_reported(self):
         config = valid_config()

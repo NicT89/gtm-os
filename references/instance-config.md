@@ -72,6 +72,34 @@ the build order, and the fields deliberately not to create.
 Field *names* are yours to choose. The skill addresses everything by ID, so calling
 a field `LinkedIn URL` instead of `Notes` costs nothing.
 
+The Vault base is separate from the posts base and entirely optional:
+
+| Key | Value |
+|---|---|
+| `AIRTABLE_VAULT_BASE_ID` | The Research Vault base (`app…`) |
+| `AIRTABLE_TBL_VAULT_FIELD_KEYS` | Field Keys reference table |
+| `AIRTABLE_TBL_VAULT_ENTITIES` | Entities |
+| `AIRTABLE_TBL_VAULT_FACTS` | Facts |
+| `AIRTABLE_TBL_VAULT_RUNS` | Runs |
+| `AIRTABLE_TBL_VAULT_QUESTIONS` | Questions |
+
+Leave all six empty and `company-deep-research`, `gap-closer`, `event-attribution`,
+and the fan-out harness degrade to report-only: they produce their reports, write no
+facts, and say plainly that nothing was persisted. They never fall back to the posts
+base. The schema is in [research-vault.md](research-vault.md).
+
+`AIRTABLE_FLD_CONTACTS_TRACKING` and `AIRTABLE_FLD_COMPANY_TRACKING` are also
+optional. They point at the `Tracking` single-select that gates scheduled scrape
+runs; leave them empty and every row is in scope for every scheduled run, which is
+the behavior a base built before that field had. See
+[airtable-posts-base.md](airtable-posts-base.md#the-tracking-field).
+
+### `SCRAPE_ROSTER_ARTIFACT`
+
+The filename `scrape-linkedin-posts` rebuilds from the live Contacts and Company
+tables at the end of every run. Defaults to `scrape-roster.md`. It is a run artifact
+written to the operator's own storage, never committed here.
+
 ### `APIFY_POSTS_ACTOR`
 
 Defaults to `harvestapi/linkedin-profile-posts`. Change it only if you have
