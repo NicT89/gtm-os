@@ -27,8 +27,12 @@
 // checking entirely once it sees `export` in a .js file and exits 0 on a file
 // with a genuine syntax error in it.
 //
-// Semantic JS linting is off for this file in .coderabbit.yaml, since a module
-// linter's findings here all reduce to "delete the script's output."
+// This file is NOT excluded from review. .coderabbit.yaml tells the reviewer to
+// ignore the return/await/globals specifically, and to scrutinize what actually
+// matters here: that untrusted scraped content stays fenced and labeled as data,
+// that the writer's tool scope stays pinned to the named records, and that the
+// instructions match references/research-vault.md. Reviewing this file is how
+// the prompt-injection surface in the writer stage was found.
 // For behavior, review against references/fanout-harness.md.
 
 export const meta = {

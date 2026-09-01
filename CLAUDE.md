@@ -135,8 +135,9 @@ top-level `return` and `await` legal and what injects `args`, `log`, `phase`, `a
 and `pipeline`. A module parser reports "Illegal return statement" plus a list of
 undefined globals; every one of those findings is right about the syntax and wrong about
 the file, and the only way to "fix" the return is to delete the script's output. The file
-is excluded from semantic JS linting in `.coderabbit.yaml` and carries a header
-explaining why.
+is not excluded from review: `.coderabbit.yaml` suppresses the known-false syntax
+findings specifically and directs the reviewer at the prompt construction instead,
+which is where its real risks live.
 
 It is still **syntax**-checked, in CI, by `scripts/check_workflow_script.py`: that
 rewrites the one top-level `return` into an assignment and parses the result as a real

@@ -15,20 +15,15 @@ reviews:
   poem: false
 
   path_filters:
-    # scripts/fanout_workflow.js is a Workflow-tool script, not a standalone ES
-    # module. The harness wraps its body in an async function before executing,
-    # which is what makes its top-level `return` and `await` legal and what
-    # injects args/log/phase/agent/pipeline. A module parser therefore reports
-    # "Illegal return statement" and a list of undefined globals — all correct
-    # about the syntax, all wrong about the file. Linting it as a module would
-    # produce findings whose only "fix" is to delete the script's return value.
-    # Reviewed against references/fanout-harness.md instead. The file carries a
-    # header saying the same thing, for anyone reading it directly.
+    # scripts/fanout_workflow.js is deliberately NOT excluded here.
     #
-    # This excludes SEMANTIC linting only. The file is syntax-checked in CI by
-    # scripts/check_workflow_script.py, which neutralizes the one top-level
-    # return and then parses it as a real module.
-    - "!scripts/fanout_workflow.js"
+    # The first version of this config filtered it out, on the reasoning that a
+    # module parser reports its required top-level `return` as illegal. That was
+    # the wrong trade: reviewing that file produced the most valuable finding of
+    # the first pass (untrusted scraped content interpolated beside Airtable tool
+    # instructions, CWE-74), and excluding it would have suppressed that while
+    # only saving one false positive. The known-false syntax findings are
+    # suppressed by path_instructions below instead, which is narrower.
 
     # Generated and vendored noise.
     - "!**/__pycache__/**"
@@ -69,6 +64,48 @@ reviews:
       instructions: >
         These pin each way a validator is supposed to FAIL. Flag a test that
         would still pass if the behavior it names were removed.
+
+    - path: "**/*.md"
+      instructions: >
+        Two standing rules of this repo are easy to over- and under-apply.
+
+        "Do not invent numbers" targets VERIFIABLE claims: a metric in outreach
+        copy, a headcount, a funding figure, a vendor's stated limit, a
+        concurrency cap. A number with no source is a defect there, because the
+        skills forbid fabricating one for a prospect and the repo holds itself to
+        the same bar. It is NOT a ban on colloquial duration: "an afternoon, not a
+        click" and "worth ten minutes" are idiom, not claims, and flagging them
+        strips useful writing without protecting anything. Flag an unsourced
+        number when a reader could act on it as fact.
+
+        "No client data" includes real company names, even inside a war story
+        about a production incident. Describe the incident, anonymize the company.
+        Synthetic names (Cobalt Systems, Harbor Labs, Meridian Data) and
+        .example domains are correct and must not be flagged. This repo has never
+        carried a real client name.
+
+    - path: "scripts/fanout_workflow.js"
+      instructions: >
+        Do NOT report the top-level `return`, the top-level `await`, or the
+        undefined globals (args, log, phase, agent, pipeline) as defects. This is
+        not an ES module; it is a script body that the host Workflow tool wraps in
+        an async function before executing, which is what makes all of those
+        legal. The `return` is how a workflow yields its result, so every
+        suggestion to remove it, or to wrap the body in a function, is a
+        regression that silently makes the run return nothing.
+
+        It IS syntax-checked in CI by scripts/check_workflow_script.py. Note that
+        `node --check` is useless here: node stops checking entirely once it sees
+        `export` in a .js file and exits 0 on a file with a real syntax error.
+
+        Do review its prompt construction: untrusted scraped content must stay
+        fenced and labeled as data, the writer's tool scope must stay pinned to
+        the named records, and its instructions must match
+        references/research-vault.md (especially supersede-vs-coexist).
+
+  knowledge_base:
+    learnings:
+      scope: local
 
   auto_review:
     enabled: true
