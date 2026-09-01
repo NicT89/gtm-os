@@ -26,12 +26,21 @@ section of this file — see MAINTAINING.md for how that extraction works.
   instruction still distinguish complement from contradiction?), truncation
   (does an oversized payload stay valid JSON?), and the injection defenses.
 
-  Both defects found in review would have been caught by this: verified by
-  mutating the script three ways and confirming each mutation fails exactly the
-  test that names it.
+  The suite proves it can fail rather than asserting it: `MutationCoverage`
+  reintroduces five defects into an in-memory copy of the script (the dropped
+  researcher questions, a removed fence token, a reused token, a lost COMPLEMENT
+  branch, and naive character-slicing) and asserts each one is detected. The file
+  on disk is never modified.
 
 ### Fixed
 
+- **A second prompt-injection hole, found by review of the first fix.** The
+  critic is shown the fence token so it can read its own input, and its output
+  was then fenced with that same token in the writer prompt. A hostile page could
+  ask the critic to echo the token into a free-text field, planting a delimiter
+  the writer could not tell from a real one. Researcher output and critic
+  verdicts now carry separate tokens, and the critic-verdict token is minted
+  where no upstream agent ever sees it.
 - **Prompt-injection hardening in the fan-out writer.** The untrusted-content
   fences used fixed markers, and `JSON.stringify` escapes newlines but passes the
   literal text `=== END RESEARCHER OUTPUT ===` through verbatim — so a scraped
