@@ -48,10 +48,30 @@ Full process: MAINTAINING.md.
 
 ## Checks
 
+<!-- This list must match .github/workflows/ci.yml. A test enforces that. -->
+
 - [ ] `python3 scripts/validate_skills.py`
+- [ ] `python3 scripts/scan_secrets.py`
+- [ ] `python3 scripts/check_workflow_script.py`
 - [ ] `python3 scripts/validate_instance_config.py`
 - [ ] `python3 -m unittest discover -s tests -v`
 - [ ] `jq empty .claude-plugin/plugin.json .claude-plugin/marketplace.json`
+
+## Review
+
+- [ ] Reviewed locally before pushing (`coderabbit review --base main`), or noted
+      below why not (CLI not authenticated is a fine reason)
+- [ ] Every CodeRabbit finding is answered **in its own thread**, including any
+      declined, with the reason
+- [ ] Findings were verified against the code before being accepted, not only
+      before being rejected
+- [ ] Any finding that revealed missing reviewer context became a
+      `.coderabbit.yaml` change, not just a reply
+
+<!-- Do not exclude a file from review to silence a false positive. Suppress the
+     specific class in .coderabbit.yaml's path_instructions and leave the file
+     reviewed. Excluding fanout_workflow.js would have hidden a prompt-injection
+     finding to save one predictable parser complaint. -->
 
 ## Skill changes
 
