@@ -7,6 +7,10 @@
   (`/plugin marketplace add NicT89/gtm-os`, then `/plugin install gtm-os@gtm-os`),
   work through [SETUP.md](SETUP.md), and invoke the skills by name or by describing
   what you want. [README.md](README.md) is the overview.
+- **To set up your own environment** — connectors, bases, `instance-config.json`: the
+  `environment-setup` skill drives it, over
+  [references/environment-setup.md](references/environment-setup.md). That module is the
+  single setup procedure; every skill routes there rather than carrying its own.
 - **To set it up for a company from scratch** — the `provision-gtm-engine` skill
   does that end to end from a single company URL, with human gates at ICP sign-off,
   credit spend, and sequence activation. Start there rather than wiring things by
@@ -34,6 +38,8 @@ value that differs between installs.
 .claude-plugin/    plugin.json + marketplace.json  (version lives in plugin.json)
 skills/<name>/     SKILL.md, plus optional references/ and scripts/
 references/        plugin-wide references shared across skills
+                   (environment-setup, research-vault, run-manifest, fanout-harness,
+                    airtable-posts-base, instance-config, mcp-coverage-map, ...)
 examples/          redacted sample outputs — the format anchors for the skills
 .github/workflows/ ci (every push/PR) + release (VERSION change on main)
 VERSION            the single source of truth users' version checks read
@@ -63,7 +69,11 @@ is not confused with the skill's own folder.
   user's own storage and are the personalized layer of the playbook. `.gitignore`
   blocks the common names; that is a safety net, not permission to try.
 - **Never commit a credential.** `.env` and `.env.*` are ignored. The audit is
-  `git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'` and it must come back empty.
+  `python3 scripts/scan_secrets.py --history`, which must exit 0. It runs in CI
+  against the working tree; the `--history` pass is the pre-release check.
+  It replaced `git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'`, which matched
+  vendor *names*: 271 hits on this repo's own prose and not one credential. An
+  audit that can never come back clean teaches everyone to ignore it.
 - **Do not invent numbers.** The skills demand "one hard number, verifiable, true
   for this specific recipient" and forbid fabrication. That standard applies to the
   repo's own documentation too: if a figure for the adopter's own pipeline is not in
@@ -93,6 +103,14 @@ Four structural conventions every skill in this repo follows:
    burn after, costed from `references/apollo-credit-costs.md`.
 4. **Everything Claude creates in Apollo carries "[Claude]" in its name.**
    Human-managed assets are never edited.
+5. **Connector preflight routes to one place.** A skill that needs a connector says what
+   it degrades to without it and sends the user to the `environment-setup` skill and
+   [references/environment-setup.md](references/environment-setup.md). Do not write
+   setup instructions into a SKILL.md: they drift, and a user then gets a different
+   procedure depending on which skill they happened to run. The framing that module
+   enforces is load-bearing and belongs in any prose you add about it — **not set up does
+   not mean not owned.** Most users already have the tool and have simply never shaped it
+   for this engine, so probing beats asking and asking beats recommending a signup.
 
 ## Scripts
 
@@ -103,10 +121,37 @@ that shape and ship with tests under `tests/`.
 
 Run the tests with `python3 -m unittest discover -s tests -v`.
 
+`scripts/fanout_workflow.js` is the exception to that shape: it is a Workflow-tool
+orchestration script, not a CLI, so it has no exit codes and no unit tests. Its rules
+instead are that it stays **tokenized** (instance IDs arrive through `args` at call time,
+never in the file), it never reads the clock (`as_of_date` is passed in), and its writer
+stage is the single place the Vault provenance rules are enforced, so a researcher that
+emits a malformed fact fails validation instead of polluting the base. The contract is
+[references/fanout-harness.md](references/fanout-harness.md).
+
+**It does not parse as a standalone ES module, and that is correct.** The Workflow tool
+wraps the script body in an async function before executing it, which is what makes the
+top-level `return` and `await` legal and what injects `args`, `log`, `phase`, `agent`,
+and `pipeline`. A module parser reports "Illegal return statement" plus a list of
+undefined globals; every one of those findings is right about the syntax and wrong about
+the file, and the only way to "fix" the return is to delete the script's output. The file
+is not excluded from review: `.coderabbit.yaml` suppresses the known-false syntax
+findings specifically and directs the reviewer at the prompt construction instead,
+which is where its real risks live.
+
+It is still **syntax**-checked, in CI, by `scripts/check_workflow_script.py`: that
+rewrites the one top-level `return` into an assignment and parses the result as a real
+module, so every brace and template literal is verified as written. Do not substitute
+`node --check` on the `.js` file — node stops checking entirely once it sees `export`
+in a `.js` file and exits 0 on a file with a real syntax error, which is how this file
+went unchecked in the first place. For behavior, review against the harness reference.
+
 ## Connectors
 
 Apollo is required; Apify, Airtable, Google Drive, and CB Insights are optional and
-each skill degrades explicitly when one is missing rather than guessing. Note that
+each skill degrades explicitly when one is missing rather than guessing. The Research
+Vault base is optional in the same way: with its keys empty, the research skills produce
+their reports and persist nothing, and say so. Note that
 interactively-authenticated MCP connectors may be unavailable in headless or
 scheduled runs — a skill that hard-stops on a missing connector will hard-stop
 there, which is correct behavior but worth knowing when scheduling a run.

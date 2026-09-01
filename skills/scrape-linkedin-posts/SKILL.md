@@ -7,6 +7,10 @@ description: Scrape recent LinkedIn posts and comments for a person or company a
 
 Apify scrape, Airtable write with linked-record dedupe, Apollo push-back. One pipeline, three entry points: single target, batch (list/tier), or scheduled refresh.
 
+## Version check (run first, never block)
+
+Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to the plugin root VERSION file, notify on mismatch, continue.
+
 ## Scope per run
 
 Floor 10 total targets, ceiling 50, per run. Each target gets ALL authored posts inside the 3-month lookback window (no per-target post cap, the window is the cap) and up to 15 comments per post. If asked for a single named person or company, that's a 1-target run and the floor does not apply.
@@ -23,18 +27,24 @@ Three modes, pick based on what the user asked for:
 
 - **Single target**: user named one person or company. Resolve their LinkedIn URL from their Apollo contact/account record (contact/account custom fields, or the standard linkedin_url field), or ask the user for it if Apollo has none on file.
 - **Batch**: user named an Apollo list, a tier (Excellent/Good), or gtm-signal-scan is calling this as its Step 6. Pull every contact/account in scope and their linkedin_url. Skip anyone with no LinkedIn URL and report them as skipped, don't guess a profile.
-- **Scheduled refresh**: no explicit target, this run is on a cadence. Read the Contacts and Company tables in the Airtable base (below) for every existing row and re-scrape all of them, since the 3-month lookback means new posts will have entered the window since the last run.
+- **Scheduled refresh**: no explicit target, this run is on a cadence. Read the Contacts and Company tables in the Airtable base (below) and re-scrape the rows that are still in scope, since the 3-month lookback means new posts will have entered the window since the last run.
+
+**Recurring and scheduled runs touch ONLY rows whose Tracking field is `active`** (`{AIRTABLE_FLD_CONTACTS_TRACKING}` on Contacts, `{AIRTABLE_FLD_COMPANY_TRACKING}` on Company). A row set to `paused` or `archived` is skipped and counted in the report; it is never re-scraped and never silently reactivated. This is the off switch: a scheduled job with no such switch keeps spending actor budget on deals that closed, people who left, and companies that went out of scope months ago, and the only way to stop it is to delete data. A row with an empty Tracking value is treated as `active`, so an existing base keeps working, but say in the report how many rows were in-scope by default rather than by explicit setting.
+
+Manual runs are exempt: if a human names a target, scrape it regardless of Tracking. The user asking is the decision. Report that you overrode a non-active row so the setting can be corrected if that was not intended.
 
 ## Step 2: Airtable base and field reference
 
 Read `instance-config.json` at the plugin root and resolve every `{KEY}` below to its value. If that file is missing, or any key needed here is empty, STOP and tell the user to run the setup in the plugin root's `references/instance-config.md`; never guess an ID and never write into a base you have not been given.
 
+**Two exceptions, and only two.** `{AIRTABLE_FLD_CONTACTS_TRACKING}` and `{AIRTABLE_FLD_COMPANY_TRACKING}` are optional: when either is empty, do NOT stop. Treat every row in that table as `active`, proceed, and say in the Step 7 report that the run was unfiltered because the base has no Tracking field. A base built before that field existed must keep working, which is the whole point of the fallback.
+
 Build the base first if it does not exist: the portable schema, build order, and the fields deliberately not to create are in `references/airtable-posts-base.md`. Field *names* do not matter — this skill addresses every field by ID.
 
 Base `{AIRTABLE_POSTS_BASE_ID}`. Five tables:
 
-- **Contacts** (`{AIRTABLE_TBL_CONTACTS}`): Name `{AIRTABLE_FLD_CONTACTS_NAME}`, LinkedIn URL `{AIRTABLE_FLD_CONTACTS_LINKEDIN_URL}`.
-- **Company** (`{AIRTABLE_TBL_COMPANY}`): Name `{AIRTABLE_FLD_COMPANY_NAME}`, LinkedIn URL `{AIRTABLE_FLD_COMPANY_LINKEDIN_URL}`.
+- **Contacts** (`{AIRTABLE_TBL_CONTACTS}`): Name `{AIRTABLE_FLD_CONTACTS_NAME}`, LinkedIn URL `{AIRTABLE_FLD_CONTACTS_LINKEDIN_URL}`, Tracking `{AIRTABLE_FLD_CONTACTS_TRACKING}`.
+- **Company** (`{AIRTABLE_TBL_COMPANY}`): Name `{AIRTABLE_FLD_COMPANY_NAME}`, LinkedIn URL `{AIRTABLE_FLD_COMPANY_LINKEDIN_URL}`, Tracking `{AIRTABLE_FLD_COMPANY_TRACKING}`.
 - **Person Post** (`{AIRTABLE_TBL_PERSON_POST}`): Name (primary) `{AIRTABLE_FLD_PERSON_POST_NAME}`, Post ID `{AIRTABLE_FLD_PERSON_POST_POST_ID}`, Person LinkedIn URL `{AIRTABLE_FLD_PERSON_POST_PERSON_LINKEDIN_URL}`, Company Name `{AIRTABLE_FLD_PERSON_POST_COMPANY_NAME}`, Post URL `{AIRTABLE_FLD_PERSON_POST_POST_URL}`, Post Content `{AIRTABLE_FLD_PERSON_POST_POST_CONTENT}`, Post Type `{AIRTABLE_FLD_PERSON_POST_POST_TYPE}`, Posted Date `{AIRTABLE_FLD_PERSON_POST_POSTED_DATE}`, Likes `{AIRTABLE_FLD_PERSON_POST_LIKES}`, Comments Count `{AIRTABLE_FLD_PERSON_POST_COMMENTS_COUNT}`, Shares `{AIRTABLE_FLD_PERSON_POST_SHARES}`, Scraped At `{AIRTABLE_FLD_PERSON_POST_SCRAPED_AT}`, Contact (link) `{AIRTABLE_FLD_PERSON_POST_CONTACT_LINK}`.
 - **Company Posts** (`{AIRTABLE_TBL_COMPANY_POSTS}`): Name (primary) `{AIRTABLE_FLD_COMPANY_POSTS_NAME}`, Post ID `{AIRTABLE_FLD_COMPANY_POSTS_POST_ID}`, Company LinkedIn URL `{AIRTABLE_FLD_COMPANY_POSTS_COMPANY_LINKEDIN_URL}`, Post URL `{AIRTABLE_FLD_COMPANY_POSTS_POST_URL}`, Post Content `{AIRTABLE_FLD_COMPANY_POSTS_POST_CONTENT}`, Post Type `{AIRTABLE_FLD_COMPANY_POSTS_POST_TYPE}`, Posted Date `{AIRTABLE_FLD_COMPANY_POSTS_POSTED_DATE}`, Likes `{AIRTABLE_FLD_COMPANY_POSTS_LIKES}`, Comments Count `{AIRTABLE_FLD_COMPANY_POSTS_COMMENTS_COUNT}`, Shares `{AIRTABLE_FLD_COMPANY_POSTS_SHARES}`, Scraped At `{AIRTABLE_FLD_COMPANY_POSTS_SCRAPED_AT}`, Company (link) `{AIRTABLE_FLD_COMPANY_POSTS_COMPANY_LINK}`.
 - **Post Comments** (`{AIRTABLE_TBL_POST_COMMENTS}`): Comment ID `{AIRTABLE_FLD_POST_COMMENTS_COMMENT_ID}`, Commenter Name `{AIRTABLE_FLD_POST_COMMENTS_COMMENTER_NAME}`, Commenter LinkedIn URL `{AIRTABLE_FLD_POST_COMMENTS_COMMENTER_LINKEDIN_URL}`, Commenter Headline `{AIRTABLE_FLD_POST_COMMENTS_COMMENTER_HEADLINE}`, Comment Text `{AIRTABLE_FLD_POST_COMMENTS_COMMENT_TEXT}`, Commented At `{AIRTABLE_FLD_POST_COMMENTS_COMMENTED_AT}`, Person Post (link) `{AIRTABLE_FLD_POST_COMMENTS_PERSON_POST_LINK}`, Company Post (link) `{AIRTABLE_FLD_POST_COMMENTS_COMPANY_POST_LINK}`, Scraped At `{AIRTABLE_FLD_POST_COMMENTS_SCRAPED_AT}`.
@@ -109,6 +119,16 @@ Targets scraped, posts written (new vs already-existed), comments written, the p
 
 Also surface relationship intel found in the discarded reposts and in commenter identities: events attended, hosts, colleagues, investors, and recurring commenters.
 
+## Step 8: Rebuild the scrape roster (every run, no exceptions)
+
+**Every run ends by rebuilding `{SCRAPE_ROSTER_ARTIFACT}` from the live Contacts and Company tables.** Scheduled or manual, one target or fifty, success or partial failure: the roster is regenerated from what the tables actually contain right now, never patched incrementally from what this run happened to touch.
+
+The roster lists every Contacts and Company row with its Tracking state, LinkedIn URL, and the date it was last scraped. It is the human-readable answer to "what is this scheduled job going to spend money on next week," and it is the artifact a human reads before approving a cadence change.
+
+Rebuilding rather than appending is the point. An incrementally maintained roster drifts away from the tables silently: rows paused in Airtable stay listed as active, rows added by another run never appear, and the drift is invisible until a scheduled run scrapes something it should not have. A full rebuild from the live tables cannot drift, and it costs one read.
+
+Write it to the run's working folder alongside the run manifest (the plugin root's `references/run-manifest.md`). It is a run artifact: it lives in the operator's own storage and is never committed to this repo.
+
 ## Breadcrumb mode (optional second-degree pass, human gate)
 
 The people tagged in a target's posts and the people commenting on them are relationship edges worth following: they reveal who the target builds with, buys from, and answers to. After a first-degree run, offer the user a breadcrumb pass: list the tagged/commenting people found (name, headline, relationship context), let the human select which to scrape, and run those as a normal batch. **Never auto-scrape second-degree targets.** Each one costs actor spend and Airtable rows, so the selection is always a human gate. Record the relationship context ("commented on X's July 2026 post about the partner event") in the run report and the audit log so the edge survives the run; if your base carries a free-text notes field on Contacts, write it there too, but never overwrite the LinkedIn URL field to make room for it.
@@ -116,5 +136,7 @@ The people tagged in a target's posts and the people commenting on them are rela
 ## Scheduling
 
 This skill can be registered as a recurring scheduled task (via the `schedule` skill / scheduled-tasks tools) to run the "scheduled refresh" mode weekly or biweekly against the existing Contacts/Company tables, keeping post data current for personalization without a manual trigger each time.
+
+Two rules make a cadence safe to leave running, and both are covered above: a scheduled run touches only `active` Tracking rows (Step 1), and every run rebuilds `{SCRAPE_ROSTER_ARTIFACT}` from the live tables (Step 8). Together they mean the standing answer to "what will this spend next week" is a current file rather than a guess, and pausing a target is a field edit rather than a deleted row. Confirm the connectors survive a scheduled invocation before depending on one: interactively-authenticated MCP servers may be unavailable headless, per the plugin root's `references/environment-setup.md`.
 
 For scheduled-refresh runs specifically, this is the mode best suited to a cheaper/lower-effort model; see "Model / effort guidance" above. First-time runs against a new target should stay on a stronger model/effort setting.

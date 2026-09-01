@@ -53,6 +53,12 @@ def parse_frontmatter(text):
 
 
 def validate_skill(skill_dir):
+    """Validate one skill directory; return a list of problem strings.
+
+    An empty list means the skill is well-formed. Every problem names the file
+    and says why it matters, because these failures are silent at runtime: a
+    skill with bad frontmatter does not error, it just never triggers.
+    """
     problems = []
     skill_file = skill_dir / "SKILL.md"
 
@@ -90,6 +96,7 @@ def validate_skill(skill_dir):
 
 
 def main():
+    """CLI entry point: validate every skill directory and report the tally."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--skills-dir", default="skills")
     args = parser.parse_args()

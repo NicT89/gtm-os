@@ -25,6 +25,13 @@ Then run through [`SETUP.md`](SETUP.md) — connectors, the Airtable posts base,
 deliberate: a skill that guessed at an ID would write your data into someone else's
 workspace.
 
+Or just say **"set up my environment"** and let the `environment-setup` skill drive it.
+It diagnoses what you already have before it suggests anything, which matters because
+**not set up almost never means not owned** — the usual situation is that you have the
+tool and have simply never shaped it for this engine. The per-connector procedure is
+[`references/environment-setup.md`](references/environment-setup.md), and every skill
+routes there when a connector it needs is missing.
+
 ## What it does
 
 | Skill | What it does |
@@ -35,6 +42,11 @@ workspace.
 | `provision-gtm-engine` | Provisions the whole engine for a company from a single URL: context brief, ICP, fields, lists, sequences |
 | `scrape-linkedin-posts` | Scrapes posts and comments into an Airtable base and pushes a digest back to the CRM. Standalone, batch, or scheduled |
 | `jd-intake` | Turns a job posting into structured intake: Known/Unknown per field, an extended-search list, and interview questions |
+| `company-deep-research` | Full sourced workup on a company: site sweep, funding and M&A, org map, customers, partners, competitors, code footprint |
+| `gtm-architecture-composer` | Composes the five-layer GTM OS architecture and its 60-day / 6-month / 12-month sequence from a completed intake |
+| `gap-closer` | Works the open-question list: persona-routed batches, drafts for human sending, answers written back as sourced facts |
+| `event-attribution` | Reconciles an event attendee list against the CRM and tags every match, so field spend stops being unattributable |
+| `environment-setup` | Diagnoses and wires the connectors, from whatever state you are already in |
 
 ## Who this is for
 
@@ -62,14 +74,24 @@ rather than merely fast:
    edited by it.
 5. **Every run appends to an audit log**, and every defect found becomes a permanent
    gate rather than a silent patch.
+6. **Conversation memory is never the system of record.** Facts land in the Research
+   Vault with source, method, capture date, and confidence, and they are appended and
+   superseded rather than edited or deleted. Re-running research is then a mechanical
+   diff: the set of facts a run superseded *is* the change report.
 
 ## Connectors
 
 - **CRM** (required) — Apollo is the reference implementation: signal source, CRM,
   enrichment, sequences, analytics.
-- **Apify** (required) — LinkedIn post and comment scraping.
-- **Airtable** (required) — the posts archive. Build it from
-  [`references/airtable-posts-base.md`](references/airtable-posts-base.md).
+- **Apify** (required *for post scraping*) — LinkedIn post and comment scraping.
+  Skills that do not scrape run without it.
+- **Airtable** (required *for the posts base*) — the posts archive. Build it from
+  [`references/airtable-posts-base.md`](references/airtable-posts-base.md). A second,
+  optional base is the **Research Vault**
+  ([`references/research-vault.md`](references/research-vault.md)): the persistent
+  research spine where every captured fact lands with its source, method, and
+  confidence. Without it the research skills still produce their reports; they just
+  cannot tell you what changed since last time.
 - **CB Insights** (optional) — funding stage, named investors, commercial maturity.
 - **Brand Kit OS** (optional) — supplies structured brand voice, positioning, and
   audience data as the seller-side context that `gtm-blueprint` composes against.

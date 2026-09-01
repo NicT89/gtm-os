@@ -41,6 +41,15 @@ jobs:
       - name: Validate skill frontmatter
         run: python3 scripts/validate_skills.py
 
+      - name: Scan for committed credentials
+        run: python3 scripts/scan_secrets.py
+
+      - name: Syntax-check workflow scripts
+        # node --check on a .js file containing `export` silently exits 0
+        # without checking anything, so fanout_workflow.js had no syntax
+        # coverage at all. This checks it correctly; see the script's docstring.
+        run: python3 scripts/check_workflow_script.py
+
       - name: Validate instance-config references
         # No instance-config.json exists in CI, and that is fine: this asserts that
         # every {KEY} the skills reference is a real key in the example schema, so a
