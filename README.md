@@ -83,8 +83,9 @@ rather than merely fast:
 
 - **CRM** (required) — Apollo is the reference implementation: signal source, CRM,
   enrichment, sequences, analytics.
-- **Apify** (required) — LinkedIn post and comment scraping.
-- **Airtable** (required) — the posts archive. Build it from
+- **Apify** (required *for post scraping*) — LinkedIn post and comment scraping.
+  Skills that do not scrape run without it.
+- **Airtable** (required *for the posts base*) — the posts archive. Build it from
   [`references/airtable-posts-base.md`](references/airtable-posts-base.md). A second,
   optional base is the **Research Vault**
   ([`references/research-vault.md`](references/research-vault.md)): the persistent

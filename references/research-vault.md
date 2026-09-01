@@ -39,7 +39,7 @@ Canonical companies and people. One row per real-world thing, ever. People get e
 | LinkedIn URL | text | |
 | Aliases | long text | Prior names, rebrand history, one per line. Rebrands NEVER create a second entity row |
 | Notes | long text | Human context only: role, warnings, constraints. System IDs never live in Notes |
-| External IDs | dedicated text columns per system (e.g. `Apollo Org ID` for the vendor's global company record, `Apollo Record ID` for the saved account/contact in YOUR workspace). Add a column per system rather than packing IDs into Notes |
+| External IDs | text, one column per system | e.g. `Apollo Org ID` for the vendor's global company record, `Apollo Record ID` for the saved account/contact in YOUR workspace. Add a column per system rather than packing IDs into Notes |
 | Related Entities | link to Entities | Person-to-employer, subsidiary-to-parent, partner-to-partner |
 
 ### Facts

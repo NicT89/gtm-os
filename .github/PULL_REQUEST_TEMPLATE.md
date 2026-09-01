@@ -39,8 +39,7 @@ Full process: MAINTAINING.md.
 - [ ] **No resolved instance values.** Every CRM/Airtable/Apify ID is a `{KEY}`
       token, single braces. Any new key was added to `instance-config.example.json`
       and grouped in `scripts/setup_status.py` in this same change.
-- [ ] **No credentials.** `git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'`
-      returns nothing that is not prose.
+- [ ] **No credentials.** `python3 scripts/scan_secrets.py --history` exits 0.
 - [ ] **No client data**, run artifacts, or audit logs. Examples are synthetic and
       use `.example` domains.
 - [ ] **No real client or prospect names.** This repo has never carried one.

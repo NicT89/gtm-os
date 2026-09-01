@@ -1,6 +1,6 @@
 # Secrets. Never commit a real key. Connector credentials (Apollo, Apify, CB
 # Insights) belong in the environment or a local .env, never in this repo.
-# Audit with: git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'  -> must be empty.
+# Audit with: python3 scripts/scan_secrets.py --history   -> must exit 0.
 .env
 .env.*
 !.env.example

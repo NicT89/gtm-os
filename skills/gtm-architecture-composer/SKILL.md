@@ -15,7 +15,9 @@ Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to t
 
 ## Connector preflight
 
-This skill reads the Vault and renders a PDF. If the `{AIRTABLE_VAULT_BASE_ID}` keys are empty, compose from the intake alone, write no facts back, and say so in the proposal. If `scripts/render_report.py`'s dependencies are missing, deliver the markdown and say the PDF was not rendered. Either way, route the user to the `environment-setup` skill (the plugin root's `references/environment-setup.md`) rather than improvising: not set up almost never means not owned.
+This skill reads the Vault, writes facts and open questions back, and renders a PDF. The Vault write needs `{AIRTABLE_VAULT_BASE_ID}`, `{AIRTABLE_TBL_VAULT_ENTITIES}`, `{AIRTABLE_TBL_VAULT_FACTS}`, and `{AIRTABLE_TBL_VAULT_QUESTIONS}`; check all four, not just the base. If **any** of them is empty, treat the Vault as absent: compose from the intake alone, write nothing back, and say so in the proposal. Partial configuration degrades the same way as no configuration, because a half-written proposal is worse than an honestly report-only one.
+
+If `scripts/render_report.py`'s dependencies are missing, deliver the markdown and say the PDF was not rendered. Either way, route the user to the `environment-setup` skill (the plugin root's `references/environment-setup.md`) rather than improvising: not set up almost never means not owned.
 
 ## The five layers
 

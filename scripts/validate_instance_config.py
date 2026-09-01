@@ -66,6 +66,9 @@ OPTIONAL_KEYS = {
     # scheduled refresh and reports that it did so.
     "AIRTABLE_FLD_CONTACTS_TRACKING",
     "AIRTABLE_FLD_COMPANY_TRACKING",
+    # Ships with a working default filename; empty means the skill falls back
+    # to it. Documented as optional, so it must validate as optional.
+    "SCRAPE_ROSTER_ARTIFACT",
 }
 
 # Single-brace {TOKEN}, not part of a {{merge token}}.

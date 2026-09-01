@@ -119,12 +119,51 @@ not set a tool up has almost always still got the tool.
   output. The file now carries a header saying so.
 - Docstrings on every function and class in the repo's Python (79/79).
 
+- `scripts/scan_secrets.py` — replaces the credential audit this repo documented
+  inline (`git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'`), which matched
+  vendor *names* and so returned 271 hits of ordinary prose and zero credentials.
+  An audit that can never come back clean teaches everyone to ignore it. The
+  replacement matches credential *shapes* (Airtable PATs, Apify tokens, secret-ish
+  assignments of long opaque values), redacts anything it finds, and runs in CI.
+- `scripts/check_workflow_script.py` — real syntax checking for
+  `scripts/fanout_workflow.js`. `node --check` silently exits 0 on any `.js` file
+  containing `export`, so that file had no syntax coverage at all; this neutralizes
+  its one top-level `return` and parses the result as a real module. Runs in CI.
+
+### Fixed
+
+- `fanout_workflow.js`: the writer stage was instructed to write the researcher's
+  questions but was never passed them, so every researcher-generated question was
+  silently dropped. It also truncated prompt payloads by slicing JSON at a
+  character count, which emits malformed JSON mid-token; it now drops whole items
+  and reports what it dropped. Its supersede instruction flipped any differing
+  value to `superseded`, contradicting the Vault's coexist-on-complement rule and
+  destroying true facts. Untrusted scraped content interpolated into the writer
+  prompt is now explicitly delimited as data with the write scope pinned, and
+  `FACTS_SCHEMA` now matches the Vault contract (`fact`, `value_type`, and the
+  select option sets).
+- `setup_status.py` crashed with a TypeError on a config file that was valid JSON
+  but not an object.
+- `SCRAPE_ROSTER_ARTIFACT` was documented as optional but rejected when empty.
+- `gap-closer`, `gtm-architecture-composer`, and `event-attribution` gated Vault
+  access on the base ID alone, so a config with a base but no table IDs passed the
+  check and failed partway through a run.
+- `scrape-linkedin-posts` added the optional `Tracking` keys to the list that stops
+  the run when empty, which would have broken the documented legacy-base fallback.
+- `event-attribution` told the agent both to append a touch to existing records and
+  never to edit them; the no-edit rule is now scoped to human-managed fields.
+- README described Apify and Airtable as globally required, contradicting CLAUDE.md.
+- Removed an unsourced concurrency figure from `fanout-harness.md` and an unsourced
+  duration from these notes.
+- Fixed a malformed table row in `research-vault.md`, and stopped describing the
+  Firecrawl probe as free (a scrape spends a credit).
+
 ### Upgrading
 
 Nothing is required. Every new config key is optional, and an install that upgrades
 and changes nothing keeps behaving exactly as before.
 
-Two things are worth ten minutes, though. Run `python3 scripts/setup_status.py` to
+Two things are worth doing anyway. Run `python3 scripts/setup_status.py` to
 see which of your values were inherited from the example rather than chosen. And if
 you want research to accumulate rather than be re-read every time, build the Research
 Vault base (SETUP.md Step 2b): without it the research skills still produce their

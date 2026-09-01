@@ -38,8 +38,13 @@ S1, S2, or S3.
 
 ### Probing, in order
 
-Run these before asking the user anything. They are cheap, read-only, and they
-answer the question faster than a conversation does.
+Run these before asking the user anything. They are read-only and they answer the
+question faster than a conversation does.
+
+**One of them is not free.** Apollo search, Airtable schema reads, Apify account
+reads, and the config validator all cost nothing. A Firecrawl *scrape* consumes a
+credit, so the Firecrawl probe below is the one place a diagnosis spends, and it is
+gated like any other spend: say so first, or use the non-billed check named there.
 
 1. **Is the MCP server present?** List the available tools. If `apollo_*` /
    `airtable_*` / `firecrawl_*` / Apify tools appear, the user is at S2 or better.
@@ -158,7 +163,12 @@ markdown.
 |---|---|---|
 | S0 | No account | Sign up at firecrawl.dev; the free tier covers evaluation. |
 | S1 | No `firecrawl_*` tools, or 401 | Add the Firecrawl MCP server and authenticate. |
-| S4 | A test scrape returns markdown | Done. Firecrawl needs no instance-config keys. |
+| S4 | An authenticated call succeeds | Done. Firecrawl needs no instance-config keys. |
+
+**Prefer the non-billed check.** Any authenticated read that is not a scrape (an
+account or usage lookup) proves S1 versus S4 without spending. Only fall back to
+scraping a single small static page if no such call is available, and state the
+one-credit cost before you do it. Do not describe this probe as free.
 
 Firecrawl is not optional in practice even though it needs no config: ATS pages,
 app-shell marketing sites, and docs portals are client-side rendered, so a plain
@@ -292,8 +302,10 @@ Setup is not complete at S3. It completes at S4, and S4 requires a live call.
 ## What never happens during setup
 
 - No credential is ever written into this repo, a SKILL.md, or a run artifact. `.env`
-  and `.env.*` are gitignored; the audit is
-  `git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'` and it must come back empty.
+  and `.env.*` are gitignored; the audit is `python3 scripts/scan_secrets.py --history`,
+  which must exit 0. It matches credential *shapes* (Airtable PATs, Apify tokens,
+  secret-ish assignments of long opaque values), not vendor names, and it redacts
+  anything it finds so the output is safe to paste into an issue.
 - No resolved instance value flows back to the public repo. Porting a skill
   improvement from a local copy means re-tokenizing every ID to a `{KEY}` first.
 - No skill guesses an ID, a base, or a field. Missing config is a stop, and the stop

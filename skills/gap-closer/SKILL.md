@@ -13,7 +13,9 @@ Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to t
 
 ## Connector preflight
 
-This skill reads and writes Questions and Facts in the Research Vault. If the `{AIRTABLE_VAULT_BASE_ID}` keys are empty, there is no Ask list to work and the skill stops: route the user to the `environment-setup` skill (the plugin root's `references/environment-setup.md`) to build the Vault, and never substitute another base. Not set up almost never means not owned.
+This skill reads Questions and writes Facts in the Research Vault, so it needs **three** keys resolved, not one: `{AIRTABLE_VAULT_BASE_ID}`, `{AIRTABLE_TBL_VAULT_QUESTIONS}`, and `{AIRTABLE_TBL_VAULT_FACTS}` (plus `{AIRTABLE_TBL_VAULT_ENTITIES}` to link an answer to its entity). Check all of them before starting. A base ID with empty table IDs is the dangerous middle state: it looks configured, passes a base-only check, and then fails partway through with questions already flipped to `asked`.
+
+If any required key is empty, stop before touching anything, name the specific keys that are missing, and route the user to the `environment-setup` skill (the plugin root's `references/environment-setup.md`). Never substitute another base or table. Not set up almost never means not owned.
 
 ## The four rules (non-negotiable, set 2026-08-17)
 

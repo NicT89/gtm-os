@@ -59,6 +59,9 @@ OPTIONAL_KEYS = {
     "AIRTABLE_TBL_VAULT_QUESTIONS",
     "AIRTABLE_FLD_CONTACTS_TRACKING",
     "AIRTABLE_FLD_COMPANY_TRACKING",
+    # Ships with a working default filename. Empty is supported and means the
+    # skill falls back to that default, so an empty value must not fail.
+    "SCRAPE_ROSTER_ARTIFACT",
 }
 
 # Ordered because setup has a dependency order and the report should read in it.
@@ -170,9 +173,16 @@ def build_report(config_path):
         try:
             with open(config_path) as f:
                 config = json.load(f)
-            config_present = True
         except (OSError, json.JSONDecodeError) as e:
             return {"error": f"cannot read {config_path}: {e}"}, 2
+        # Valid JSON is not enough: it has to be an object. A list or a bare
+        # string parses fine and then throws TypeError deep in classify() on
+        # the first key lookup, which surfaces as a traceback rather than as
+        # the actionable message this script exists to print.
+        if not isinstance(config, dict):
+            return {"error": f"{config_path} must contain a JSON object, "
+                             f"got {type(config).__name__}"}, 2
+        config_present = True
 
     assigned, groups = set(), []
     for label, predicate, blocks, how in GROUPS:

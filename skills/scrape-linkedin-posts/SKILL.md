@@ -37,6 +37,8 @@ Manual runs are exempt: if a human names a target, scrape it regardless of Track
 
 Read `instance-config.json` at the plugin root and resolve every `{KEY}` below to its value. If that file is missing, or any key needed here is empty, STOP and tell the user to run the setup in the plugin root's `references/instance-config.md`; never guess an ID and never write into a base you have not been given.
 
+**Two exceptions, and only two.** `{AIRTABLE_FLD_CONTACTS_TRACKING}` and `{AIRTABLE_FLD_COMPANY_TRACKING}` are optional: when either is empty, do NOT stop. Treat every row in that table as `active`, proceed, and say in the Step 7 report that the run was unfiltered because the base has no Tracking field. A base built before that field existed must keep working, which is the whole point of the fallback.
+
 Build the base first if it does not exist: the portable schema, build order, and the fields deliberately not to create are in `references/airtable-posts-base.md`. Field *names* do not matter — this skill addresses every field by ID.
 
 Base `{AIRTABLE_POSTS_BASE_ID}`. Five tables:

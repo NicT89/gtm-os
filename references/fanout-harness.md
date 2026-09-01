@@ -26,7 +26,7 @@ Company A's critic runs while company B is still researching. The only sequentia
 
 ## Concurrency, budget, failure
 
-- Default width: whatever the platform caps (about 10 concurrent); pass more companies and they queue.
+- Default width: whatever the host Workflow tool schedules. The script sets no concurrency limit of its own; `max_companies` (default 10) caps how many companies a run will process, not how many run at once. Pass more and the platform queues them. If you need a specific width, measure it on your host rather than assuming one.
 - Budget guard: the script takes a per-company page estimate and a hard cap in args; it stops launching new researchers when projected spend meets the cap and reports what it skipped. No silent truncation.
 - A researcher that dies returns null; the writer skips it and the summary lists the company as FAILED with the resume path (rerun with just that company; the pre-created rows are reused).
 - The scrape rules inside researchers are the standard ones: Firecrawl markdown, no paid enrichment tools inside fan-out (Apollo reveals and actor runs stay in the sequential orchestrator where the human gate lives).

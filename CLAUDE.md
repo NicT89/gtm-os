@@ -69,7 +69,11 @@ is not confused with the skill's own folder.
   user's own storage and are the personalized layer of the playbook. `.gitignore`
   blocks the common names; that is a safety net, not permission to try.
 - **Never commit a credential.** `.env` and `.env.*` are ignored. The audit is
-  `git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'` and it must come back empty.
+  `python3 scripts/scan_secrets.py --history`, which must exit 0. It runs in CI
+  against the working tree; the `--history` pass is the pre-release check.
+  It replaced `git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'`, which matched
+  vendor *names*: 271 hits on this repo's own prose and not one credential. An
+  audit that can never come back clean teaches everyone to ignore it.
 - **Do not invent numbers.** The skills demand "one hard number, verifiable, true
   for this specific recipient" and forbid fabrication. That standard applies to the
   repo's own documentation too: if a figure for the adopter's own pipeline is not in
@@ -131,8 +135,15 @@ top-level `return` and `await` legal and what injects `args`, `log`, `phase`, `a
 and `pipeline`. A module parser reports "Illegal return statement" plus a list of
 undefined globals; every one of those findings is right about the syntax and wrong about
 the file, and the only way to "fix" the return is to delete the script's output. The file
-is excluded from JS linting in `.coderabbit.yaml` and carries a header explaining why.
-Review it against the harness reference, not against a parser.
+is excluded from semantic JS linting in `.coderabbit.yaml` and carries a header
+explaining why.
+
+It is still **syntax**-checked, in CI, by `scripts/check_workflow_script.py`: that
+rewrites the one top-level `return` into an assignment and parses the result as a real
+module, so every brace and template literal is verified as written. Do not substitute
+`node --check` on the `.js` file — node stops checking entirely once it sees `export`
+in a `.js` file and exits 0 on a file with a real syntax error, which is how this file
+went unchecked in the first place. For behavior, review against the harness reference.
 
 ## Connectors
 

@@ -148,6 +148,17 @@ class Classification(unittest.TestCase):
         self.assertIn("AIRTABLE_TBL_CONTACTS", report["required_still_open"])
         self.assertEqual(code, 1)
 
+    def test_roster_artifact_may_be_emptied(self):
+        """Documented as optional, so an explicitly empty value must not fail.
+
+        It ships with a working default filename; empty means the skill falls
+        back to that default.
+        """
+        config = filled_config(SCRAPE_ROSTER_ARTIFACT="")
+        report, code = status.build_report(write_config(config))
+        self.assertEqual(report["required_still_open"], [])
+        self.assertEqual(code, 0)
+
     def test_empty_optional_keys_do_not_block(self):
         """Optional means an empty value is a supported configuration, not an oversight."""
         config = filled_config()
@@ -173,6 +184,29 @@ class Classification(unittest.TestCase):
 
 class Errors(unittest.TestCase):
     """Bad input is reported, never raised."""
+
+    def test_json_array_is_reported_not_raised(self):
+        """Valid JSON is not enough; it must be an object.
+
+        A list parses fine, then throws TypeError on the first key lookup deep
+        in classify(). Caught by review: the earlier suite only covered JSON
+        that fails to parse, not JSON that parses to the wrong type.
+        """
+        tmp = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        tmp.write('["INSTANCE_NAME"]')
+        tmp.close()
+        report, code = status.build_report(Path(tmp.name))
+        self.assertEqual(code, 2)
+        self.assertIn("must contain a JSON object", report["error"])
+
+    def test_json_string_is_reported_not_raised(self):
+        """A bare JSON string indexes by substring, so it reaches the same crash."""
+        tmp = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        tmp.write('"INSTANCE_NAME is what I meant"')
+        tmp.close()
+        report, code = status.build_report(Path(tmp.name))
+        self.assertEqual(code, 2)
+        self.assertIn("must contain a JSON object", report["error"])
 
     def test_malformed_json_is_a_usage_error_not_a_crash(self):
         """A hand-edited config with a stray comma should say so, not raise."""

@@ -24,6 +24,10 @@ reviews:
     # produce findings whose only "fix" is to delete the script's return value.
     # Reviewed against references/fanout-harness.md instead. The file carries a
     # header saying the same thing, for anyone reading it directly.
+    #
+    # This excludes SEMANTIC linting only. The file is syntax-checked in CI by
+    # scripts/check_workflow_script.py, which neutralizes the one top-level
+    # return and then parses it as a real module.
     - "!scripts/fanout_workflow.js"
 
     # Generated and vendored noise.

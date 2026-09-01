@@ -142,6 +142,16 @@ class ConfigCheck(unittest.TestCase):
                 config[key] = ""
         self.assertEqual(validator.check_config(write_config(config), SCHEMA_KEYS), [])
 
+    def test_roster_artifact_is_optional(self):
+        """The changelog documents leaving it empty as supported, so it must be.
+
+        Without this the validator rejects a configuration the docs promise
+        works.
+        """
+        config = valid_config()
+        config["SCRAPE_ROSTER_ARTIFACT"] = ""
+        self.assertEqual(validator.check_config(write_config(config), SCHEMA_KEYS), [])
+
     def test_malformed_crm_field_id_is_reported(self):
         """CRM custom field IDs are 24-char hex; anything else was misread or truncated."""
         config = valid_config()
