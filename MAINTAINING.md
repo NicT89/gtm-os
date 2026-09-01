@@ -34,6 +34,18 @@ happens after merge, not before.
    - **patch** (`1.0.x`) — wording fixes, clarifications, non-behavioral tweaks.
    - **minor** (`1.x.0`) — new skill, new capability, backward-compatible additions.
    - **major** (`x.0.0`) — changes that alter how existing skills behave or are invoked.
+
+   **"Additive" is not the test for patch; it is the test for *not major*.** A release
+   that adds a skill, a script, a reference, or a config key is a **minor** even though
+   nothing breaks and every existing install keeps working untouched. Patch is for
+   releases that change no capability at all. This trips people up because a purely
+   additive release feels low-risk, and low-risk reads as "patch" — but the number is
+   telling users what is *there*, not how nervous the maintainer was. If a user could
+   invoke something after upgrading that they could not invoke before, it is a minor.
+
+   Incoming deliveries sometimes propose their own version number. Check it against
+   these rules rather than adopting it: the delivery knows what it changed, not what
+   the rest of the repo already contains.
 3. Bump `VERSION`. Leave `.claude-plugin/plugin.json` alone — the release workflow
    syncs it for you after merge.
 4. Move the relevant notes from `## [Unreleased]` into a new dated section in

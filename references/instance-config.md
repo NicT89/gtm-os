@@ -121,13 +121,41 @@ The config check verifies *shape*, not existence. It cannot tell you an ID is re
 only that it looks like the right kind of thing. The first live run is still the
 real test, which is why `scrape-linkedin-posts` starts with a single target.
 
+## Seeing what is left to fill in
+
+```bash
+python3 scripts/setup_status.py [--json]
+```
+
+Where the validator asks "is this well-formed?", this asks "what is left, and what does
+each gap block?" It classifies every key three ways rather than two:
+
+- **set** — non-empty and different from what the example ships. Someone decided this.
+- **default** — non-empty but byte-identical to the shipped example. It *works*, which
+  is why it goes unexamined: a plain `cp` of the example inherits every shipped value
+  silently.
+- **unset** — empty.
+
+That middle state is the whole reason the script exists. Three keys ship non-empty
+(`CRM_PROVIDER`, `APIFY_POSTS_ACTOR`, `SCRAPE_ROSTER_ARTIFACT`), and a deployment can
+run for months on an inherited value nobody ever chose. Verdicts are `INCOMPLETE`
+(exit 1), `READY_WITH_DEFAULTS` (exit 0, runnable but inherited), and `READY`.
+
 ## Adding a new key
 
-1. Add it to `instance-config.example.json` with an empty value.
-2. Reference it from the skill by wrapping the key name in single braces, the same
-   way `AIRTABLE_POSTS_BASE_ID` is referenced above.
-3. If it is optional, add it to `OPTIONAL_KEYS` in the validator.
-4. Run the validator.
+1. Add it to `instance-config.example.json` with an empty value. Prefer empty: a
+   non-empty default is inherited silently by every `cp` of the example, so ship one
+   only when the value is genuinely right for most deployments, and expect
+   `setup_status.py` to keep asking about it until someone confirms it.
+2. Put it in a group in `scripts/setup_status.py` so the report can say what it blocks.
+   A key with no group fails `test_every_schema_key_lands_in_exactly_one_group`.
+3. Reference it from the skill by wrapping the key name in single braces, the same
+   way `AIRTABLE_POSTS_BASE_ID` is referenced above. Single braces, always: `{{double}}`
+   is the CRM's own merge-token syntax and the validator deliberately ignores it, so a
+   config key written that way is silently never checked.
+4. If it is optional, add it to `OPTIONAL_KEYS` in **both** the validator and
+   `setup_status.py`. A test asserts the two sets are identical.
+5. Run the validator and the status report.
 
 Note that the reference check scans this file too, so an illustrative key name here
 must be a real one — writing a made-up example in brace form fails CI, which is the

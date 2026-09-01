@@ -40,6 +40,18 @@ Ask the user only when probes 1 and 2 both fail, and ask it as a connection ques
 a purchase question: *"Do you already have a <tool> account? If so this is a connection
 step, not a signup."*
 
+Then run the config side of the same diagnosis, which is deterministic and needs no
+connector at all:
+
+```bash
+python3 scripts/setup_status.py
+```
+
+It reports every config key as **set**, **default**, or **unset**, grouped by
+connector, with what each gap blocks. The `default` state is the one to read closely:
+those keys are non-empty, they work, and they arrived by copying the example rather
+than by anyone deciding. `READY_WITH_DEFAULTS` is not done.
+
 ## Step 2: Report the ladder before doing any work
 
 Present one table: connector, current state, what is missing, what the next action is,
@@ -61,6 +73,13 @@ Follow the reference per connector. The order matters in three places:
 2. **Airtable parent tables before child tables.** Link fields cannot be created until
    both sides exist.
 3. **Objects before IDs.** A key cannot be recorded for a field that does not exist yet.
+
+**Replace the shipped defaults, do not inherit them.** For every key
+`setup_status.py` reports as `default`, ask the user one question and record their
+answer, even when the answer is "the default is right." `CRM_PROVIDER` is the one
+that matters most: it ships as `apollo` and the field-writing calls are named for
+Apollo, so a user on a different CRM has a fork to plan, not a label to edit. Re-run
+the report after each pass; the target is `READY`, not `READY_WITH_DEFAULTS`.
 
 Human gates that stay gates: the human creates Apollo custom field definitions in the UI
 (the API cannot), the human picks the field prefix, and the human approves anything that

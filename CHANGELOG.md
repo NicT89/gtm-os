@@ -12,7 +12,7 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
-## [1.5.0] - 2026-08-31
+## [1.5.0] - 2026-09-01
 
 The research spine and the setup module. Everything here is additive: no existing
 skill changes how it is invoked, and an install that upgrades and changes nothing in
@@ -33,6 +33,15 @@ not set a tool up has almost always still got the tool.
   **not set up does not mean not owned**: the usual gap is a tool the user already
   pays for that has never been shaped for this engine. Only the first state needs a
   signup. Every skill now routes here when a connector it needs is missing.
+- `scripts/setup_status.py` — answers "what is left for me to fill in, and what does
+  each gap block?", grouped by connector. It classifies keys three ways rather than
+  two: **set** (chosen), **unset** (empty), and **default** — non-empty but still
+  byte-identical to what `instance-config.example.json` ships. That third state is
+  the point. A plain `cp` of the example inherits every shipped default silently,
+  they work, nothing fails, and nobody ever decides whether they are right for this
+  workspace. Verdicts are `INCOMPLETE`, `READY_WITH_DEFAULTS`, and `READY`; the
+  middle one is runnable but means values were inherited rather than chosen. `--json`
+  for the audit trail.
 - `references/research-vault.md` — the persistent research data spine (schema v1.1):
   Entities, Facts, Runs, Questions, plus a Field Keys reference table. Facts are
   append-only with mandatory provenance (source URL or inference tag, source type,
@@ -87,6 +96,21 @@ not set a tool up has almost always still got the tool.
 - `scripts/validate_instance_config.py` checks any `AIRTABLE_*_BASE_ID` key for the
   `app` prefix rather than only the posts base by name, so a second base cannot
   silently accept a table ID where a base ID belongs.
+- `MAINTAINING.md` states explicitly that "additive" is the test for *not major*, not
+  the test for patch: a release adding a skill, script, reference, or config key is a
+  minor even though nothing breaks. Adding it because this release was itself
+  proposed as a patch on the reasoning that it was additive.
+
+### Upgrading
+
+Nothing is required. Every new config key is optional, and an install that upgrades
+and changes nothing keeps behaving exactly as before.
+
+Two things are worth ten minutes, though. Run `python3 scripts/setup_status.py` to
+see which of your values were inherited from the example rather than chosen. And if
+you want research to accumulate rather than be re-read every time, build the Research
+Vault base (SETUP.md Step 2b): without it the research skills still produce their
+reports, they just cannot tell you what changed since last time.
 
 ## [1.4.0] - 2026-08-17
 

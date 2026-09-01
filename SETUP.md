@@ -114,6 +114,18 @@ what makes the second run worth paying for.
 cp instance-config.example.json instance-config.json
 ```
 
+Before hunting for values, see what the copy actually left you with:
+
+```bash
+python3 scripts/setup_status.py
+```
+
+It groups every key by connector and marks it **set**, **default**, or **unset**, and
+says what each gap blocks. Note the `default` rows especially: a plain `cp` inherits
+three non-empty values from the example (`CRM_PROVIDER`, `APIFY_POSTS_ACTOR`,
+`SCRAPE_ROSTER_ARTIFACT`). They work, so nothing complains, which is exactly why they
+get left unexamined. Decide each one rather than inheriting it.
+
 Then fill it in:
 
 1. **Airtable IDs.** Call the Airtable schema tools to read back the base ID, all five
@@ -135,8 +147,13 @@ Then fill it in:
 Validate before going further:
 
 ```bash
-python3 scripts/validate_instance_config.py
+python3 scripts/setup_status.py            # what is left, and what it blocks
+python3 scripts/validate_instance_config.py  # is what is there well-formed
 ```
+
+The two answer different questions. `setup_status.py` tells you how far you have got
+and aims you at `READY` rather than `READY_WITH_DEFAULTS`. `validate_instance_config.py`
+tells you whether the values you did supply are well-formed.
 
 It checks that every `{KEY}` the skills reference exists, that your file defines exactly
 the schema's keys, and that the values look like the right kind of ID. It verifies

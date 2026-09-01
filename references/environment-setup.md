@@ -218,6 +218,48 @@ invocation before you depend on it for one.
 
 ---
 
+## The placeholders the repo ships with
+
+`instance-config.example.json` ships two kinds of value, and they fail in opposite
+directions.
+
+**Empty placeholders** (`""`) are loud. A skill that needs one stops and says so, and
+the validator reports it as required-but-empty. These get fixed because they hurt.
+
+**Non-empty shipped defaults** are quiet, and they are the ones that bite. Copying the
+example inherits them wholesale, they work, nothing fails, and nobody ever decides
+whether they are right for this workspace. Today there are three:
+
+| Key | Ships as | When it is wrong |
+|---|---|---|
+| `CRM_PROVIDER` | `apollo` | Any deployment on a different CRM. The field-writing calls are named for Apollo, so this is a real fork, not a label. |
+| `APIFY_POSTS_ACTOR` | `harvestapi/linkedin-profile-posts` | You have standardized on a different actor. Substituting one means `scrape-linkedin-posts` Step 4's parsing must be re-matched to its output shape. |
+| `SCRAPE_ROSTER_ARTIFACT` | `scrape-roster.md` | The name collides with something in your artifact home. |
+
+Run the status report to see all three states at once:
+
+```bash
+python3 scripts/setup_status.py
+```
+
+It classifies every key as **set** (chosen: non-empty and different from what ships),
+**default** (non-empty but still byte-identical to the example: works, never decided),
+or **unset**, groups them by connector, and says what each gap blocks and how to close
+it. Exit 0 means runnable, 1 means a required key is still open. Add `--json` to log
+the verdict to the audit trail.
+
+Three verdicts, and the middle one is the point:
+
+- `INCOMPLETE` — a required key is unset. Something will hard-stop.
+- `READY_WITH_DEFAULTS` — runnable, but values were inherited rather than chosen.
+  Walk the user through each one and get a yes or a change. A confirmed default is
+  finished; an unexamined one is a latent surprise.
+- `READY` — every key holds a deliberate value.
+
+Do not treat `READY_WITH_DEFAULTS` as done and move on. Reaching `READY` takes one
+question per key, and it is the difference between a deployment that was configured
+and one that was merely copied.
+
 ## Finishing: record, validate, prove
 
 Setup is not complete at S3. It completes at S4, and S4 requires a live call.
