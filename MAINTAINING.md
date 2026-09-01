@@ -55,6 +55,63 @@ happens after merge, not before.
 
 Tagging and publishing are automatic — do not tag by hand. See below.
 
+## Pull requests
+
+Every change lands through a PR against `main`. `.github/PULL_REQUEST_TEMPLATE.md`
+populates the description automatically; fill in every section rather than deleting
+the awkward ones.
+
+The flow, in order:
+
+1. **Branch.** Never commit to `main` directly. Name the branch for the outcome, not
+   the ticket: `v1.5.0-research-vault-and-setup`, not `nt/update-3`.
+2. **Do the work**, running the four checks below as you go rather than at the end.
+3. **Write the changelog entry** in the same PR as the change. A release whose notes
+   are written afterwards describes what someone remembers, not what shipped.
+4. **Bump `VERSION` last**, immediately before opening the PR. Merging a changed
+   `VERSION` fires the release, so an early bump on a branch that then sits for a
+   week is a release waiting to go off.
+5. **Open the PR, let CI pass, merge.** Tagging and publishing are automatic.
+
+### The checklist CI cannot run
+
+CI validates manifests, skill frontmatter, config references, and the tests. It
+cannot see any of the following, which is why they are review gates and why the PR
+template restates them:
+
+- **No resolved instance values.** Every deployment ID is a single-brace `{KEY}`.
+  This is the one most likely to slip, because a skill improvement ported from a
+  local copy arrives with real IDs baked in and works perfectly, which is exactly
+  what makes it dangerous. Re-tokenize before committing, and add any new key to
+  `instance-config.example.json` and to a group in `scripts/setup_status.py` in the
+  same change.
+- **No credentials**, in the tree or the history.
+- **No client data, run artifacts, or audit logs.** `examples/` is synthetic, uses
+  `.example` domains, and stays that way.
+- **No real client or prospect names**, including in a war story about a production
+  incident. Describe the incident, anonymize the company. The repo has never carried
+  a client name; keep it that way.
+- **No invented numbers.** The skills forbid fabricating a figure for a recipient;
+  the same standard binds the repo's own docs. Leave the placeholder.
+
+### Reviewing an incoming delivery
+
+Work that arrives from elsewhere (a Cowork session, a zip, a patch) gets read, not
+applied. Three things to check every time, because all three have actually come up:
+
+- **Its proposed version number.** Check it against the SemVer rules above rather
+  than adopting it. A delivery knows what it changed; it does not know what the rest
+  of the repo already contains.
+- **Its conventions against the repo's.** Token syntax, config shape, and naming
+  follow this repo, not the delivery. A nested config block or a `{{double-brace}}`
+  key will pass a human read and fail silently at runtime.
+- **Its examples for real identifiers.** Deliveries written against a live engagement
+  carry that engagement's names, IDs, and URLs in their examples.
+
+State every deviation from the delivery's own instructions in the PR description.
+A deviation that is explained is a decision; an unexplained one looks like a mistake
+the next reader has to re-litigate.
+
 ## Release notes come from `CHANGELOG.md`
 
 `.github/workflows/release.yml` fires on any push to `main` that changes `VERSION`.

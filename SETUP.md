@@ -41,8 +41,9 @@ in their local copies for convenience; those values must never flow back to the 
 repo. When porting a skill improvement from a local copy into this repo, re-tokenize
 every instance value before committing — every ID becomes a `{KEY}`, and any key that
 does not exist yet gets added to `instance-config.example.json` in the same change. CI
-cannot catch a leaked ID, so this is a review gate: the PR checklist in
-[MAINTAINING.md](MAINTAINING.md) includes "no resolved instance values."
+cannot catch a leaked ID, so this is a review gate: it is the first item in
+[MAINTAINING.md](MAINTAINING.md#the-checklist-ci-cannot-run), restated in the pull
+request template so it is checked off deliberately every time.
 
 ## Step 1: Diagnose the connectors
 

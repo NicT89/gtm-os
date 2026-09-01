@@ -101,6 +101,13 @@ not set a tool up has almost always still got the tool.
   minor even though nothing breaks. Adding it because this release was itself
   proposed as a patch on the reasoning that it was additive.
 
+- `.github/PULL_REQUEST_TEMPLATE.md` and a "Pull requests" section in
+  `MAINTAINING.md`: the branch-to-merge flow, the checklist CI cannot run (no
+  resolved instance values, credentials, client data, real client names, or invented
+  numbers), and how to review an incoming delivery — check its proposed version, its
+  conventions, and its examples for real identifiers, and state every deviation.
+  `SETUP.md` referenced this checklist by name before it existed; now it does.
+
 ### Upgrading
 
 Nothing is required. Every new config key is optional, and an install that upgrades
