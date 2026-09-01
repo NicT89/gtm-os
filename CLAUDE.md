@@ -126,7 +126,10 @@ you need before starting:
    python3 scripts/scan_secrets.py
    python3 scripts/check_workflow_script.py
    python3 -m unittest discover -s tests
+   jq empty .claude-plugin/plugin.json .claude-plugin/marketplace.json
    ```
+   That list is what CI runs, and `tests/test_docs_match_ci.py` fails if the two
+   drift apart.
 3. **Review locally before pushing**, if the CLI is authenticated:
    `coderabbit review --base main` (or `--agent` for structured JSON). Findings
    are cheaper here than on the PR.

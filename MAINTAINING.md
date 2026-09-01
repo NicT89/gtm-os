@@ -65,7 +65,7 @@ The flow, in order:
 
 1. **Branch.** Never commit to `main` directly. Name the branch for the outcome, not
    the ticket: `v1.5.0-research-vault-and-setup`, not `nt/update-3`.
-2. **Do the work**, running the four checks below as you go rather than at the end.
+2. **Do the work**, running the checks below as you go rather than at the end.
 3. **Write the changelog entry** in the same PR as the change. A release whose notes
    are written afterwards describes what someone remembers, not what shipped.
 4. **Bump `VERSION` last**, immediately before opening the PR. Merging a changed

@@ -37,6 +37,19 @@ upgrade.
   (`coderabbit review --base main`, or `--agent` for structured JSON), since the
   GitHub review runs regardless.
 
+- `tests/test_docs_match_ci.py` — asserts the check lists in `CLAUDE.md` and the
+  PR template match what `ci.yml` actually runs, in both directions, and that
+  every documented script exists.
+
+### Fixed
+
+- The PR template's check list omitted `scan_secrets.py` and
+  `check_workflow_script.py`, both added to CI in 1.5.0. Anyone working that
+  checklist would have ticked four boxes believing they had run everything CI
+  runs, while skipping the credential scan. Found by the first local
+  `coderabbit review` run on this branch, which is a fair advertisement for the
+  loop this release documents. The new test above is why it cannot recur.
+
 ## [1.5.0] - 2026-09-01
 
 The research spine and the setup module. Everything here is additive: no existing

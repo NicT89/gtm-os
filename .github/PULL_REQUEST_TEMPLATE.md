@@ -48,7 +48,11 @@ Full process: MAINTAINING.md.
 
 ## Checks
 
+<!-- This list must match .github/workflows/ci.yml. A test enforces that. -->
+
 - [ ] `python3 scripts/validate_skills.py`
+- [ ] `python3 scripts/scan_secrets.py`
+- [ ] `python3 scripts/check_workflow_script.py`
 - [ ] `python3 scripts/validate_instance_config.py`
 - [ ] `python3 -m unittest discover -s tests -v`
 - [ ] `jq empty .claude-plugin/plugin.json .claude-plugin/marketplace.json`
