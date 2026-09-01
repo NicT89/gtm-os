@@ -33,4 +33,11 @@ briefs/
 # Copy instance-config.example.json to create it. It describes one workspace,
 # never the template, and must not be committed here.
 instance-config.json
+
+# Vestige of an earlier convention that kept the same file at
+# instance/instance-config.json. Nothing in this repo writes there any more, but
+# older Cowork-era notes still describe that path, so anyone following them would
+# create a folder full of resolved workspace IDs that nothing was ignoring.
+# Cheap safety net; salvaged from that delivery's .gitignore before it was deleted.
+instance/
 gate_config.json
