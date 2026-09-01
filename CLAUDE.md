@@ -125,6 +125,15 @@ stage is the single place the Vault provenance rules are enforced, so a research
 emits a malformed fact fails validation instead of polluting the base. The contract is
 [references/fanout-harness.md](references/fanout-harness.md).
 
+**It does not parse as a standalone ES module, and that is correct.** The Workflow tool
+wraps the script body in an async function before executing it, which is what makes the
+top-level `return` and `await` legal and what injects `args`, `log`, `phase`, `agent`,
+and `pipeline`. A module parser reports "Illegal return statement" plus a list of
+undefined globals; every one of those findings is right about the syntax and wrong about
+the file, and the only way to "fix" the return is to delete the script's output. The file
+is excluded from JS linting in `.coderabbit.yaml` and carries a header explaining why.
+Review it against the harness reference, not against a parser.
+
 ## Connectors
 
 Apollo is required; Apify, Airtable, Google Drive, and CB Insights are optional and

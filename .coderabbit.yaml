@@ -1,0 +1,74 @@
+# CodeRabbit configuration for gtm-os.
+#
+# This repo is mostly prose playbooks (skills/*/SKILL.md) plus a small amount of
+# deterministic Python. The settings below aim review at the things that can
+# actually break an installed copy, and turn off the ones that report style
+# opinions on documentation.
+
+language: en-US
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  poem: false
+
+  path_filters:
+    # scripts/fanout_workflow.js is a Workflow-tool script, not a standalone ES
+    # module. The harness wraps its body in an async function before executing,
+    # which is what makes its top-level `return` and `await` legal and what
+    # injects args/log/phase/agent/pipeline. A module parser therefore reports
+    # "Illegal return statement" and a list of undefined globals — all correct
+    # about the syntax, all wrong about the file. Linting it as a module would
+    # produce findings whose only "fix" is to delete the script's return value.
+    # Reviewed against references/fanout-harness.md instead. The file carries a
+    # header saying the same thing, for anyone reading it directly.
+    - "!scripts/fanout_workflow.js"
+
+    # Generated and vendored noise.
+    - "!**/__pycache__/**"
+    - "!**/*.pyc"
+
+  path_instructions:
+    - path: "skills/**/SKILL.md"
+      instructions: >
+        These are agent instructions, not documentation. Review them for
+        operational safety, not prose style. Flag: a step that automates past a
+        named human gate (ICP sign-off, credit spend, pre-send review); a
+        credit-consuming action that does not state its cost before spending; a
+        hardcoded deployment ID where a single-brace {KEY} token belongs; a
+        missing or blocking version-check preamble; setup instructions written
+        inline instead of routing to the environment-setup skill; and a
+        `description` that summarizes behavior without carrying the trigger
+        phrases a user would actually say. Do not flag long prose, repetition
+        across skills, or tone.
+
+    - path: "references/**/*.md"
+      instructions: >
+        Shared reference material cited by multiple skills. Flag factual
+        contradictions with the skills that cite them, single-brace {KEY} tokens
+        that do not exist in instance-config.example.json, and any real client
+        name, credential, or workspace ID (base app…, table tbl…, field fld…,
+        record rec…, or a 24-char hex CRM field ID). Placeholder forms like
+        appXXXXXXXXXXXXXX are intentional and fine.
+
+    - path: "scripts/**/*.py"
+      instructions: >
+        House shape is: standard library only, a module docstring with usage,
+        exit codes 0 pass / 1 fail / 2 usage error, and JSON on stdout so results
+        are loggable to the audit trail. Flag departures from that, and flag a
+        validator that cannot fail — a check that always passes reads as a gate
+        while being none.
+
+    - path: "tests/**/*.py"
+      instructions: >
+        These pin each way a validator is supposed to FAIL. Flag a test that
+        would still pass if the behavior it names were removed.
+
+  auto_review:
+    enabled: true
+    drafts: false
+
+chat:
+  auto_reply: true

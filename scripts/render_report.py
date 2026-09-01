@@ -81,6 +81,11 @@ def sanitize(text):
 
 
 def _styles():
+    """Build the stylesheet every block renders through.
+
+    Defined once here rather than inline so headings, cells, and tiles cannot
+    drift apart visually across block types.
+    """
     ss = getSampleStyleSheet()
     ss.add(ParagraphStyle("H1x", parent=ss["Heading1"], fontName="Helvetica-Bold",
                           fontSize=16, spaceBefore=14, spaceAfter=6, textColor=colors.HexColor(INK)))
@@ -195,6 +200,10 @@ def _chart_png(chart):
 
 
 def _tiles(tiles, ss, avail_w):
+    """Lay out stat tiles four to a row, wrapping into as many rows as needed.
+
+    Returns flowables ready to append to the story.
+    """
     cells, per_row = [], 4
     rows = [tiles[i:i + per_row] for i in range(0, len(tiles), per_row)]
     out = []
@@ -221,6 +230,13 @@ def _tiles(tiles, ss, avail_w):
 
 
 def _table(block, ss, avail_w, status_col=None):
+    """Render a table block, optionally color-coding one column by status.
+
+    `status_col` names the column whose cell values (Known/Unknown and the
+    legacy FILLED/PARTIAL/GAP/ASK keys) drive per-cell background color.
+    Column widths are proportioned to `avail_w` so a wide table still fits the
+    page rather than overflowing silently.
+    """
     headers = [Paragraph(sanitize(h), ss["CellHead"]) for h in block["headers"]]
     body = []
     status_cells = []
@@ -251,6 +267,12 @@ def _table(block, ss, avail_w, status_col=None):
 
 
 def render(doc_json, out_path):
+    """Render one report document to a PDF at `out_path`.
+
+    `doc_json` is the report contract: a `meta` object plus an ordered `blocks`
+    list, each block carrying a `type` this function dispatches on. Returns the
+    result dict that main() prints as the JSON status line.
+    """
     ss = _styles()
     meta = doc_json.get("meta", {})
     page_w, _ = letter
@@ -258,6 +280,11 @@ def render(doc_json, out_path):
     avail_w = page_w - 2 * margin
 
     def _decorate(canvas, _doc):
+        """Paint the per-page furniture: header bar, footer, and page number.
+
+        Passed to the doc template as both onFirstPage and onLaterPages, so it
+        runs for every page rather than only the first.
+        """
         canvas.saveState()
         canvas.setFillColor(colors.HexColor(SERIES[0]))
         canvas.rect(0, letter[1] - 0.28 * inch, page_w, 0.28 * inch, fill=1, stroke=0)
@@ -339,6 +366,7 @@ SELFTEST = {
 
 
 def main():
+    """CLI entry point: parse args, render or self-test, print a JSON result line."""
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--input", help="input JSON file")
     ap.add_argument("--out", help="output PDF path")

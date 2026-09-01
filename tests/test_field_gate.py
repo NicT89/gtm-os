@@ -25,6 +25,7 @@ PERSONA_INTEL = "FIELD_ID_PERSONA_INTELLIGENCE"     # optional
 
 
 def record(**custom_fields):
+    """Build a minimal CRM record carrying the given custom fields."""
     return {
         "name": "Test Contact",
         "organization_name": "Testco",
@@ -33,19 +34,26 @@ def record(**custom_fields):
 
 
 class IsPopulated(unittest.TestCase):
+    """What counts as a filled-in field value."""
+
     def test_absent_and_empty_values_are_not_populated(self):
+        """None, empty, and whitespace-only are all "nobody filled this in"."""
         for value in (None, "", "   ", "\n\t ", [], {}):
             with self.subTest(value=repr(value)):
                 self.assertFalse(field_gate.is_populated(value))
 
     def test_meaningful_values_are_populated(self):
+        """Real content passes, including short values that are nonetheless real."""
         for value in ("summary text", "  padded  ", ["a"], {"k": "v"}):
             with self.subTest(value=repr(value)):
                 self.assertTrue(field_gate.is_populated(value))
 
 
 class RequiredFields(unittest.TestCase):
+    """Required fields block the gate when absent or empty."""
+
     def test_missing_required_field_fails(self):
+        """The core gate: composing without a required input is the defect this prevents."""
         verdict = field_gate.run_gate(
             record(**{RESEARCH_PROFILE: "profile"}),
             field_gate.EXAMPLE_CONFIG,
@@ -55,6 +63,7 @@ class RequiredFields(unittest.TestCase):
         self.assertIn("LinkedIn Profile Summary", verdict["missing_required"])
 
     def test_whitespace_only_required_field_fails(self):
+        """A field of spaces looks populated in a CRM grid and is not."""
         verdict = field_gate.run_gate(
             record(**{LINKEDIN_SUMMARY: "   ", RESEARCH_PROFILE: "profile"}),
             field_gate.EXAMPLE_CONFIG,
@@ -64,6 +73,7 @@ class RequiredFields(unittest.TestCase):
         self.assertIn("LinkedIn Profile Summary", verdict["missing_required"])
 
     def test_optional_field_absent_does_not_fail(self):
+        """Optional inputs must not block an otherwise complete record."""
         verdict = field_gate.run_gate(
             record(**{LINKEDIN_SUMMARY: "summary", POSTS_FIELD: "digest"}),
             field_gate.EXAMPLE_CONFIG,
@@ -77,7 +87,10 @@ class RequiredFields(unittest.TestCase):
 
 
 class OneOfGroups(unittest.TestCase):
+    """one_of groups are satisfied by any single member."""
+
     def test_empty_group_fails_even_when_required_field_present(self):
+        """A one_of group with no member satisfied is its own failure, independently."""
         verdict = field_gate.run_gate(
             record(**{LINKEDIN_SUMMARY: "summary"}),
             field_gate.EXAMPLE_CONFIG,
@@ -90,6 +103,7 @@ class OneOfGroups(unittest.TestCase):
         )
 
     def test_either_group_member_satisfies_it(self):
+        """one_of means any member, not a specific preferred one."""
         for satisfying in (RESEARCH_PROFILE, POSTS_FIELD):
             with self.subTest(field=satisfying):
                 verdict = field_gate.run_gate(
@@ -102,7 +116,10 @@ class OneOfGroups(unittest.TestCase):
 
 
 class Verdict(unittest.TestCase):
+    """The verdict carries what the audit log needs."""
+
     def test_failing_fields_carry_remediation_and_passing_ones_do_not(self):
+        """A failure without a fix path makes the operator go read the config themselves."""
         verdict = field_gate.run_gate(
             record(**{LINKEDIN_SUMMARY: "summary"}),
             field_gate.EXAMPLE_CONFIG,
@@ -113,6 +130,7 @@ class Verdict(unittest.TestCase):
         self.assertTrue(by_id[RESEARCH_PROFILE]["remediation"])
 
     def test_verdict_carries_run_context_for_the_audit_log(self):
+        """The verdict is logged verbatim, so it must be self-describing later."""
         verdict = field_gate.run_gate(
             record(**{LINKEDIN_SUMMARY: "s", POSTS_FIELD: "d"}),
             field_gate.EXAMPLE_CONFIG,
@@ -123,6 +141,7 @@ class Verdict(unittest.TestCase):
         self.assertEqual(verdict["motion"], "hiring")
 
     def test_record_without_custom_fields_fails_closed(self):
+        """No evidence must fail, never pass: absence of data is not proof of completeness."""
         verdict = field_gate.run_gate({}, field_gate.EXAMPLE_CONFIG, "funding")
         self.assertEqual(verdict["gate"], "FAIL")
         self.assertEqual(verdict["contact"], "unknown")

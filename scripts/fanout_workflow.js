@@ -1,3 +1,29 @@
+// GTM research fan-out — a Workflow-tool script, NOT a standalone ES module.
+//
+// READ THIS BEFORE "FIXING" THE PARSE ERROR AT THE BOTTOM OF THIS FILE.
+//
+// A standard ES-module parser rejects this file with "Illegal return statement"
+// on the final `return`, and reports `args`, `log`, `phase`, `agent`, and
+// `pipeline` as undefined. Both reports are correct about the syntax and wrong
+// about the file. This is not a module that gets imported: it is a script BODY
+// that the Workflow tool wraps in an async function before executing. Inside
+// that wrapper the top-level `return` and `await` are legal, and the globals
+// below are injected by the harness:
+//
+//   args      the invocation payload (contract in references/fanout-harness.md)
+//   log(msg)  progress line surfaced to the operating session
+//   phase(t)  marks the phase boundary named in meta.phases
+//   agent()   spawns one subagent; returns its schema-validated result
+//   pipeline() stages work per item so later items start before earlier finish
+//
+// The final `return` is how a workflow yields its result. Deleting it, or
+// wrapping the body in a function to satisfy a linter, does not fix a bug — it
+// removes this script's only output and the run silently returns nothing.
+//
+// So this file is excluded from JS linting in .coderabbit.yaml rather than
+// edited to parse standalone. If you need to check it, check it against the
+// contract in references/fanout-harness.md, not against a module parser.
+
 export const meta = {
   name: 'gtm-research-fanout',
   description: 'Parallel company research: one researcher per company, critic pass, validated writes to the Research Vault',

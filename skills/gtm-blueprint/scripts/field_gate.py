@@ -65,6 +65,12 @@ EXAMPLE_CONFIG = {
 
 
 def is_populated(value):
+    """True when a field value carries real content.
+
+    Absent, None, empty, and whitespace-only all count as unpopulated: a field
+    holding only spaces is a field nobody filled in, and treating it as present
+    is how an empty blueprint reaches a prospect.
+    """
     if value is None:
         return False
     if isinstance(value, str):
@@ -75,6 +81,15 @@ def is_populated(value):
 
 
 def run_gate(record, config, motion):
+    """Run the completeness gate over one record; return the verdict dict.
+
+    Checks required fields and one_of groups from `config` against the record's
+    custom fields. The verdict carries per-field status plus remediation for
+    every failure, and is shaped to be logged to the audit trail verbatim.
+
+    Fails closed: a record with no custom fields at all fails rather than
+    passing on the absence of evidence.
+    """
     fields = record.get("typed_custom_fields", {})
     results, missing_required, one_of_groups = [], [], {}
 
@@ -112,6 +127,7 @@ def run_gate(record, config, motion):
 
 
 def main():
+    """CLI entry point: gate one record file and exit 0 on PASS, 1 on FAIL."""
     p = argparse.ArgumentParser()
     p.add_argument("record")
     p.add_argument("--motion", choices=["funding", "hiring"], required=True)

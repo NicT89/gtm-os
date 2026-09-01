@@ -75,6 +75,11 @@ SCANNED_GLOBS = ("skills/**/*.md", "references/*.md")
 
 
 def load_schema():
+    """Return (schema_keys, raw_schema) from instance-config.example.json.
+
+    Keys beginning with an underscore are documentation for the human reading
+    the file, not config keys, and are excluded.
+    """
     with open(SCHEMA_PATH) as f:
         schema = json.load(f)
     return {k for k in schema if not k.startswith("_")}, schema
@@ -108,6 +113,12 @@ def looks_like_id(key, value):
 
 
 def check_config(config_path, schema_keys):
+    """Check one instance-config.json against the schema; return a problem list.
+
+    Flags keys the schema defines but the config omits, keys the config invents,
+    non-string values, required keys left empty, and values whose shape does not
+    match their key. An empty list means the file is well-formed.
+    """
     problems = []
     try:
         with open(config_path) as f:
@@ -140,6 +151,7 @@ def check_config(config_path, schema_keys):
 
 
 def main():
+    """CLI entry point: run the reference check always, the config check if a file exists."""
     p = argparse.ArgumentParser()
     p.add_argument("--config", default=None,
                    help="Path to instance-config.json. Defaults to the repo root copy if present.")

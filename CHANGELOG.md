@@ -108,6 +108,17 @@ not set a tool up has almost always still got the tool.
   conventions, and its examples for real identifiers, and state every deviation.
   `SETUP.md` referenced this checklist by name before it existed; now it does.
 
+- `.coderabbit.yaml` — review configuration. Aims automated review at what can
+  break an installed copy (a step automating past a human gate, a hardcoded
+  deployment ID, a spend with no stated cost, a validator that cannot fail) and
+  away from prose style on documentation. It also excludes
+  `scripts/fanout_workflow.js` from JS linting: that file is a Workflow-tool script
+  whose body the harness wraps in an async function, so a module parser reports its
+  required top-level `return` as an illegal statement. The finding is right about
+  the syntax and wrong about the file, and the only "fix" would delete the script's
+  output. The file now carries a header saying so.
+- Docstrings on every function and class in the repo's Python (79/79).
+
 ### Upgrading
 
 Nothing is required. Every new config key is optional, and an install that upgrades

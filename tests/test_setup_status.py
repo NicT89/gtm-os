@@ -17,6 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load(name, relpath):
+    """Import a repo script by path, since scripts/ is not an importable package."""
     spec = importlib.util.spec_from_file_location(name, REPO_ROOT / relpath)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -30,6 +31,7 @@ SCHEMA = status.load_schema()
 
 
 def write_config(mapping):
+    """Write a config dict to a temp file and return its path."""
     tmp = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
     json.dump(mapping, tmp)
     tmp.close()
@@ -56,9 +58,10 @@ def filled_config(**overrides):
 
 
 class Grouping(unittest.TestCase):
+    """Every schema key must be grouped, exactly once, in the right group."""
+
     def test_every_schema_key_lands_in_exactly_one_group(self):
-        # An ungrouped key means a new config key was added without telling the
-        # user what it blocks, which is the one thing this script is for.
+        """A new key added without a group would ship with nothing saying what it blocks."""
         report, _ = status.build_report(write_config(filled_config()))
         grouped = [e["key"] for g in report["groups"] for e in g["keys"]]
         self.assertEqual(sorted(grouped), sorted(SCHEMA))
@@ -66,6 +69,7 @@ class Grouping(unittest.TestCase):
         self.assertNotIn("Ungrouped", [g["group"] for g in report["groups"]])
 
     def test_vault_keys_group_separately_from_the_posts_base(self):
+        """The two Airtable bases degrade independently, so they must report independently."""
         report, _ = status.build_report(write_config(filled_config()))
         by_group = {g["group"]: [e["key"] for e in g["keys"]] for g in report["groups"]}
         vault = by_group["Research Vault (optional)"]
@@ -77,17 +81,22 @@ class Grouping(unittest.TestCase):
 
 
 class OptionalKeysStayInSync(unittest.TestCase):
+    """The two scripts must agree on what is safe to leave empty."""
+
     def test_the_two_scripts_agree_on_what_is_optional(self):
-        # setup_status says a key is safe to leave empty; validate_instance_config
-        # decides whether leaving it empty fails. If they drift, one of them lies.
+        """If the sets drift, one script tells the user something the other contradicts."""
         self.assertEqual(status.OPTIONAL_KEYS, validator.OPTIONAL_KEYS)
 
     def test_every_optional_key_is_a_real_schema_key(self):
+        """An optional key that no longer exists in the schema silently exempts nothing."""
         self.assertEqual(status.OPTIONAL_KEYS - set(SCHEMA), set())
 
 
 class Classification(unittest.TestCase):
+    """The set/default/unset boundary, which is the point of the script."""
+
     def test_no_config_file_reports_everything_unset(self):
+        """A fresh clone is a legitimate state to report on, not an error."""
         report, code = status.build_report(Path("/nonexistent/instance-config.json"))
         self.assertFalse(report["config_present"])
         self.assertEqual(report["verdict"], "INCOMPLETE")
@@ -95,8 +104,7 @@ class Classification(unittest.TestCase):
         self.assertEqual(report["totals"]["set"], 0)
 
     def test_naive_copy_of_the_example_flags_the_shipped_defaults(self):
-        # `cp instance-config.example.json instance-config.json` is the exact
-        # gesture SETUP.md tells people to make, so this is the common case.
+        """The common case: SETUP.md tells people to make exactly this gesture."""
         report, code = status.build_report(write_config(dict(SCHEMA)))
         self.assertEqual(code, 1)  # required keys are empty
         self.assertEqual(report["verdict"], "INCOMPLETE")
@@ -108,6 +116,7 @@ class Classification(unittest.TestCase):
         self.assertEqual(report["totals"]["set"], 0)
 
     def test_inherited_default_is_not_counted_as_set(self):
+        """The distinction the whole script exists for: works is not the same as chosen."""
         config = filled_config(APIFY_POSTS_ACTOR=SCHEMA["APIFY_POSTS_ACTOR"])
         report, code = status.build_report(write_config(config))
         self.assertIn("APIFY_POSTS_ACTOR", report["unreviewed_defaults"])
@@ -117,6 +126,7 @@ class Classification(unittest.TestCase):
         self.assertEqual(report["required_still_open"], [])
 
     def test_a_chosen_value_that_differs_is_set(self):
+        """Changing a default away from the shipped value is what reaching READY means."""
         config = filled_config(APIFY_POSTS_ACTOR="someone-else/other-actor")
         report, code = status.build_report(write_config(config))
         self.assertEqual(report["verdict"], "READY")
@@ -124,12 +134,14 @@ class Classification(unittest.TestCase):
         self.assertEqual(code, 0)
 
     def test_whitespace_only_value_is_unset_not_set(self):
+        """A key holding spaces was never filled in; counting it as set hides the gap."""
         config = filled_config(AIRTABLE_TBL_CONTACTS="   ")
         report, code = status.build_report(write_config(config))
         self.assertIn("AIRTABLE_TBL_CONTACTS", report["required_still_open"])
         self.assertEqual(code, 1)
 
     def test_absent_key_is_missing_and_blocks(self):
+        """A key deleted from the config must block, not be silently skipped."""
         config = filled_config()
         del config["AIRTABLE_TBL_CONTACTS"]
         report, code = status.build_report(write_config(config))
@@ -137,6 +149,7 @@ class Classification(unittest.TestCase):
         self.assertEqual(code, 1)
 
     def test_empty_optional_keys_do_not_block(self):
+        """Optional means an empty value is a supported configuration, not an oversight."""
         config = filled_config()
         for key in status.OPTIONAL_KEYS:
             config[key] = ""
@@ -145,6 +158,7 @@ class Classification(unittest.TestCase):
         self.assertEqual(code, 0)
 
     def test_vault_left_empty_still_reports_ready(self):
+        """The documented degrade path: running without the Vault is a real choice."""
         # The documented degrade path: no Vault is a supported configuration.
         config = filled_config()
         for key in SCHEMA:
@@ -158,7 +172,10 @@ class Classification(unittest.TestCase):
 
 
 class Errors(unittest.TestCase):
+    """Bad input is reported, never raised."""
+
     def test_malformed_json_is_a_usage_error_not_a_crash(self):
+        """A hand-edited config with a stray comma should say so, not raise."""
         tmp = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
         tmp.write("{not json")
         tmp.close()

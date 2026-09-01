@@ -128,6 +128,11 @@ GROUPS = [
 
 
 def load_schema():
+    """Return the example config as {key: shipped_value}, minus _-prefixed notes.
+
+    The shipped value matters as much as the key here: it is what a value is
+    compared against to tell a deliberate choice from an inherited default.
+    """
     with open(SCHEMA_PATH) as f:
         raw = json.load(f)
     return {k: v for k, v in raw.items() if not k.startswith("_")}
@@ -148,6 +153,16 @@ def classify(key, schema_value, config, config_present):
 
 
 def build_report(config_path):
+    """Diagnose one config file and return (report, exit_code).
+
+    Groups every schema key, classifies each as set/default/unset/missing, and
+    derives the verdict. A missing config file is not an error: it is the
+    honest starting state, reported as everything unset.
+
+    Exit code is 1 when a required key is unset or absent, 0 otherwise. An
+    inherited default does not fail the run, because it is a working
+    configuration; it surfaces as READY_WITH_DEFAULTS instead.
+    """
     schema = load_schema()
     config, config_present = {}, False
 
@@ -233,6 +248,12 @@ MARK = {"set": "set     ", "default": "DEFAULT ", "unset": "unset   ", "missing"
 
 
 def print_human(report):
+    """Print the report as a terminal-readable checklist.
+
+    Groups are flagged TODO (blocking), look (holds an inherited default), or
+    ok. Blocking groups also print what they block and how to close them, so
+    the next action never requires opening another file.
+    """
     if not report["config_present"]:
         print(f"No {Path(report['config_path']).name} yet.\n")
         print("  cp instance-config.example.json instance-config.json\n")
@@ -275,6 +296,7 @@ def print_human(report):
 
 
 def main():
+    """CLI entry point: report on the config and exit with its verdict code."""
     p = argparse.ArgumentParser()
     p.add_argument("--config", default=None,
                    help="Path to instance-config.json. Defaults to the repo root copy.")
