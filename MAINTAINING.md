@@ -73,6 +73,58 @@ The flow, in order:
    week is a release waiting to go off.
 5. **Open the PR, let CI pass, merge.** Tagging and publishing are automatic.
 
+### The review loop
+
+CodeRabbit reviews every PR on this repo, and it is treated as a second reviewer
+rather than as a linter to clear. On the v1.5.0 PR it produced fifteen findings,
+all fifteen were valid, and two were defects no amount of re-reading would have
+surfaced: a writer stage told to persist data it was never passed, and a prompt
+whose supersede instruction contradicted the reference document added alongside
+it. Budget for that outcome rather than expecting a rubber stamp.
+
+**Review locally before pushing.** The CLI runs the same analysis against
+uncommitted work, so findings arrive while the context is still in your head and
+before anything is public:
+
+```bash
+coderabbit review --base main          # or --uncommitted for staged work
+coderabbit review --agent              # structured JSON, for an agent to consume
+```
+
+Setup is `brew install coderabbit` then `coderabbit auth login` (browser). In
+Claude Code, `/plugin install coderabbit` adds `/coderabbit:review` over the same
+CLI. Neither is required to open a PR: the GitHub review runs regardless.
+
+**Then, on the PR itself:**
+
+1. **Triage every finding against the code before acting on it.** Not before
+   rejecting it, and not before accepting it either. On the v1.5.0 PR one finding
+   claimed a crash on non-object JSON; the naive cases turned out to be handled
+   and the crash needed a config that was a non-object *containing a schema key*.
+   Reproducing that first is what made the fix correct instead of approximate.
+2. **Fix what is valid.** Most findings are.
+3. **Reply in the finding's own thread**, one conversation per finding, saying
+   what changed and in which commit. A finding you decline gets a reply too,
+   stating the reason. Silence reads as agreement that never shipped.
+4. **When a finding is right about the syntax and wrong about the file**, fix the
+   context, never the code. See the rule below.
+5. **Feed the miss back into `.coderabbit.yaml`.** A finding that reveals the
+   reviewer lacked repo context is a config change, not just a reply.
+
+**Never exclude a file from review to silence a false positive.** The first pass
+at this excluded `scripts/fanout_workflow.js` because a module parser misreads its
+required top-level `return`. That would have suppressed the best finding of the
+review — untrusted scraped content interpolated beside Airtable tool instructions
+— to save one predictable false positive. Suppress the specific finding class
+through `path_instructions` and leave the file reviewed.
+
+**The most valuable findings are the ones about checks, not code.** Two of the
+fifteen showed that an audit this repo documented could not fail: a credential
+grep matching vendor names (271 hits of prose, zero credentials) and
+`node --check`, which silently exits 0 on any `.js` file containing `export`. A
+check that cannot fail is worse than no check, because everyone learns to ignore
+it. Both became real scripts with tests. Look for that class specifically.
+
 ### The checklist CI cannot run
 
 CI validates manifests, skill frontmatter, config references, and the tests. It

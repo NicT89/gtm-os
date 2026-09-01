@@ -12,6 +12,31 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-09-01
+
+Process only. No skill, script, or config behavior changes, so nothing to do on
+upgrade.
+
+### Added
+
+- The CodeRabbit review loop, written down in `MAINTAINING.md` (for maintainers)
+  and `CLAUDE.md` (for an agent working in this repo), with the PR template
+  updated to match. Reviews are treated as a second reviewer rather than a linter
+  to clear: on the v1.5.0 PR, fifteen findings were raised, all fifteen were
+  valid, and two were defects that re-reading would not have surfaced.
+
+  Four rules carry most of the value, each one learned the expensive way on that
+  PR: verify a finding against the code before **accepting** it and not only
+  before rejecting it; answer every finding in its own thread, declines included;
+  never exclude a file from review to silence a false positive, because doing so
+  on `fanout_workflow.js` would have hidden the prompt-injection finding that
+  file's review produced; and treat a finding about a broken check as the
+  highest-value kind, since two of the fifteen exposed audits that could not fail.
+
+  Local pre-push review is documented as optional
+  (`coderabbit review --base main`, or `--agent` for structured JSON), since the
+  GitHub review runs regardless.
+
 ## [1.5.0] - 2026-09-01
 
 The research spine and the setup module. Everything here is additive: no existing

@@ -112,6 +112,62 @@ Four structural conventions every skill in this repo follows:
    not mean not owned.** Most users already have the tool and have simply never shaped it
    for this engine, so probing beats asking and asking beats recommending a signup.
 
+## Shipping a change: the PR loop
+
+Every change lands through a PR, and CodeRabbit reviews it as a second pair of
+eyes. Full process in [MAINTAINING.md](MAINTAINING.md#the-review-loop); the part
+you need before starting:
+
+1. **Branch.** Never commit to `main`.
+2. **Build, running the checks as you go**, not at the end:
+   ```bash
+   python3 scripts/validate_skills.py
+   python3 scripts/validate_instance_config.py
+   python3 scripts/scan_secrets.py
+   python3 scripts/check_workflow_script.py
+   python3 -m unittest discover -s tests
+   ```
+3. **Review locally before pushing**, if the CLI is authenticated:
+   `coderabbit review --base main` (or `--agent` for structured JSON). Findings
+   are cheaper here than on the PR.
+4. **Bump `VERSION` last**, immediately before opening the PR — merging a changed
+   `VERSION` fires the release, so an early bump on a branch that sits is a
+   release waiting to go off. Additive is **minor**, not patch.
+5. **Open the PR**, fill in every template section, and label it (`release`,
+   `area: *`, `safety-review` when it touches redaction, credentials, client
+   data, or instance IDs).
+6. **Work the review**, per the rules below.
+
+### Working a CodeRabbit review
+
+**Verify each finding against the code before acting on it — before accepting it,
+not just before rejecting it.** Agents reviewing agents produce confident, precise
+prose either way. On the v1.5.0 PR a finding described a crash whose obvious
+repro did not actually crash; the real precondition was narrower, and reproducing
+it first is what made the fix correct rather than approximate. Do not take a
+finding at face value, and do not dismiss one because it is inconvenient.
+
+**Reply in each finding's own thread**, one conversation per finding, naming what
+changed and in which commit. A finding you decline still gets a reply with the
+reason.
+
+**When a finding is right about the syntax and wrong about the file, change the
+context, not the code.** Never exclude a file from review to silence a false
+positive: the first attempt at this excluded `fanout_workflow.js`, which would
+have suppressed the prompt-injection finding that file's review produced.
+Suppress the specific class in `.coderabbit.yaml`'s `path_instructions` instead.
+
+**Treat a finding about a broken check as the highest-value kind.** Two on that PR
+showed audits that could not fail. A check that cannot fail is worse than no
+check.
+
+**Then improve the reviewer.** `.coderabbit.yaml` carries per-path instructions;
+when a finding shows it lacked repo context, that is a config change and not just
+a reply. It already scopes the two rules easiest to get wrong from outside — "do
+not invent numbers" means a number a reader could act on as fact, not colloquial
+duration; "no client data" whitelists the synthetic names. CodeRabbit also reads
+this file, so a convention written here reaches the reviewer.
+
 ## Scripts
 
 `skills/gtm-blueprint/scripts/field_gate.py` is the model: standard library only, a
