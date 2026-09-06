@@ -71,4 +71,4 @@ Check the do-not-contact/exclusion list before composing for any contact; a blue
 
 ## Quality gate
 
-Blueprints feed outreach a human sends. Before any batch write: sample-review 3 outputs, verify every cited fact against source data, confirm the human approves the template voice. Log defects and gate results to the audit log; template changes are versioned in the changelog.
+Blueprints feed outreach a human sends. Before any batch write: sample-review 3 outputs, verify every cited fact against source data, confirm the human approves the template voice, and check motion assignment — every record in the batch carries a recorded `selected_motion` (the preset name, or `Custom motion: <phrase>`), no record was composed while its motion was still unresolved, and each sampled blueprint's week lines and closer match the motion it is recorded under. A blueprint composed against a motion nobody chose is the defect this gate exists to catch, and it does not announce itself in the prose. Log defects and gate results to the audit log; template changes are versioned in the changelog.
