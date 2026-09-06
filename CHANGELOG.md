@@ -17,8 +17,11 @@ section of this file — see MAINTAINING.md for how that extraction works.
 Additive: no existing skill changes how it is invoked, and an install that upgrades and
 changes nothing in its config keeps the same invocation and configuration contract. One
 behavior change is deliberate and confined to `gtm-blueprint`'s motion step — motion
-selection is now an explicit operator choice, and a company that matched no preset
-(previously forced onto the nearest one) can take the custom path.
+selection is now an operator choice, and a company that matched no preset
+(previously forced onto the nearest one) can take the custom path. In the batch
+field-pipeline mode the selection gate fires selectively — clean single-preset matches
+still compose unattended, and only the ambiguous and no-fit companies are held out for
+the operator — so an existing batch run does not start stalling on every contact.
 
 ### Added
 
