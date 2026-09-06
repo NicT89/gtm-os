@@ -207,6 +207,26 @@ resume rather than a restart, and so spend is stated before it happens. That con
 is in [references/run-manifest.md](references/run-manifest.md); it needs no setup beyond
 having chosen a working folder here.
 
+## Step 7: Give your workspace a project `CLAUDE.md` (recommended)
+
+This repo's `CLAUDE.md` governs an agent *changing the plugin*. It is not the place for
+your instance's specifics, and it is not yours to edit — it ships with every copy. Instead,
+create a `CLAUDE.md` in **your own** working directory (the one where you run the engine,
+not a clone of this repo) that captures the decisions this setup produced, so your agent
+carries them on every run without re-deriving them:
+
+- Your default GTM **motion** (one of the five presets, or a custom motion — see
+  `skills/gtm-blueprint/references/motion-templates.md`) and why.
+- Your **disclosure stance** — whether outreach reveals the AI engine, per `gtm-blueprint`.
+- Your **field prefix** (`INSTANCE_FIELD_PREFIX`) and where `instance-config.json` lives.
+- Your **cadence** — which runs are scheduled and which connectors may be unavailable in a
+  headless run.
+- Any **connector quirks** for your accounts that a run should know up front.
+
+Keep resolved IDs and credentials out of it — those belong in `instance-config.json` and
+the environment. The project `CLAUDE.md` is context and preference, not secrets. It stays
+in your workspace and never comes back to this repo.
+
 ## What stays local vs what flows back
 
 - **Local, never committed:** `instance-config.json`, audit logs, run manifests, the

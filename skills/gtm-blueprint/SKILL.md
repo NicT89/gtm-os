@@ -44,13 +44,13 @@ Seller side: load positioning, offer, and voice from the configured context sour
 
 ## Step 3: Classify the GTM motion
 
-Decide by observable signals, in this order: (1) B2C check: consumer sellers get no cold-outbound blueprint, propose channel framings or flag to the human. (2) PLG/dev-first: self-serve, open source, docs-heavy. (3) Enterprise sales-led: book-a-call CTA, high ACV, compliance buyers. (4) Founder-led early: <20 employees, no sales function. (5) Channel/partner-led: resellers, marketplaces, partner nav. (6) Regulated vertical: healthcare/finance/defense/gov buyers. Multi-model companies get one blueprint per distribution model, matched to each contact's role.
+Decide by observable signals, in this order: (1) B2C check: consumer sellers get no cold-outbound blueprint, propose channel framings or flag to the human. (2) PLG/dev-first: self-serve, open source, docs-heavy. (3) Enterprise sales-led: book-a-call CTA, high ACV, compliance buyers. (4) Founder-led early: <20 employees, no sales function. (5) Channel/partner-led: resellers, marketplaces, partner nav. (6) Regulated vertical: healthcare/finance/defense/gov buyers. (7) None fits cleanly: do NOT force the nearest preset — compose a custom motion aligned to the framework (the Custom motion section in references/motion-templates.md walks the four questions that build one). Multi-model companies get one blueprint per distribution model, matched to each contact's role.
 
-When signals conflict or classification is uncertain (a company could plausibly be two motions), do not guess: present both candidate classifications to the human with the evidence for each and let them pick. A blueprint built on the wrong motion reads templated to the one person who knows better, the recipient.
+The five presets are options, not a closed list. This classification is a recommendation, and the human may accept it, pick a different preset, or choose the custom motion — motion selection is a named choice, not an automated one. When signals conflict or classification is uncertain (a company could plausibly be two motions), do not guess: present the candidate classifications to the human with the evidence for each and let them pick. When the company plausibly fits none, present that finding too and offer the custom path rather than defaulting to the closest label. A blueprint built on the wrong motion reads templated to the one person who knows better, the recipient.
 
 ## Step 4: Compose against the motion template
 
-Read references/motion-templates.md for the five templates, the exact output format (hyphen-bullet week lines, closer line, intro line lives in the email template not the field), and the composition rules: cite at least one real stack tool and one hard number, name their actual buyer, no flattery, no fabrication, falsifiability test.
+Read references/motion-templates.md for the five templates and the custom-motion builder for a company none of them fit, the exact output format (hyphen-bullet week lines, closer line, intro line lives in the email template not the field), and the composition rules: cite at least one real stack tool and one hard number, name their actual buyer, no flattery, no fabrication, falsifiability test. A custom motion follows the same format and the same rules; it is a different emphasis, not a lower standard.
 
 ## Step 5: Write back
 

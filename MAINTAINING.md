@@ -164,6 +164,30 @@ State every deviation from the delivery's own instructions in the PR description
 A deviation that is explained is a decision; an unexplained one looks like a mistake
 the next reader has to re-litigate.
 
+## Branch protection
+
+`main` is the authoritative branch every install's version check reads, and the release
+workflow publishes off it. Protect it in **Settings → Branches → Add branch ruleset** (or
+classic branch protection) for `main`, so an accidental direct push cannot ship a release
+or leak a resolved value past the review gates that CI cannot enforce:
+
+- **Require a pull request before merging.** This is the load-bearing one: the safety
+  checklist (no resolved instance IDs, no credentials, no client data) is a human review
+  gate, and a direct push skips it entirely.
+- **Require status checks to pass** — the `ci` workflow — and require branches to be up to
+  date before merging.
+- **Restrict who can push** to `main` to the maintainer(s), and **block force pushes and
+  deletions.**
+- Allow the release workflow's automated `chore: sync plugin.json` commit: it pushes to
+  `main` with the built-in `GITHUB_TOKEN`, so either exempt that actor in the ruleset or
+  keep the sync path in mind when tightening rules, or the release will fail at the sync
+  step.
+
+This is a repo setting, not a file in the tree, so it is not captured by CI and has to be
+set once in the GitHub UI. It matters more here than on a typical repo because this is a
+public template: the whole point of the tokenization and safety review is defeated if
+anyone can push a resolved ID straight to `main`.
+
 ## Release notes come from `CHANGELOG.md`
 
 `.github/workflows/release.yml` fires on any push to `main` that changes `VERSION`.

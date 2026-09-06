@@ -12,6 +12,47 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-09-06
+
+Additive. No existing skill changes how it is invoked; an install that upgrades and
+changes nothing in its config keeps working exactly as before.
+
+### Added
+
+- **Custom-motion builder in `gtm-blueprint`.** The five motion presets (PLG,
+  enterprise, founder-led, channel, regulated) were the only options; a company that
+  fit none of them got the nearest preset forced onto it, which reads templated to the
+  one reader who knows better — the recipient. `skills/gtm-blueprint/references/motion-templates.md`
+  now carries a **Custom motion** section: when no preset fits, compose one from the same
+  four-part framework the presets are built on (where the company's pipeline actually
+  hides → Week 1; the shortest honest path to a conversation → Week 2; trustworthy
+  reporting for their stage and buyer → Weeks 3-4; the closer). Same output format, same
+  falsifiability standard, same no-fabrication rules — a different emphasis, never a lower
+  bar. `gtm-blueprint` Step 3 adds it as classification option (7) and now frames motion
+  selection as a named human choice: the classification is a recommendation the operator
+  can accept, swap for another preset, or send to the custom path, rather than an
+  automated verdict.
+
+### Changed
+
+- **`docs/ROADMAP.md` refreshed.** It still described v1.3.0 as "this release" while the
+  repo was at 1.5.2. It now records the instance/playbook separation, setup module,
+  research spine, and front door as shipped, notes the custom-motion builder, and lists
+  the genuinely remaining work (provisioning defaults, `commands/` surface, `PLAYBOOK.md`,
+  per-tool docs).
+- **Template-use guardrails, aimed at operators.** The README gains a "Your instance vs.
+  this repo" section stating plainly that this is a template you run, not a service, and
+  that you never need to push anything back to it to use the engine — `main` is read-only
+  upstream. `SETUP.md` adds Step 7: create a project `CLAUDE.md` in *your own* workspace
+  (motion default, disclosure stance, field prefix, cadence, connector quirks — never
+  secrets), separate from this repo's maintainer-facing `CLAUDE.md`, which the front-door
+  section of `CLAUDE.md` now points to.
+- **`MAINTAINING.md` documents recommended `main` branch protection** — require a PR,
+  require CI, restrict direct pushes, block force-push — since the tokenization and safety
+  review that keep resolved IDs out of a public template are defeated by a direct push.
+  This is a one-time GitHub setting, not a file, so it is documented rather than enforced
+  by CI.
+
 ## [1.5.2] - 2026-09-01
 
 ### Added

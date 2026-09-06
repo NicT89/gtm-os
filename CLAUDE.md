@@ -10,7 +10,9 @@
 - **To set up your own environment** — connectors, bases, `instance-config.json`: the
   `environment-setup` skill drives it, over
   [references/environment-setup.md](references/environment-setup.md). That module is the
-  single setup procedure; every skill routes there rather than carrying its own.
+  single setup procedure; every skill routes there rather than carrying its own. This file
+  is not yours to edit — it governs changing the plugin; [SETUP.md](SETUP.md) Step 7 shows
+  you how to write a project `CLAUDE.md` for your *own* workspace instead.
 - **To set it up for a company from scratch** — the `provision-gtm-engine` skill
   does that end to end from a single company URL, with human gates at ICP sign-off,
   credit spend, and sequence activation. Start there rather than wiring things by
