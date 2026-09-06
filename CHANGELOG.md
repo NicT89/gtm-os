@@ -12,6 +12,26 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Changed
+
+- **The composition spec now anchors on persona, not on signal alone.** The opener rule
+  keyed only on the company's signal, so a founder and the operating owner sitting beside
+  the open req received the same anchoring from the same facts. That is correct data
+  addressed to the wrong job, and it reads as a mail merge to the one recipient who knows
+  which of those two people they are. The spec now says to resolve the persona first, lets
+  the closer follow the motion the contact is enrolled in rather than the company's loudest
+  signal, and states the invariant that was previously only implied: one contact in one
+  motion, never one motion per company. An account holding two personas may legitimately
+  run two motions at once.
+- **A voice fallback ladder for contacts with thin posting histories.** "Their own words
+  preferred when posts exist" assumed the words would be usable, and said nothing about the
+  common case where a contact has posted twice in three months and one of them is a
+  greeting. The gap was filled by improvisation, which invents a voice for a real person.
+  The ladder is now explicit — the person's own posts, then the company's public voice from
+  the account research, then plain and thin with no mirror line — along with the reason to
+  prefer thin over fluent, and the instruction to record which rung was used so a later
+  reader can tell a deliberate thin opener from a lazy one.
+
 ## [1.7.0] - 2026-09-06
 
 Additive. Nothing changes how an existing install is invoked or configured, and an upgrade
