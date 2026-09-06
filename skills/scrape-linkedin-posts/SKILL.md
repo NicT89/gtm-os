@@ -61,6 +61,10 @@ Before creating a Contacts or Company row, search the table for an existing row 
 
 Actor `{APIFY_POSTS_ACTOR}`. One call per target batch. Parameters: `maxPosts` 0 (all posts, the window is the cap), `postedLimit` "3months", `scrapeComments` true, `maxComments` 15.
 
+**The profile list goes in `targetUrls`.** Not `profiles`, not `profileUrls`, not `urls`. This is worth stating because getting it wrong is silent: the actor does not reject an unrecognized input key, it runs against zero targets and returns a **SUCCEEDED run with an empty dataset**, which is indistinguishable from a target who genuinely has not posted in the window. The tell is the runtime. A real two-profile scrape takes ~40 seconds; the empty run finishes in under 4. If a run returns zero items, verify the input key before concluding the target is inactive, and never write a "No Content" row on the strength of an empty run you have not checked this way.
+
+Pass full profile URLs (`https://www.linkedin.com/in/<slug>/`). Company URLs work in the same field.
+
 **The actor returns the target's full activity feed, not just their authored posts.** Roughly 80-90% of post items are typically things the target liked, commented on, or reposted from someone else, not things they wrote. Do not write these to Airtable or push them to the CRM; they will pollute the record with someone else's content attributed to the wrong person.
 
 **Project only the fields you need when reading the dataset.** `get-dataset-items` supports a `fields=` parameter; use it (e.g. `fields="type,id,postId,content,commentary,postedAt.date,createdAt,engagement,author.publicIdentifier,author.name,linkedinUrl,repostedBy.publicIdentifier,commentIds,actor.name,actor.linkedinUrl,actor.position"`) instead of pulling the full ~167-field item for every row. The unprojected pull runs well past the context-per-tool-call limit; projecting up front cuts the token cost of this step by roughly half.
