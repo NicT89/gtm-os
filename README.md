@@ -37,8 +37,9 @@ routes there when a connector it needs is missing.
 This repo is a **template you run, not a service you log into.** Install it, point it at
 your own accounts, and everything specific to you — the resolved IDs in
 `instance-config.json`, your prospect data, your audit logs, your rendered reports — lives
-only in your workspace and is git-ignored. None of it flows back here, and **you never
-need to push anything to this repo to use the engine.** Treat `main` as read-only
+only in your own storage: a local workspace (git-ignored) or the artifact home you choose
+(a local folder or Google Drive, per SETUP Step 6). None of it flows back here, and **you
+never need to push anything to this repo to use the engine.** Treat `main` as read-only
 upstream: pull updates from it and run your instance off your own copy. Setup even
 suggests you capture your instance's specifics — motion default, disclosure stance, field
 prefix, cadence — in a project `CLAUDE.md` in *your* workspace (not this one), so your own

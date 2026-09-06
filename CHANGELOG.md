@@ -14,8 +14,11 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [1.6.0] - 2026-09-06
 
-Additive. No existing skill changes how it is invoked; an install that upgrades and
-changes nothing in its config keeps working exactly as before.
+Additive: no existing skill changes how it is invoked, and an install that upgrades and
+changes nothing in its config keeps the same invocation and configuration contract. One
+behavior change is deliberate and confined to `gtm-blueprint`'s motion step — motion
+selection is now an explicit operator choice, and a company that matched no preset
+(previously forced onto the nearest one) can take the custom path.
 
 ### Added
 

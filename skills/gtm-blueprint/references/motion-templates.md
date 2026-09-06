@@ -94,11 +94,14 @@ no flattery, no fabrication, and the falsifiability test: if the plan could be s
 different company unchanged, it has failed. A custom motion is a different emphasis, never
 a lower standard.
 
-Name it in the blueprint so the human can see what was built — `Custom motion:
-<one phrase>` rather than silently borrowing a preset's name — and surface the reasoning
-to the human the same way an uncertain classification is surfaced (see SKILL.md Step 3):
-custom is the escape hatch for genuine misfits, chosen deliberately, not the default. If,
-while composing, the company turns out to fit a preset after all, switch to it and say so.
+The composed field keeps the exact shape above — the three week lines and the closer,
+nothing else — so a custom motion never writes a label into it. Surface the choice to the
+human instead: when presenting the recommendation (SKILL.md Step 3), name the custom
+motion (`Custom motion: <one phrase>`) and its reasoning, and compose only on the
+operator's selection. Custom is the escape hatch for genuine misfits, chosen deliberately,
+not the default. If, while composing, the company turns out to fit a preset after all, do
+not switch silently — surface the better-fitting preset with its evidence and switch only
+on the operator's confirmation.
 
 ## Modifiers
 
