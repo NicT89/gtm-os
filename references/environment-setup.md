@@ -189,8 +189,12 @@ None of these block a run. Each skill states the degradation when one is absent.
 | **Google Drive / Box / OneDrive** | File home for briefs, reports, audit logs | A local folder works identically. Choose one and say which. |
 | **A warehouse (BigQuery, Supabase)** | The data spine layer in `gtm-architecture-composer` | The architecture proposal names the gap instead of designing around it. |
 
+How well this engine speaks any platform the user brings — native, generic, or not built
+— is [platform-support.md](platform-support.md); state the tier and what it costs them
+before wiring, and never imply a generic platform is either unsupported or equivalent.
 Coverage status and the MCP-vs-API decision for any tool a client already runs is in
-[mcp-coverage-map.md](mcp-coverage-map.md). Rows carry a verified date; re-verify any
+[mcp-coverage-map.md](mcp-coverage-map.md), which answers the different question of
+whether the vendor publishes a server at all. Rows carry a verified date; re-verify any
 row older than a quarter before citing it to a client.
 
 ---

@@ -12,6 +12,54 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-09-06
+
+Additive. Nothing changes how an existing install is invoked or configured, and an upgrade
+needs no action. Three things arrive: the same Get Started steps in every entry point, an
+honest statement of how well the engine speaks each platform, and a way for a setup run to
+report itself instead of leaving the write-up as homework.
+
+### Added
+
+- **Get Started, in three places on purpose.** The install path was buried, and the most
+  common way to get it wrong is to open the repo URL in a chat window — which installs
+  nothing and runs nothing, while looking like it is working. The four steps now appear
+  verbatim in `README.md`, `CLAUDE.md`, and a new `AGENTS.md`, so whichever file a person
+  or an agent opens first, the correct start is already there. `references/get-started.md`
+  is the source and `tests/test_get_started_consistent.py` fails the build if the copies
+  drift or if the install commands stop matching the marketplace manifest — three copies
+  are only safe while something pins them together.
+- **`references/platform-support.md`: native, generic, or not built.** You choose your
+  stack, and the engine now says plainly how well it speaks each part of it. **Native**
+  (Apollo, Airtable, Apify, Firecrawl) means the skills are written against that
+  platform's real MCP semantics and a deployment has run it end to end. **Generic**
+  (HubSpot, Clay, CB Insights, Brand Kit OS, a file home, a warehouse) means the motion
+  runs with the same gates, composition rules, and audits, but nobody built the
+  platform-specific path: you map fields yourself and its failure modes are undocumented.
+  **Not built** means there is no path here at all, whatever the vendor's own server can
+  do — Salesforce is the worked example, with a first-rate official MCP server and no GTM
+  OS integration. Tier is assigned on evidence in this repository, and
+  `tests/test_platform_support.py` fails if a claim outruns it. `environment-setup` now
+  states the tier and the specific cost once, at the ladder, and is told not to talk
+  anyone out of their stack.
+- **Setup runs can report themselves.** `scripts/setup_feedback.py` turns a run into a
+  redacted report and, with the user's explicit approval, files it upstream through their
+  own `gh`. The module's core claim — *not set up does not mean not owned* — can only fail
+  on somebody else's half-configured accounts, and a tester who has to remember to write
+  it up mostly does not. The report carries connector names, S0-S4 states, the checkpoint,
+  the outcome, and short notes; notes are **rejected rather than stripped** when they
+  contain a credential, a workspace ID, an email address, or a link outside vendor
+  documentation, because a stripped note is one the approving person never actually read.
+  `environment-setup` offers it at three moments, including when a run is abandoned — the
+  finding that otherwise never gets reported. Consent is explicit and a no ends it.
+
+### Changed
+
+- **`references/mcp-coverage-map.md` now says which question it answers.** Whether a
+  vendor publishes an MCP server and whether GTM OS has been built against it are
+  different facts, and conflating them is how someone ends up expecting Apollo-grade
+  behavior from a platform nobody here has ever written a line for.
+
 ## [1.6.1] - 2026-09-06
 
 A correction to `scrape-linkedin-posts`, found by running it rather than by reading it.
