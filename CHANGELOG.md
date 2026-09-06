@@ -12,6 +12,47 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-09-01
+
+### Added
+
+- `tests/test_fanout_workflow.py` — adversarial and wiring tests for
+  `scripts/fanout_workflow.js`, which had none because it executes only inside
+  the host Workflow tool. It turns out not to need the real harness: the five
+  injected globals (`args`, `log`, `phase`, `agent`, `pipeline`) are stubbed, the
+  real script runs, and every prompt each stage would have sent is captured and
+  asserted against. 19 tests covering the wiring (does the writer actually
+  receive the researcher's questions?), the Vault contract (does the supersede
+  instruction still distinguish complement from contradiction?), truncation
+  (does an oversized payload stay valid JSON?), and the injection defenses.
+
+  The suite proves it can fail rather than asserting it: `MutationCoverage`
+  reintroduces five defects into an in-memory copy of the script (the dropped
+  researcher questions, a removed fence token, a reused token, a lost COMPLEMENT
+  branch, and naive character-slicing) and asserts each one is detected. The file
+  on disk is never modified.
+
+### Fixed
+
+- **A second prompt-injection hole, found by review of the first fix.** The
+  critic is shown the fence token so it can read its own input, and its output
+  was then fenced with that same token in the writer prompt. A hostile page could
+  ask the critic to echo the token into a free-text field, planting a delimiter
+  the writer could not tell from a real one. Researcher output and critic
+  verdicts now carry separate tokens, and the critic-verdict token is minted
+  where no upstream agent ever sees it.
+- **Prompt-injection hardening in the fan-out writer.** The untrusted-content
+  fences used fixed markers, and `JSON.stringify` escapes newlines but passes the
+  literal text `=== END RESEARCHER OUTPUT ===` through verbatim — so a scraped
+  page could plant a closing marker and address the writer as though it were the
+  orchestrator. Markers now carry a per-run token the content has never seen, and
+  the writer is told that a BEGIN/END line without that exact token is planted
+  content rather than a delimiter.
+- `.gitignore` now ignores `instance/`. An earlier convention kept the config at
+  `instance/instance-config.json`, and Cowork-era notes still describe that path,
+  so anyone following them would create a folder of resolved workspace IDs that
+  nothing was ignoring.
+
 ## [1.5.1] - 2026-09-01
 
 Process only. No skill, script, or config behavior changes, so nothing to do on
