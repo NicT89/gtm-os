@@ -144,6 +144,12 @@ def hostile_research():
 
 
 def benign_critique():
+    """A well-behaved critic verdict: one gap, no weak facts, one extra question.
+
+    Deliberately boring. The hostile payload belongs in the researcher output,
+    so a test that fails here has found a wiring defect rather than an
+    injection defense that did not hold.
+    """
     return {"missing_field_keys": ["C3"], "weak_facts": [],
             "extra_questions": [{"question": "Who owns renewals?", "field_key": "C7",
                                  "persona_group": "Customer Success"}]}
@@ -155,6 +161,7 @@ class Wiring(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Run the real script once and index every captured prompt by stage."""
         cls.captured = run_script(default_args(), hostile_research(), benign_critique())
         cls.by = {c["label"].split(":")[0]: c["prompt"] for c in cls.captured}
 
@@ -173,6 +180,11 @@ class Wiring(unittest.TestCase):
         self.assertIn("UNIQUE-RESEARCHER-QUESTION-MARKER", self.by["write"])
 
     def test_writer_receives_the_critics_questions(self):
+        """The critic's extra questions reach the writer, as its own questions do.
+
+        Step 5 promises "the researcher's plus the critic's". The sibling test
+        covers the researcher half; this is the other half of that claim.
+        """
         self.assertIn("Who owns renewals?", self.by["write"])
 
     def test_writer_is_given_the_run_and_entity_records(self):
@@ -197,6 +209,7 @@ class PromptInjectionDefenses(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Run the script once with a hostile researcher payload, and index by stage."""
         cls.captured = run_script(default_args(), hostile_research(), benign_critique())
         cls.by = {c["label"].split(":")[0]: c["prompt"] for c in cls.captured}
 
@@ -296,6 +309,7 @@ class VaultContract(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Run the script once and index every captured prompt by stage."""
         cls.captured = run_script(default_args(), hostile_research(), benign_critique())
         cls.by = {c["label"].split(":")[0]: c["prompt"] for c in cls.captured}
 
@@ -311,9 +325,19 @@ class VaultContract(unittest.TestCase):
         self.assertIn("Do not supersede", prompt)
 
     def test_identical_values_are_not_rewritten(self):
+        """An unchanged value writes nothing, so a re-run is not a wall of noise.
+
+        Facts are append-only. Without this rule every re-run duplicates every
+        fact it re-confirms, and the change report stops meaning anything.
+        """
         self.assertIn("IDENTICAL value: write nothing", self.by["write"])
 
     def test_provenance_is_validated_before_writing(self):
+        """Incomplete provenance is rejected at the writer, not repaired downstream.
+
+        A fact without a source URL or an inference tag cannot be audited later,
+        and nothing further up the pipeline can reconstruct where it came from.
+        """
         self.assertIn("Incomplete provenance -> reject", self.by["write"])
 
 
@@ -377,6 +401,11 @@ class MutationCoverage(unittest.TestCase):
         return source.replace(old, new, 1)
 
     def prompts_for(self, source):
+        """Run a mutated copy of the script and index the prompts it would have sent.
+
+        The mutation lives only in the string passed here; the file on disk is
+        never modified.
+        """
         captured = run_script(default_args(), hostile_research(), benign_critique(),
                               source_override=source)
         return {c["label"].split(":")[0]: c["prompt"] for c in captured}
