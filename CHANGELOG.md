@@ -12,6 +12,24 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-09-06
+
+A correction to `scrape-linkedin-posts`, found by running it rather than by reading it.
+Nothing to do on upgrade; no configuration changes.
+
+### Fixed
+
+- **`scrape-linkedin-posts` now names the actor's input key.** A live run passed the
+  profile list as `profiles`. The actor does not reject an unrecognized input key: it ran
+  against zero targets and returned a **SUCCEEDED run with an empty dataset**, which is
+  indistinguishable from a target who genuinely has not posted inside the window. Nothing
+  in the skill said which key to use, so the next person had no way to catch it either.
+  The skill now states that the profile list goes in `targetUrls`, records the silent
+  failure mode, and gives the tell that separates the two cases — a real two-profile
+  scrape takes ~40 seconds, the empty run finishes in under 4. It also forbids writing a
+  "No Content" row off an empty run that has not been checked this way, which is how the
+  defect would otherwise become permanent data.
+
 ## [1.6.0] - 2026-09-06
 
 Additive: no existing skill changes how it is invoked, and an install that upgrades and
