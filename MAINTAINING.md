@@ -178,10 +178,12 @@ or leak a resolved value past the review gates that CI cannot enforce:
   date before merging.
 - **Restrict who can push** to `main` to the maintainer(s), and **block force pushes and
   deletions.**
-- Allow the release workflow's automated `chore: sync plugin.json` commit: it pushes to
-  `main` with the built-in `GITHUB_TOKEN`, so either exempt that actor in the ruleset or
-  keep the sync path in mind when tightening rules, or the release will fail at the sync
-  step.
+- **You do not need a bypass for the release workflow.** As of 1.7.1 the PR bumps both
+  `VERSION` and `.claude-plugin/plugin.json`, `scripts/check_version_sync.py` fails CI if
+  they disagree, and the workflow's sync step exits early when they already match — so it
+  never pushes. This matters because GitHub does not offer Actions in a personal
+  repository's ruleset bypass list, which made the bot push the one thing standing between
+  this repo and a protected `main`.
 
 This is a repo setting, not a file in the tree, so it is not captured by CI and has to be
 set once in the GitHub UI. It matters more here than on a typical repo because this is a

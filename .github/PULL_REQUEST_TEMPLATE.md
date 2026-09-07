@@ -54,6 +54,7 @@ Full process: MAINTAINING.md.
 - [ ] `python3 scripts/scan_secrets.py`
 - [ ] `python3 scripts/check_workflow_script.py`
 - [ ] `python3 scripts/validate_instance_config.py`
+- [ ] `python3 scripts/check_version_sync.py`
 - [ ] `python3 -m unittest discover -s tests -v`
 - [ ] `jq empty .claude-plugin/plugin.json .claude-plugin/marketplace.json`
 

@@ -12,8 +12,111 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-09-07
+
+Corrections to the feedback reporter and to two checks that shipped in 1.7.0 without
+doing their job. Nothing to do on upgrade; no configuration changes.
+
+### Changed
+
+- **Sensitive values in a feedback note are now stripped, not rejected.** 1.7.0 refused
+  any note containing a credential, workspace ID, email address, or private link, on the
+  reasoning that a stripped note is one the approving person never actually read. That was
+  right about the risk and wrong about the fix: rejection sends the tester back to rewrite
+  from memory, which loses the detail that made the note worth having, and it makes the
+  most forthcoming reporters do the most work. Each value is now replaced in place with a
+  visible `[redacted: <kind>]` marker and the body states how many were removed.
+
+  What makes that safe is the new **two-step approval**. Rendering the report sends nothing
+  and prints a token derived from the exact body displayed; submitting requires that token,
+  so a body edited after it was shown is refused. The text a human approves is provably the
+  text that gets filed, and the host's own tool-approval prompt carries the decision rather
+  than a question the agent asks itself. Blanket permission to run the script still cannot
+  file anything that was never rendered.
+
 ### Added
 
+- **`scripts/check_version_sync.py`, and with it a protectable `main`.** `release.yml`
+  used to fix version drift itself: on a push to `main` it rewrote
+  `.claude-plugin/plugin.json` and committed the result back as `github-actions[bot]`.
+  That bot push was the single thing preventing branch protection from requiring a pull
+  request — the load-bearing rule, since the safety checklist (no resolved instance IDs,
+  no credentials, no client data) is a human gate a direct push skips entirely — and
+  GitHub does not offer Actions in a personal repository's ruleset bypass list.
+
+  Bumping both files in the PR removes the push. CI now fails when they disagree, the
+  workflow's sync step exits early when they match and so never fires, and `main` can
+  require a pull request with no bypass at all. This also closes the older trap the
+  previous convention warned about: editing only the manifest used to do nothing, silently.
+
+### Fixed
+
+- **A URL could pass the allowlist while pointing somewhere else.** The check matched a
+  host *prefix* and kept the rest of the string, so
+  `https://docs.apify.com@wiki.internal.example/setup` read as vendor documentation when
+  the trusted name was userinfo and the destination was the private host after the `@`.
+  URLs are now parsed with `urlsplit` and denied by default: https only, no userinfo, no
+  non-default port, exact hostname match. URL resolution also runs first, on untouched
+  text, so a link is no longer half-rewritten by the email rule before it is judged.
+- **`tests/test_platform_support.py` could not fail.** It scanned every markdown file in
+  `skills/` and `references/` — including `platform-support.md`, the document whose claims
+  it exists to check. Every needle was present in the claim itself, so deleting the actual
+  evidence would have left it green. It now reads only the artifacts each row cites, which
+  immediately surfaced that Apollo's evidence list omitted the file where
+  `typed_custom_fields` actually lives.
+- **A non-object report crashed instead of reporting.** `json.loads` accepts arrays and
+  strings; every field read then raised `AttributeError` rather than returning a problem.
+- **Generic and Not built were collapsed into one outcome.** "A platform that is not
+  native still works" is true of Generic and false of Not built, and a reader on Salesforce
+  would have taken it as a promise. The Get Started block, the README, and the tier table
+  now separate them: Generic is a real option, Not built is genuinely unsupported.
+- **The empty-scrape check no longer infers from runtime.** `scrape-linkedin-posts` now
+  reads the run's own recorded input back and confirms `targetUrls` holds the intended
+  profile URLs before a "No Content" row can be written. The timing tell is kept as a
+  prompt to go look, labelled as one observation rather than a measurement.
+- **The connector allowlist is pinned exactly** rather than by size, since connector names
+  reach the rendered body unscanned and a size bound would accept one named after a client.
+
+## [1.7.0] - 2026-09-06
+
+Additive. Nothing changes how an existing install is invoked or configured, and an upgrade
+needs no action. Three things arrive: the same Get Started steps in every entry point, an
+honest statement of how well the engine speaks each platform, and a way for a setup run to
+report itself instead of leaving the write-up as homework.
+
+### Added
+
+- **Get Started, in three places on purpose.** The install path was buried, and the most
+  common way to get it wrong is to open the repo URL in a chat window — which installs
+  nothing and runs nothing, while looking like it is working. The four steps now appear
+  verbatim in `README.md`, `CLAUDE.md`, and a new `AGENTS.md`, so whichever file a person
+  or an agent opens first, the correct start is already there. `references/get-started.md`
+  is the source and `tests/test_get_started_consistent.py` fails the build if the copies
+  drift or if the install commands stop matching the marketplace manifest — three copies
+  are only safe while something pins them together.
+- **`references/platform-support.md`: native, generic, or not built.** You choose your
+  stack, and the engine now says plainly how well it speaks each part of it. **Native**
+  (Apollo, Airtable, Apify, Firecrawl) means the skills are written against that
+  platform's real MCP semantics and a deployment has run it end to end. **Generic**
+  (HubSpot, Clay, CB Insights, Brand Kit OS, a file home, a warehouse) means the motion
+  runs with the same gates, composition rules, and audits, but nobody built the
+  platform-specific path: you map fields yourself and its failure modes are undocumented.
+  **Not built** means there is no path here at all, whatever the vendor's own server can
+  do — Salesforce is the worked example, with a first-rate official MCP server and no GTM
+  OS integration. Tier is assigned on evidence in this repository, and
+  `tests/test_platform_support.py` fails if a claim outruns it. `environment-setup` now
+  states the tier and the specific cost once, at the ladder, and is told not to talk
+  anyone out of their stack.
+- **Setup runs can report themselves.** `scripts/setup_feedback.py` turns a run into a
+  redacted report and, with the user's explicit approval, files it upstream through their
+  own `gh`. The module's core claim — *not set up does not mean not owned* — can only fail
+  on somebody else's half-configured accounts, and a tester who has to remember to write
+  it up mostly does not. The report carries connector names, S0-S4 states, the checkpoint,
+  the outcome, and short notes; notes are **rejected rather than stripped** when they
+  contain a credential, a workspace ID, an email address, or a link outside vendor
+  documentation, because a stripped note is one the approving person never actually read.
+  `environment-setup` offers it at three moments, including when a run is abandoned — the
+  finding that otherwise never gets reported. Consent is explicit and a no ends it.
 - **Motion validation is a sweep, not a first-match test.** A contact who failed the motion
   they were checked against was being set aside, when the failure often belonged to a
   different motion's gate entirely. Step 3 now says to check a contact against every
@@ -70,53 +173,9 @@ section of this file — see MAINTAINING.md for how that extraction works.
   prefer thin over fluent, and the instruction to record which rung was used so a later
   reader can tell a deliberate thin opener from a lazy one.
 
-## [1.7.0] - 2026-09-06
-
-Additive. Nothing changes how an existing install is invoked or configured, and an upgrade
-needs no action. Three things arrive: the same Get Started steps in every entry point, an
-honest statement of how well the engine speaks each platform, and a way for a setup run to
-report itself instead of leaving the write-up as homework.
-
-### Added
-
-- **Get Started, in three places on purpose.** The install path was buried, and the most
-  common way to get it wrong is to open the repo URL in a chat window — which installs
-  nothing and runs nothing, while looking like it is working. The four steps now appear
-  verbatim in `README.md`, `CLAUDE.md`, and a new `AGENTS.md`, so whichever file a person
-  or an agent opens first, the correct start is already there. `references/get-started.md`
-  is the source and `tests/test_get_started_consistent.py` fails the build if the copies
-  drift or if the install commands stop matching the marketplace manifest — three copies
-  are only safe while something pins them together.
-- **`references/platform-support.md`: native, generic, or not built.** You choose your
-  stack, and the engine now says plainly how well it speaks each part of it. **Native**
-  (Apollo, Airtable, Apify, Firecrawl) means the skills are written against that
-  platform's real MCP semantics and a deployment has run it end to end. **Generic**
-  (HubSpot, Clay, CB Insights, Brand Kit OS, a file home, a warehouse) means the motion
-  runs with the same gates, composition rules, and audits, but nobody built the
-  platform-specific path: you map fields yourself and its failure modes are undocumented.
-  **Not built** means there is no path here at all, whatever the vendor's own server can
-  do — Salesforce is the worked example, with a first-rate official MCP server and no GTM
-  OS integration. Tier is assigned on evidence in this repository, and
-  `tests/test_platform_support.py` fails if a claim outruns it. `environment-setup` now
-  states the tier and the specific cost once, at the ladder, and is told not to talk
-  anyone out of their stack.
-- **Setup runs can report themselves.** `scripts/setup_feedback.py` turns a run into a
-  redacted report and files it upstream through the tester's own `gh`. The module's core
-  claim — *not set up does not mean not owned* — can only fail on somebody else's
-  half-configured accounts, and a tester who has to remember to write it up mostly does
-  not. The report carries connector names, S0-S4 states, the checkpoint, the outcome, and
-  short notes. **Sensitive values are stripped automatically**: credentials, workspace IDs,
-  email addresses, and links outside vendor documentation are each replaced in place with a
-  visible `[redacted: <kind>]` marker, and the body states how many were removed — so a
-  tester writes their note naturally instead of self-censoring it.
-
-  Approval rides on the host's existing tool-approval prompt rather than on a question the
-  agent asks itself. Rendering the report sends nothing and prints a token derived from the
-  exact body; submitting requires that token, so a body that changed after it was displayed
-  is refused. Nothing can be filed that was not first put on screen, including under a
-  permission setting that would otherwise run the script unattended.
-  `environment-setup` offers it at three moments, including when a run is abandoned — the
-  finding that otherwise never gets reported. A no ends it.
+  _(These three shipped in 1.7.0 but were still recorded as Unreleased when the
+  release fired, so the published notes omitted them. Moved here after the fact;
+  the GitHub release body was amended to match.)_
 
 ### Changed
 
