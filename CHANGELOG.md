@@ -12,7 +12,45 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Added
+
+- **Motion validation is a sweep, not a first-match test.** A contact who failed the motion
+  they were checked against was being set aside, when the failure often belonged to a
+  different motion's gate entirely. Step 3 now says to check a contact against every
+  remaining motion before dismissing them, to separate an ACCOUNT-gate failure (the company
+  does not qualify, so fixing the contact cannot help) from a PERSONA failure (the company
+  qualifies and the right person may already be in the CRM), and to record which motions
+  were checked and what blocked each. "Not a fit" is not a reusable answer; "checked against
+  all of them, here is the closest and what blocks it" is.
+- **An available job description is always audited, and always persisted.** The JD carries
+  the role, the seniority, the tools, and often the reporting line — which is what says
+  which persona owns the req and therefore which motion the contact belongs in. Running
+  persona validation without reading a JD that exists is guessing with the answer on the
+  page. The skill now requires scraping it whenever one is on file, auditing the role and
+  reporting line against the persona under consideration, and storing the full text as a
+  dated reference document rather than only a summary field. Summaries drop the reporting
+  line, the seniority signals, and the tool list first, and those are the three things a
+  re-check needs.
+- **Targets with no posts come off the cadence.** A first scrape returning zero authored
+  posts now sets that target's Tracking to `paused` with the reason recorded, instead of
+  buying the same empty answer every cycle forever. Two interlocks bind it, and both matter
+  more than the rule: it fires only on a VERIFIED empty run, because an unverified empty is
+  indistinguishable from the silent input-key failure and auto-pausing on one turns a
+  five-minute bug into a permanent wrong answer about a real person; and only on a FIRST
+  scrape, because someone with existing rows who is quiet this cycle is a poster having a
+  quiet quarter. Every auto-pause is named in the run report — a cadence that quietly
+  shrinks itself is worse than one that costs too much.
+
 ### Changed
+
+- **The field provenance map now documents what each field is FOR.** It recorded where every
+  field came from and which gate it served, but not what it means, so the one thing a reader
+  actually needed at the call site was the one thing missing: an empty `LinkedIn Posts` means
+  "verified not a poster" in one reading and "not researched yet" in the other, and that
+  difference decides whether a run re-scrapes. Both field tables gain a Purpose column
+  covering what the field holds and what consumes it. A CRM field's label is not its
+  contract, and Apollo offers nowhere to store the contract beside the field, so this file
+  is the field documentation.
 
 - **The composition spec now anchors on persona, not on signal alone.** The opener rule
   keyed only on the company's signal, so a founder and the operating owner sitting beside
