@@ -1,6 +1,6 @@
 # GTM Motion Templates
 
-Select ONE template per blueprint using the classification rules in SKILL.md. Each template defines what Weeks 1, 2, and 3-4 emphasize and the closer line. The emphases exist because the plan must describe what a GTM engineer would actually build first at THAT kind of company; a PLG company's pipeline hides in usage data, an enterprise seller's pipeline hides in a finite account universe. Getting the emphasis wrong makes the plan feel templated, which defeats its purpose.
+Select ONE motion per blueprint using the classification rules in SKILL.md — one of the five templates below, or a **custom motion** (see the Custom motion section) when the company fits none of them cleanly. Each template defines what Weeks 1, 2, and 3-4 emphasize and the closer line. The emphases exist because the plan must describe what a GTM engineer would actually build first at THAT kind of company; a PLG company's pipeline hides in usage data, an enterprise seller's pipeline hides in a finite account universe. Getting the emphasis wrong makes the plan feel templated, which defeats its purpose. The five are the common shapes, not a closed list: forcing the nearest preset onto a company it does not fit produces exactly the templated feel the skill exists to avoid.
 
 ## Output format (all motions)
 
@@ -55,6 +55,53 @@ Signals: buyers in healthcare, finance, defense, or government; procurement-shap
 - Week 2: Compliance-aware, domain-literate outreach that respects how these buyers evaluate.
 - Weeks 3-4: Program- or cycle-shaped pipeline reporting.
 - Closer: "Systematic beats heroic: the whole buyer universe, worked methodically."
+
+## Custom motion (when none of the five fit)
+
+The five templates are the common shapes, not the whole space. Some companies do not map
+cleanly onto any of them: a usage-based infrastructure company that also runs a top-down
+enterprise motion, a community-led company whose pipeline is neither self-serve signups
+nor named accounts, a services firm selling outcomes rather than seats, a marketplace with
+supply and demand sides that source differently. Do NOT force one of the five onto a
+company it does not fit — a preset worn by the wrong company reads templated to the one
+reader who knows better, the recipient, which is the exact failure this skill exists to
+prevent.
+
+When no preset fits, compose a custom motion from the same framework the five are built
+on. The framework, not the labels, is what makes a motion trustworthy. Answer these four
+questions from the company's real business, and the answers ARE the Week 1 / Week 2 /
+Weeks 3-4 / closer lines:
+
+1. **Where does THIS company's pipeline actually hide?** That is Week 1. PLG's hides in
+   usage; enterprise's in a finite account list. A custom motion's hides somewhere you
+   name from their reality — a partner ecosystem, a specific data signal, a regulatory or
+   procurement calendar, an existing install base, a community. Name the specific source,
+   not a generic one.
+2. **What is the shortest honest path from that signal to a qualified conversation?** That
+   is Week 2. It has to fit how this buyer actually evaluates and buys, not how it would
+   be convenient for them to.
+3. **What does trustworthy reporting look like at their stage and for their buyer?** That
+   is Weeks 3-4 — the pipeline view a person inside THIS company would actually trust to
+   make a decision, sized for their stage.
+4. **What is the closer** — the one-line reason the motion is right for them now? Write it
+   from their situation, in the register of the five closers above (proof before headcount;
+   documented for the team; systematic beats heroic), not as a slogan.
+
+The output shape is identical to the presets: hyphen-bullet Week 1 / Week 2 / Weeks 3-4
+lines plus a closer, in the format above. Every rule that binds the presets binds a custom
+motion too — cite at least one real stack tool and one hard number, name the actual buyer,
+no flattery, no fabrication, and the falsifiability test: if the plan could be sent to a
+different company unchanged, it has failed. A custom motion is a different emphasis, never
+a lower standard.
+
+The composed field keeps the exact shape above — the three week lines and the closer,
+nothing else — so a custom motion never writes a label into it. Surface the choice to the
+human instead: when presenting the recommendation (SKILL.md Step 3), name the custom
+motion (`Custom motion: <one phrase>`) and its reasoning, and compose only on the
+operator's selection. Custom is the escape hatch for genuine misfits, chosen deliberately,
+not the default. If, while composing, the company turns out to fit a preset after all, do
+not switch silently — surface the better-fitting preset with its evidence and switch only
+on the operator's confirmation.
 
 ## Modifiers
 

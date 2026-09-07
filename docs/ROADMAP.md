@@ -2,24 +2,24 @@
 
 Semver discipline: MINOR for additive capability, PATCH for fixes/wording, MAJOR only for breaking changes to how an existing skill is invoked or behaves. Release mechanics: bump VERSION (plugin.json auto-syncs via release.yml), notes from CHANGELOG, push to main.
 
-## v1.3.0 (this release)
-Signals doctrine (12-signal taxonomy), org_ids boundary rule, catch-all hard exclusion, run-shape JSON artifacts, credit-frugality as standing principle, plus the comparison-branch quality work (credit reference, CI, examples, repo conventions).
+## Shipped (through v1.6.0)
 
-Also landed early, ahead of their v1.4.0 slot:
-- Release-notes unification: `release.yml` now extracts the matching `## [x.y.z]` CHANGELOG section. `CHANGES-<version>.md` is deprecated (still read as a fallback); fold the two remaining files into CHANGELOG.md and delete them.
-- `references/airtable-posts-base.md`: the portable posts-base schema (tables, field types, link wiring, build order, fields not to create) — the client-facing half of the Airtable instance separation. The ID block in `scrape-linkedin-posts` is now explicitly labelled instance-specific and points here.
+The structural work the earlier roadmap slotted for v1.4.0 and v1.5.0 has landed. Rather than restate it version by version — the `CHANGELOG.md` is the authoritative per-release record — the current state is:
 
-## v1.4.0: instance/playbook separation + operator UX
-- THE structural change: extract all instance-specific values (Airtable base/table/field ids, Apollo custom-field ids, list names, mailbox, closers/voice lines) out of skill bodies into one generated instance config; skills reference config keys; provision-gtm-engine writes the config per deployment. Unlocks clean client installs. Start with `scrape-linkedin-posts` (45 IDs, the largest single concentration) now that its schema is documented separately.
-- Per-connector setup guides matching `references/airtable-posts-base.md`, for Apollo custom fields and lists, and CB Insights.
-- Persona/motion mode presets (founder-led, PLG, enterprise/ABM, channel, regulated) as provisioning defaults.
-- commands/ surface: /gtm-scan, /gtm-audit, /gtm-blueprint, /gtm-status, /gtm-provision.
+- **Instance / playbook separation.** Every deployment value (Airtable base/table/field IDs, CRM custom-field IDs, list names, mailbox, field prefix) is a `{KEY}` token resolved once into a local, git-ignored `instance-config.json`. `instance-config.example.json`, `references/instance-config.md`, `scripts/validate_instance_config.py`, and `scripts/setup_status.py` support it. The repo never carries a resolved value.
+- **Setup as a first-class module.** `SETUP.md` is the sequence; `references/environment-setup.md` and the `environment-setup` skill are the per-connector procedure and its invocable front door. One setup path, not one per skill.
+- **The research spine.** The optional Research Vault base plus `company-deep-research`, `jd-intake`, `gap-closer`, `event-attribution`, `gtm-architecture-composer`, and the fan-out harness, all degrading to report-only when the Vault is absent.
+- **Front door.** `CLAUDE.md` opens by routing a reader to USE (SETUP, skills) vs. CHANGE (repo conventions); the portable Airtable posts-base and per-connector guides are documented.
+- **Motion selection is a choice, not a default.** The five presets (PLG, enterprise, founder-led, channel, regulated) live in `skills/gtm-blueprint/references/motion-templates.md`, and — new in v1.6.0 — a **custom-motion builder** for companies none of the five fit: the same four-part framework (where pipeline hides, shortest honest path to a conversation, trustworthy reporting, closer) under the same falsifiability standard. `gtm-blueprint` Step 3 presents the classification as a recommendation the human can override, choose a different preset, or send to the custom path.
 
-## v1.5.0: front door + enablement
-- Top-level CLAUDE.md interactive onboarding (persona assessment -> mode -> workspace scaffold -> connector walk-through), reframing provisioning as first-run experience.
-- PLAYBOOK.md: the "why" layer (signal-based sourcing, tiered enrichment, show-don't-tell, human gates) for buyers and client teams.
-- engine/-style per-tool docs (Apollo, Apify+Airtable, CB Insights, Brand Kit OS, HubSpot) with a tool template for extending to a client's stack.
-- Multi-LLM pastable prompt layer; Brand Kit OS fast-signup card integration.
+## Next
+
+- **Persona/motion presets as provisioning defaults.** The presets exist in `gtm-blueprint`; wiring them (and the custom path) into `provision-gtm-engine` as a first-run choice is the remaining half.
+- **`commands/` surface:** `/gtm-scan`, `/gtm-audit`, `/gtm-blueprint`, `/gtm-status`, `/gtm-provision` as thin invocations over the skills.
+- **`PLAYBOOK.md`:** the "why" layer (signal-based sourcing, tiered enrichment, show-don't-tell, human gates) for buyers and client teams.
+- **Per-tool `engine/`-style docs** (Apollo, Apify + Airtable, CB Insights, Brand Kit OS, HubSpot) with a template for extending to a client's stack.
+- **Multi-LLM pastable prompt layer; Brand Kit OS fast-signup card integration.**
 
 ## Parallel track (not repo-versioned)
+
 Connector directory submission; GTM-layer schema roadmap (ICP+, positioning, objections, signals, attack angles, structured anti-slop).

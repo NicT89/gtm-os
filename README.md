@@ -32,6 +32,23 @@ tool and have simply never shaped it for this engine. The per-connector procedur
 [`references/environment-setup.md`](references/environment-setup.md), and every skill
 routes there when a connector it needs is missing.
 
+## Your instance vs. this repo
+
+This repo is a **template you run, not a service you log into.** Install it, point it at
+your own accounts, and everything specific to you — the resolved IDs in
+`instance-config.json`, your prospect data, your audit logs, your rendered reports — lives
+only in your own storage: a local workspace (git-ignored) or the artifact home you choose
+(a local folder or Google Drive, per SETUP Step 6). None of it flows back here, and **you
+never need to push anything to this repo to use the engine.** Treat `main` as read-only
+upstream: pull updates from it and run your instance off your own copy. Setup even
+suggests you capture your instance's specifics — motion default, disclosure stance, field
+prefix, cadence — in a project `CLAUDE.md` in *your* workspace (not this one), so your own
+agent has that context on every run.
+
+Contributing an improvement back upstream is welcome but entirely optional and separate
+from using the engine — see [MAINTAINING.md](MAINTAINING.md), and re-tokenize every
+deployment value to a `{KEY}` first so none of your resolved IDs ever leave your machine.
+
 ## What it does
 
 | Skill | What it does |
