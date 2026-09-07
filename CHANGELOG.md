@@ -12,6 +12,34 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.7.2] - 2026-09-07
+
+Three corrections, all found by running the engine against live companies rather than by
+reading it. Nothing to do on upgrade; no configuration changes.
+
+### Fixed
+
+- **A scraped URL may never be constructed from convention.** `references/scraping-playbook.md`
+  already said "sitemap first", and a run scraped `<domain>/pricing/` anyway because that is
+  where pricing usually lives. The page did not exist, the 404 **still cost 5 Firecrawl
+  credits**, and the information was on the homepage — which one `firecrawl_map` call would
+  have shown. The rule is now stated as a prohibition rather than an ordering preference, it
+  names the tool, and it records that a miss is not free. The soft version of this rule had
+  already been read by the agent that broke it.
+- **Apollo's `organization_revenue` returns `0.0` when revenue is unknown, not zero.**
+  `field-provenance.md` made the 0-vs-blank distinction for CB Insights fields and never made
+  it for Apollo's own. One enrichment call returned real estimates for two companies and
+  `0.0` for a third that is privately held, so the absent value sits in the same column as
+  the good ones. The rule is now explicit: write `N/A`, never `$0`, never cite it. A
+  blueprint quoting "$0 revenue" to a prospect is a fabricated hard number that the
+  falsifiability test cannot catch, because the number came from a tool.
+- **A single source can contradict itself, and the Vault had no rule for it.**
+  `references/research-vault.md` covered supersede-on-contradiction and coexist-on-complement
+  across sources. It said nothing about one record whose structured `founded_year` said 2009
+  while its own description said 2008 — no older fact to supersede, and not complements
+  either. The Vault now takes one fact naming both values at `low` confidence, so whichever
+  field the agent read first cannot silently become the hard number.
+
 ## [1.7.1] - 2026-09-07
 
 Corrections to the feedback reporter and to two checks that shipped in 1.7.0 without

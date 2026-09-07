@@ -17,7 +17,19 @@ Firecrawl (scrape with markdown format, onlyMainContent true) is the default ext
 
 ## Site reconnaissance order
 
-1. Sitemap first (`sitemap_index.xml` and its children) to inventory pages before scraping.
+**Never scrape a URL you constructed.** Enumerate first, then scrape only what the
+enumeration returned. `firecrawl_map` on the domain, or the sitemap
+(`sitemap_index.xml` and its children), gives you the real URL list; a path assembled
+from convention is a guess wearing the costume of a fact.
+
+This is written as a hard rule because the soft version did not hold. On 2026-09-07 a
+run scraped `<domain>/pricing/` because that is where pricing usually lives. The page did
+not exist, the 404 **still cost 5 Firecrawl credits**, and the information was on the
+homepage all along — which one `firecrawl_map` call would have shown. A miss is not free,
+and the model that guessed had already read this section.
+
+1. Enumerate first: `firecrawl_map`, or the sitemap, to inventory real pages before
+   scraping any of them.
 2. Priority pages: platform/products, services (often the contract-level catalog), pricing, partners/integrations, careers, about, blog/newsroom for M&A and rebrand history.
 3. The pricing page classifies the motion: a calculator or contact form means sales-led; card checkout means PLG; both means a hybrid with a self-serve wedge.
 4. The partners/integrations page is a buyer-signal source: companies running those platforms are in-profile.
