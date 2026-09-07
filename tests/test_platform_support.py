@@ -24,19 +24,21 @@ DOC = REPO_ROOT / "references" / "platform-support.md"
 NATIVE_EVIDENCE = {
     "Apollo": (
         ["references/apollo-credit-costs.md",
-         "skills/gtm-blueprint/references/field-provenance.md"],
-        ["typed_custom_fields"],
+         "skills/gtm-blueprint/references/field-provenance.md",
+         "skills/gtm-blueprint/SKILL.md"],
+        ["typed_custom_fields", "APOLLO_CF_CONTACT_BLUEPRINT"],
     ),
     "Airtable": (
-        ["references/airtable-posts-base.md", "references/research-vault.md"],
-        ["AIRTABLE_FLD_"],
+        ["references/airtable-posts-base.md", "references/research-vault.md",
+         "skills/scrape-linkedin-posts/SKILL.md"],
+        ["AIRTABLE_FLD_", "AIRTABLE_POSTS_BASE_ID"],
     ),
     "Apify": (
         ["skills/scrape-linkedin-posts/SKILL.md"],
-        ["targetUrls"],
+        ["targetUrls", "APIFY_POSTS_ACTOR"],
     ),
     "Firecrawl": (
-        ["references/scraping-playbook.md"],
+        ["references/scraping-playbook.md", "skills/company-deep-research/SKILL.md"],
         ["Firecrawl"],
     ),
 }
@@ -51,12 +53,18 @@ def section(name):
     return body[1].split("\n### ", 1)[0].split("\n## ", 1)[0]
 
 
-def haystack():
-    """Everything a skill or reference says, as one blob."""
+def evidence_text(paths):
+    """The named evidence artifacts for one platform, as one blob.
+
+    This deliberately reads ONLY the files the doc's evidence column points at, plus the
+    config example. An earlier version scanned every markdown file in skills/ and
+    references/ — which included platform-support.md itself, so every needle was present in
+    the claim document and the test passed even with the real evidence deleted. That is the
+    check-that-cannot-fail this repo has already been bitten by twice.
+    """
     parts = []
-    for path in list((REPO_ROOT / "skills").rglob("*.md")) + \
-            list((REPO_ROOT / "references").glob("*.md")) + \
-            [REPO_ROOT / "instance-config.example.json"]:
+    for rel in list(paths) + ["instance-config.example.json"]:
+        path = REPO_ROOT / rel
         try:
             parts.append(path.read_text(encoding="utf-8"))
         except OSError:
@@ -97,22 +105,34 @@ class NativeClaimsAreBackedByTheRepo(unittest.TestCase):
                         f"{platform} is listed Native but {rel} is gone; demote the row "
                         "or restore the evidence")
 
-    def test_each_native_platform_has_its_semantics_in_the_skills(self):
-        blob = haystack()
-        for platform, (_, needles) in NATIVE_EVIDENCE.items():
+    def test_each_native_platform_has_its_semantics_in_its_own_evidence(self):
+        for platform, (paths, needles) in NATIVE_EVIDENCE.items():
+            blob = evidence_text(paths)
             for needle in needles:
                 with self.subTest(platform=platform, needle=needle):
                     self.assertIn(
                         needle, blob,
-                        f"{platform} is listed Native but nothing in skills/ or "
-                        f"references/ mentions {needle!r}")
+                        f"{platform} is listed Native but {needle!r} appears in none of "
+                        f"its cited evidence files ({', '.join(paths)}); demote the row "
+                        "or restore the evidence")
+
+    def test_the_claim_document_is_not_its_own_evidence(self):
+        """A guard on the guard: platform-support.md must never be read as evidence."""
+        for _, (paths, _) in NATIVE_EVIDENCE.items():
+            for rel in paths:
+                self.assertNotIn("platform-support", rel,
+                                 "a platform cannot cite the claim document as its proof")
 
     def test_no_platform_is_in_two_tiers(self):
         """A row copied instead of moved reads as both, and the reader believes the better one."""
-        native = set(re.findall(r"\*\*([A-Za-z0-9 /.\-]+)\*\*", section("Native")))
-        generic = set(re.findall(r"\*\*([A-Za-z0-9 /.\-]+)\*\*", section("Generic")))
-        self.assertEqual(native & generic, set(),
-                         f"listed in two tiers: {sorted(native & generic)}")
+        tiers = {name: set(re.findall(r"\*\*([A-Za-z0-9 /.\-]+)\*\*", section(name)))
+                 for name in ("Native", "Generic", "Not built")}
+        for first, second in (("Native", "Generic"), ("Native", "Not built"),
+                              ("Generic", "Not built")):
+            with self.subTest(pair=(first, second)):
+                overlap = tiers[first] & tiers[second]
+                self.assertEqual(overlap, set(),
+                                 f"listed in both {first} and {second}: {sorted(overlap)}")
 
     def test_salesforce_is_not_claimed_as_native(self):
         """The worked example in the doc: vendor MCP exists, our integration does not."""

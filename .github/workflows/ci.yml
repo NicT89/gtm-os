@@ -56,6 +56,12 @@ jobs:
         # typo cannot ship as a confusing runtime "missing ID" failure.
         run: python3 scripts/validate_instance_config.py
 
+      - name: Version and manifest agree
+        # release.yml no longer pushes a sync commit to main, so a PR that bumps
+        # one and not the other would ship the mismatch. This is what lets `main`
+        # require a pull request: nothing has to push to it after the merge.
+        run: python3 scripts/check_version_sync.py
+
   tests:
     runs-on: ubuntu-latest
     steps:

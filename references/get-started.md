@@ -40,10 +40,12 @@ Diagnosis is free: every probe it runs is a read-only call, and none of them spe
 credit.
 
 **3. Know how well it speaks your stack.** Bring the CRM and data tools you already use.
-`references/platform-support.md` says plainly which platforms are built in natively, which
-run generically, and which are not built yet. A platform that is not native still works —
-it is just not as good, and the engine tells you which one you are on rather than
-pretending they are equivalent.
+`references/platform-support.md` puts each one in a tier: **native** (built against that
+platform's own semantics), **generic** (the motion runs under the same gates, but you map
+the fields and its failure modes are undocumented), or **not built** (no path here yet,
+whatever the vendor's own server can do). Generic is a real option, not a warning label.
+Not built is genuinely not supported. The engine tells you which tier you are on rather
+than letting you infer it.
 
 **4. Run something.** Ask in your own words — `run a signal scan`,
 `create a GTM blueprint for <company>`, `audit my sequence`. Every skill states what it

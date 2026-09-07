@@ -47,10 +47,12 @@ Diagnosis is free: every probe it runs is a read-only call, and none of them spe
 credit.
 
 **3. Know how well it speaks your stack.** Bring the CRM and data tools you already use.
-`references/platform-support.md` says plainly which platforms are built in natively, which
-run generically, and which are not built yet. A platform that is not native still works —
-it is just not as good, and the engine tells you which one you are on rather than
-pretending they are equivalent.
+`references/platform-support.md` puts each one in a tier: **native** (built against that
+platform's own semantics), **generic** (the motion runs under the same gates, but you map
+the fields and its failure modes are undocumented), or **not built** (no path here yet,
+whatever the vendor's own server can do). Generic is a real option, not a warning label.
+Not built is genuinely not supported. The engine tells you which tier you are on rather
+than letting you infer it.
 
 **4. Run something.** Ask in your own words — `run a signal scan`,
 `create a GTM blueprint for <company>`, `audit my sequence`. Every skill states what it
@@ -99,15 +101,17 @@ is not confused with the skill's own folder.
 - **Every `skills/*/SKILL.md` needs YAML frontmatter with `name` and `description`,
   and `name` must equal the directory name.** The description is what triggers the
   skill, so it carries the trigger phrases, not just a summary of behavior.
+- **`VERSION` and `.claude-plugin/plugin.json` must agree** —
+  `scripts/check_version_sync.py`. Bump both in the same commit.
 
 ## The rules CI cannot enforce
 
-- **Bump `VERSION` alone; never hand-edit `.claude-plugin/plugin.json`'s version.**
-  `release.yml` rewrites the manifest to match `VERSION` and commits it back to
-  `main` before tagging. Editing both by hand still works but is redundant, and
-  editing only the manifest silently does nothing. There is deliberately no CI
-  check that the two match — it would false-fail every release PR. See
-  [MAINTAINING.md](MAINTAINING.md).
+- *(This rule changed in 1.7.1. It used to read "bump `VERSION` alone" and warn that
+  no CI check could compare the two, because `release.yml` rewrote the manifest and
+  pushed the fix to `main` itself. That bot push was the one thing preventing `main`
+  from requiring a pull request, and GitHub does not offer Actions in a personal
+  repo's ruleset bypass list. Bumping both in the PR removes the push; the sync step
+  survives as a no-op safety net. See `scripts/check_version_sync.py`.)*
 - **Never commit client data, run artifacts, or audit logs.** Those live in each
   user's own storage and are the personalized layer of the playbook. `.gitignore`
   blocks the common names; that is a safety net, not permission to try.
@@ -168,6 +172,7 @@ you need before starting:
    python3 scripts/validate_instance_config.py
    python3 scripts/scan_secrets.py
    python3 scripts/check_workflow_script.py
+   python3 scripts/check_version_sync.py
    python3 -m unittest discover -s tests
    jq empty .claude-plugin/plugin.json .claude-plugin/marketplace.json
    ```
@@ -206,6 +211,43 @@ Suppress the specific class in `.coderabbit.yaml`'s `path_instructions` instead.
 **Treat a finding about a broken check as the highest-value kind.** Two on that PR
 showed audits that could not fail. A check that cannot fail is worse than no
 check.
+
+## Prove every new check can fail, before you trust it
+
+This repo has now shipped four checks that could not fail, and two of them were
+written *specifically* to prevent the thing they then failed to catch:
+
+- `git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'` matched vendor names. 271
+  hits on this repo's own prose, zero credentials.
+- `node --check fanout_workflow.js` exits 0 on a file with a real syntax error,
+  because node stops checking once it sees `export` in a `.js` file.
+- `test_critic_is_also_fenced` passed on the word "untrusted" appearing anywhere,
+  so it would have survived deleting the fence it was named after.
+- `test_platform_support` scanned every markdown file in `skills/` and
+  `references/` — including the claim document whose claims it existed to check.
+  Every needle was present in the claim, so deleting all the real evidence left it
+  green.
+
+The pattern is the same each time: the check reads the wrong surface, and passing
+proves nothing. It is not carelessness, it is that a passing check looks identical
+whether it is working or vacuous, and nobody re-reads a green check.
+
+**So the rule: before you trust a new check, break the thing it checks and watch it
+fail.** Delete the fence, corrupt the syntax, remove the evidence file, plant the
+credential. If it still passes, the check is decoration. This costs a minute and is
+the only evidence that a check does anything at all.
+
+Two habits that follow from it:
+
+- **Never let a check read the document that makes the claim.** Evidence and claim
+  must be separate files, or the claim proves itself.
+- **Assert the specific thing, not a word that co-occurs with it.** A test that
+  greps for "untrusted" passes on prose about untrusted input; a test that asserts
+  the tokenized delimiters match each other cannot.
+
+Where a check is genuinely hard to falsify by hand, pin it the way
+`tests/test_fanout_workflow.py` does: reintroduce the defects into an in-memory copy
+and assert each one is caught.
 
 **Then improve the reviewer.** `.coderabbit.yaml` carries per-path instructions;
 when a finding shows it lacked repo context, that is a config change and not just
