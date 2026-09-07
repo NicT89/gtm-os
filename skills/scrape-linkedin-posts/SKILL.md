@@ -84,6 +84,15 @@ Comment-item return is INTERMITTENT (see the plugin root's `references/dependenc
 
 If a target has zero authored post items in the window, write one row with Post Type "No Content" (Name still carries the bare person/company name) and skip the comments step for that target entirely (there's nothing to have comments on).
 
+**Then take them off the cadence.** A target whose FIRST scrape returns zero authored posts is not a poster, and re-scraping them every cycle buys the same empty answer forever. Set their Tracking to `paused` in the same run and put the reason in the row: `paused <date>: zero authored posts on first scrape`. This is a spend decision, not a judgement about the person — they stay in the base with their history intact, they appear on the roster as paused with the reason visible, and a human flipping Tracking back to `active` puts them straight back in scope.
+
+Two conditions bind this, and both matter more than the rule itself:
+
+1. **Only on a VERIFIED empty run.** An unverified empty result is indistinguishable from an input-key error (see Step 3) or a transient actor failure, and auto-pausing on one converts a five-minute bug into a permanent wrong answer about a real person. Confirm the run actually targeted them — the runtime tell, a non-empty dataset for other targets in the same batch, or a re-run — before pausing anyone. If you cannot confirm it, write nothing and report the run as inconclusive.
+2. **Only on the FIRST scrape.** A target who has posted before and is quiet this cycle is a poster having a quiet quarter, not a non-poster. Pause on the first zero only; for anyone with existing post rows, leave Tracking alone and let the cadence carry them.
+
+Report every auto-pause in Step 7 by name and reason. A cadence that quietly shrinks itself is worse than one that costs too much, because the shrinking is invisible until someone asks why a target stopped producing rows.
+
 ## Step 5: Write to Airtable, deduped and linked
 
 For each post: check Post ID against existing rows in the relevant table first, skip if found. Otherwise create the row, set Name to the bare person/company name, and link it to the target's Contacts/Company record (single-item array in the Contact/Company link field). Remember that Posted Date is a bare `YYYY-MM-DD` string.
