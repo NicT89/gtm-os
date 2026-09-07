@@ -43,15 +43,22 @@ report itself instead of leaving the write-up as homework.
   states the tier and the specific cost once, at the ladder, and is told not to talk
   anyone out of their stack.
 - **Setup runs can report themselves.** `scripts/setup_feedback.py` turns a run into a
-  redacted report and, with the user's explicit approval, files it upstream through their
-  own `gh`. The module's core claim — *not set up does not mean not owned* — can only fail
-  on somebody else's half-configured accounts, and a tester who has to remember to write
-  it up mostly does not. The report carries connector names, S0-S4 states, the checkpoint,
-  the outcome, and short notes; notes are **rejected rather than stripped** when they
-  contain a credential, a workspace ID, an email address, or a link outside vendor
-  documentation, because a stripped note is one the approving person never actually read.
+  redacted report and files it upstream through the tester's own `gh`. The module's core
+  claim — *not set up does not mean not owned* — can only fail on somebody else's
+  half-configured accounts, and a tester who has to remember to write it up mostly does
+  not. The report carries connector names, S0-S4 states, the checkpoint, the outcome, and
+  short notes. **Sensitive values are stripped automatically**: credentials, workspace IDs,
+  email addresses, and links outside vendor documentation are each replaced in place with a
+  visible `[redacted: <kind>]` marker, and the body states how many were removed — so a
+  tester writes their note naturally instead of self-censoring it.
+
+  Approval rides on the host's existing tool-approval prompt rather than on a question the
+  agent asks itself. Rendering the report sends nothing and prints a token derived from the
+  exact body; submitting requires that token, so a body that changed after it was displayed
+  is refused. Nothing can be filed that was not first put on screen, including under a
+  permission setting that would otherwise run the script unattended.
   `environment-setup` offers it at three moments, including when a run is abandoned — the
-  finding that otherwise never gets reported. Consent is explicit and a no ends it.
+  finding that otherwise never gets reported. A no ends it.
 
 ### Changed
 

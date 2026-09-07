@@ -125,7 +125,7 @@ Report what was fixed, what remains at which state, and what the user must do th
 (UI-only steps, purchases, auth in a browser). A connector left below S4 is named
 explicitly along with which skills degrade because of it.
 
-## Feedback checkpoints (offer at each; never skip the asking)
+## Feedback checkpoints (offer at each; the approval is the tool call)
 
 This module has been read far more than it has been watched. The failure it exists to
 prevent — telling somebody to buy a tool they already pay for — can only be observed on
@@ -141,29 +141,42 @@ Offer to file a report at exactly three moments:
    do now, a probe that could not be resolved. An abandoned run is a finding, not a
    non-event, and it is the one that never gets reported voluntarily.
 
-Build the report and render it:
+It is a two-step flow, and the second step is where the user approves:
 
 ```bash
-python3 scripts/setup_feedback.py --report <report.json>          # renders, sends nothing
-python3 scripts/setup_feedback.py --report <report.json> --submit # files it upstream
+python3 scripts/setup_feedback.py --report <report.json>
+python3 scripts/setup_feedback.py --report <report.json> --submit --confirm <token>
 ```
+
+The first renders the exact issue body and prints a token derived from it, and sends
+nothing. The second files it, and the host's own approval prompt for that command is the
+acceptance gate — you are not collecting consent in conversation and then reporting the
+answer yourself. **Do not ask for permission in prose and then run the submit command as
+if that settled it.** Show the rendered body, say what filing it does, and let the tool
+call carry the decision.
+
+The token is a digest of the body that was displayed. If a note is edited or the ladder
+changes after rendering, the token no longer matches and the submission is refused, so
+nothing can be filed that was not first put on screen — including under a permission
+setting that would otherwise run this script unattended.
 
 `--schema` prints the input shape. The report carries connector names, S0-S4 states, the
 checkpoint, the outcome, whether a state was misdiagnosed, and short free-text notes.
-Notes are **rejected, not stripped**, when they contain a credential, a workspace ID, an
-email address, or a link outside vendor documentation — rewrite the note in terms of what
-happened rather than what the value was, and run it again.
+**Sensitive values in notes are stripped automatically** — credentials, workspace IDs,
+email addresses, and links outside vendor documentation are each replaced with a visible
+`[redacted: <kind>]` marker, and the body says how many were removed. Write the note
+naturally; do not pre-sanitize it and do not talk the user into rephrasing.
 
-**Three rules, and none of them bends:**
+**Rules that do not bend:**
 
-- **Show the rendered body and get an explicit yes before `--submit`.** It posts to a
-  public issue tracker using the user's own `gh` credentials. Rendering first is not a
-  formality — it is how the person approves text they have actually read.
 - **A no ends it.** Do not re-ask at the next checkpoint, do not ask a second way, and do
   not treat silence as consent. Continue the setup exactly as if the offer had not been
   made.
-- **Never put anything in a note that the user has not seen.** The notes are the user's
-  account of what happened, not your summary of their workspace.
+- **Never put anything in a note the user has not said.** The notes are their account of
+  what happened, not your summary of their workspace. Redaction protects against values
+  leaking; it does not license writing observations on their behalf.
+- **The rendered body is the last word.** If the user objects to anything in it, change the
+  report and render again. Never file a body they have not seen in final form.
 
 If `gh` is missing or unauthenticated, the script says so and prints the body for the user
 to paste. That is a fine outcome; do not go looking for another way to send it.
