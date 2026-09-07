@@ -40,10 +40,12 @@ Diagnosis is free: every probe it runs is a read-only call, and none of them spe
 credit.
 
 **3. Know how well it speaks your stack.** Bring the CRM and data tools you already use.
-`references/platform-support.md` says plainly which platforms are built in natively, which
-run generically, and which are not built yet. A platform that is not native still works —
-it is just not as good, and the engine tells you which one you are on rather than
-pretending they are equivalent.
+`references/platform-support.md` puts each one in a tier: **native** (built against that
+platform's own semantics), **generic** (the motion runs under the same gates, but you map
+the fields and its failure modes are undocumented), or **not built** (no path here yet,
+whatever the vendor's own server can do). Generic is a real option, not a warning label.
+Not built is genuinely not supported. The engine tells you which tier you are on rather
+than letting you infer it.
 
 **4. Run something.** Ask in your own words — `run a signal scan`,
 `create a GTM blueprint for <company>`, `audit my sequence`. Every skill states what it
@@ -120,10 +122,11 @@ rather than merely fast:
 ## Connectors
 
 You choose the stack. [`references/platform-support.md`](references/platform-support.md)
-says how well this engine speaks each platform — built in natively, working but
-generic, or not built yet — and what specifically you give up in each case. A platform
-outside the native tier still runs the motion, with the same gates and audits; what you
-lose is the accumulated platform knowledge. The list below is the reference stack.
+says how well this engine speaks each platform and what you give up in each case. A
+**generic** platform still runs the motion under the same gates and audits; what you lose
+is the accumulated platform knowledge. A **not built** platform has no path here at all —
+that one is genuinely unsupported, however good the vendor's own MCP server is. The list
+below is the reference stack.
 
 - **CRM** (required) — Apollo is the reference implementation: signal source, CRM,
   enrichment, sequences, analytics.

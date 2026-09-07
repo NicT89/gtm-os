@@ -119,6 +119,22 @@ class SensitiveValuesAreStrippedFromTheBody(unittest.TestCase):
                              "see https://wiki.internal.example/setup for context",
                              "private-link")
 
+    def test_a_link_that_only_looks_allowlisted_is_stripped(self):
+        """The allowlisted name can be userinfo, a prefix, or a different port.
+
+        Each of these reads as vendor documentation and resolves somewhere else. A
+        host-prefix regex accepted the first one and kept the rest of the URL intact.
+        """
+        for raw, leaked in (
+            ("https://docs.apify.com@wiki.internal.example/setup", "wiki.internal.example"),
+            ("https://user:pw@wiki.internal.example/x", "wiki.internal.example"),
+            ("https://docs.apify.com.evil.example/x", "evil.example"),
+            ("http://docs.apify.com/actors", "http://"),
+            ("https://docs.apify.com:8443/x", "8443"),
+        ):
+            with self.subTest(url=raw):
+                self.assert_stripped(leaked, f"see {raw}", "private-link")
+
     def test_vendor_documentation_links_survive(self):
         """Stripping these would remove the most useful kind of note."""
         body = body_for(good_report(notes=["https://docs.apify.com/actors says otherwise"]))
@@ -209,9 +225,17 @@ class ItConstrainsTheStructuredFields(unittest.TestCase):
         problems, _ = validate(good_report(notes=[f"base {ident}"]))
         self.assertEqual(problems, [])
 
-    def test_the_allowlist_stays_small_and_named(self):
-        self.assertLessEqual(len(CONNECTORS), 25)
-        self.assertIn("apollo", CONNECTORS)
+    def test_the_allowlist_is_exactly_this_set(self):
+        """Connector names go into the body unscanned, so the set is pinned exactly.
+
+        A size bound would let a connector named after a client slip in, which is the one
+        way a free-typed identifier could still reach a public issue.
+        """
+        self.assertEqual(CONNECTORS, {
+            "apollo", "airtable", "apify", "firecrawl", "cb-insights", "brand-kit-os",
+            "google-drive", "box", "onedrive", "supabase", "bigquery", "hubspot", "clay",
+            "salesforce", "workflow-tool", "python-report-env", "other",
+        })
         self.assertEqual(set(STATES), {"S0", "S1", "S2", "S3", "S4"})
 
 
@@ -238,8 +262,20 @@ class TheCliBehaves(unittest.TestCase):
         self.assertIn("Refusing to submit", proc.stderr)
 
     def test_submitting_with_a_wrong_token_is_refused(self):
+        """Assert the reason, not just the code: submit() also exits 1 when gh is absent."""
         proc = self.run_cli(good_report(), "--submit", "--confirm", "000000000000")
         self.assertEqual(proc.returncode, 1)
+        self.assertIn("Refusing to submit", proc.stderr)
+
+    def test_a_non_object_report_is_rejected_rather_than_crashing(self):
+        """json.loads accepts a list; every field read would then raise, not report."""
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            f.write("[]")
+            path = f.name
+        proc = subprocess.run([sys.executable, str(SCRIPT), "--report", path],
+                              capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("must be a JSON object", proc.stdout)
 
     def test_a_structurally_broken_report_exits_one(self):
         proc = self.run_cli(good_report(checkpoint="nope"))

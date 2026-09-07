@@ -59,6 +59,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
@@ -116,7 +117,37 @@ ALLOWED_URL_HOSTS = {
     "airtable.com", "support.airtable.com", "apify.com", "docs.apify.com",
     "firecrawl.dev", "docs.firecrawl.dev",
 }
-URL = re.compile(r"https?://([A-Za-z0-9.-]+)(?:/\S*)?")
+
+# Match the whole URL token, then decide with a real parser. Matching a host with a regex
+# and keeping the rest of the string is how a link survives that only LOOKS allowlisted:
+# in "https://docs.apify.com@wiki.internal.example/setup" the allowlisted name is userinfo,
+# and the actual destination is the private host after the @.
+URL = re.compile(r"\b[A-Za-z][A-Za-z0-9+.\-]*://\S+")
+
+
+def url_is_publishable(raw):
+    """True only for a plain https link to a host on the allowlist.
+
+    Default deny, and every clause is a way a URL can point somewhere other than where it
+    appears to: userinfo moves the real host after an @, a non-default port reaches a
+    different service on a trusted name, a non-https scheme is not documentation, and a
+    suffix match would accept docs.apify.com.evil.example.
+    """
+    try:
+        parts = urlsplit(raw.rstrip(".,;:)]}"))
+    except ValueError:
+        return False
+    if parts.scheme != "https":
+        return False
+    if parts.username or parts.password or "@" in parts.netloc:
+        return False
+    try:
+        if parts.port not in (None, 443):
+            return False
+    except ValueError:
+        return False
+    host = (parts.hostname or "").lower()
+    return host in ALLOWED_URL_HOSTS
 
 MAX_NOTE_CHARS = 600
 MAX_NOTES = 12
@@ -139,6 +170,17 @@ def redact_note(note):
         return _sub
 
     text = note
+
+    # URLs are resolved FIRST, on the untouched text. A link contains hosts, paths, and
+    # sometimes an @ that the email rule would rewrite into "[redacted: email-address]" —
+    # which then leaves a half-mangled link behind instead of removing the destination.
+    def _url(match):
+        if url_is_publishable(match.group(0)):
+            return match.group(0)
+        kinds.append("private-link")
+        return "[redacted: private-link]"
+    text = URL.sub(_url, text)
+
     for kind, pattern in SENSITIVE:
         text = pattern.sub(swap(kind), text)
 
@@ -151,14 +193,6 @@ def redact_note(note):
             kinds.append("credential")
             return "[redacted: credential]"
         text = pattern.sub(_cred, text)
-
-    def _url(match):
-        host = match.group(1).lower()
-        if host in ALLOWED_URL_HOSTS:
-            return match.group(0)
-        kinds.append("private-link")
-        return "[redacted: private-link]"
-    text = URL.sub(_url, text)
 
     if len(text) > MAX_NOTE_CHARS:
         text = text[:MAX_NOTE_CHARS - len(TRUNCATED)] + TRUNCATED
@@ -174,6 +208,11 @@ def validate(report):
     version. Sensitive content in a note is never a problem here; it is redacted.
     """
     problems = []
+
+    if not isinstance(report, dict):
+        # json.loads happily returns a list, a string, or a number, and every field read
+        # below would then raise instead of reporting a problem.
+        return [f"the report must be a JSON object, got {type(report).__name__}"], {}
 
     checkpoint = report.get("checkpoint")
     if checkpoint not in CHECKPOINTS:

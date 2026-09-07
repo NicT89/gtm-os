@@ -23,7 +23,7 @@ yes and not a flat no.
 |---|---|---|
 | **Native** | Skills are written against this platform's actual MCP semantics — its calls, its ID shapes, its field types — and a deployment has run it end to end. | The full motion. Deterministic field writes, verified persistence, documented failure modes. |
 | **Generic** | The platform is reachable over MCP and the engine can read and write through it, but no platform-specific path was built. The skills' gates, composition rules, and audits all still apply. | The motion runs. You supply the field mapping yourself, writes are not verified the same way, and platform-specific failure modes are undocumented — nobody has hit them here yet. |
-| **Not built** | No GTM OS path exists. The vendor may well have an excellent MCP server; we have not built against it. | Use it through a generic connector at your own pace, or move data with n8n/API per the coverage map. Treat any skill's claims about it as unverified. |
+| **Not built** | No GTM OS path exists. The vendor may well have an excellent MCP server; we have not built against it. | The integration is yours to build, or move the data with n8n/API per the coverage map. Nothing here reads or writes it, so treat any skill's claims about it as unverified. |
 
 **A generic platform is a real option, not a warning label.** Every gate, every
 falsifiability test, every no-fabrication rule binds the same way regardless of tier. What

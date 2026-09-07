@@ -61,7 +61,9 @@ Before creating a Contacts or Company row, search the table for an existing row 
 
 Actor `{APIFY_POSTS_ACTOR}`. One call per target batch. Parameters: `maxPosts` 0 (all posts, the window is the cap), `postedLimit` "3months", `scrapeComments` true, `maxComments` 15.
 
-**The profile list goes in `targetUrls`.** Not `profiles`, not `profileUrls`, not `urls`. This is worth stating because getting it wrong is silent: the actor does not reject an unrecognized input key, it runs against zero targets and returns a **SUCCEEDED run with an empty dataset**, which is indistinguishable from a target who genuinely has not posted in the window. The tell is the runtime. A real two-profile scrape takes ~40 seconds; the empty run finishes in under 4. If a run returns zero items, verify the input key before concluding the target is inactive, and never write a "No Content" row on the strength of an empty run you have not checked this way.
+**The profile list goes in `targetUrls`.** Not `profiles`, not `profileUrls`, not `urls`. This is worth stating because getting it wrong is silent: the actor does not reject an unrecognized input key, it runs against zero targets and returns a **SUCCEEDED run with an empty dataset**, which is indistinguishable from a target who genuinely has not posted in the window.
+
+**On any empty run, check the input deterministically before believing it.** Read the run's own recorded input back (`get-actor-run`) and confirm `targetUrls` is present and holds exactly the profile URLs you intended. That comparison answers the question outright: input wrong means the run tested nothing, input right means the target really was quiet in the window. A short runtime — an empty run has finished in under 4 seconds where a real two-profile scrape took around 40 — is a useful prompt to go look, but it is one observation from one account on one actor version, so treat it as a hint and never as the check. **Never write a "No Content" row off an empty run whose input you have not read back**, because that is how a wrong key becomes permanent data.
 
 Pass full profile URLs (`https://www.linkedin.com/in/<slug>/`). Company URLs work in the same field.
 
