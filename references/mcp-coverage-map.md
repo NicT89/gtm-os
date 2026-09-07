@@ -2,6 +2,12 @@
 
 The integration-layer decision table for GTM stacks. Any provisioning or architecture engagement starts by intersecting the client's tool stack with this map. MCP availability changes monthly: every row carries a verified date, and a row older than a quarter gets re-verified before it is cited to a client.
 
+**This file answers one question: does the vendor publish an MCP server?** That is a
+market fact and it changes monthly. It is NOT the same question as whether GTM OS has
+been built against that platform — Salesforce has an excellent official server and no
+GTM OS integration at all. For that second question, which is the one that determines
+how well a run actually goes, see [platform-support.md](platform-support.md).
+
 ## Decision rule
 
 - **MCP for agent workflows** (Claude reading, deciding, writing single records).

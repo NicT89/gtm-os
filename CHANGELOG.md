@@ -12,6 +12,112 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Added
+
+- **Motion validation is a sweep, not a first-match test.** A contact who failed the motion
+  they were checked against was being set aside, when the failure often belonged to a
+  different motion's gate entirely. Step 3 now says to check a contact against every
+  remaining motion before dismissing them, to separate an ACCOUNT-gate failure (the company
+  does not qualify, so fixing the contact cannot help) from a PERSONA failure (the company
+  qualifies and the right person may already be in the CRM), and to record which motions
+  were checked and what blocked each. "Not a fit" is not a reusable answer; "checked against
+  all of them, here is the closest and what blocks it" is.
+- **An available job description is always audited, and always persisted.** The JD carries
+  the role, the seniority, the tools, and often the reporting line — which is what says
+  which persona owns the req and therefore which motion the contact belongs in. Running
+  persona validation without reading a JD that exists is guessing with the answer on the
+  page. The skill now requires scraping it whenever one is on file, auditing the role and
+  reporting line against the persona under consideration, and storing the full text as a
+  dated reference document rather than only a summary field. Summaries drop the reporting
+  line, the seniority signals, and the tool list first, and those are the three things a
+  re-check needs.
+- **Targets with no posts come off the cadence.** A first scrape returning zero authored
+  posts now sets that target's Tracking to `paused` with the reason recorded, instead of
+  buying the same empty answer every cycle forever. Two interlocks bind it, and both matter
+  more than the rule: it fires only on a VERIFIED empty run, because an unverified empty is
+  indistinguishable from the silent input-key failure and auto-pausing on one turns a
+  five-minute bug into a permanent wrong answer about a real person; and only on a FIRST
+  scrape, because someone with existing rows who is quiet this cycle is a poster having a
+  quiet quarter. Every auto-pause is named in the run report — a cadence that quietly
+  shrinks itself is worse than one that costs too much.
+
+### Changed
+
+- **The field provenance map now documents what each field is FOR.** It recorded where every
+  field came from and which gate it served, but not what it means, so the one thing a reader
+  actually needed at the call site was the one thing missing: an empty `LinkedIn Posts` means
+  "verified not a poster" in one reading and "not researched yet" in the other, and that
+  difference decides whether a run re-scrapes. Both field tables gain a Purpose column
+  covering what the field holds and what consumes it. A CRM field's label is not its
+  contract, and Apollo offers nowhere to store the contract beside the field, so this file
+  is the field documentation.
+
+- **The composition spec now anchors on persona, not on signal alone.** The opener rule
+  keyed only on the company's signal, so a founder and the operating owner sitting beside
+  the open req received the same anchoring from the same facts. That is correct data
+  addressed to the wrong job, and it reads as a mail merge to the one recipient who knows
+  which of those two people they are. The spec now says to resolve the persona first, lets
+  the closer follow the motion the contact is enrolled in rather than the company's loudest
+  signal, and states the invariant that was previously only implied: one contact in one
+  motion, never one motion per company. An account holding two personas may legitimately
+  run two motions at once.
+- **A voice fallback ladder for contacts with thin posting histories.** "Their own words
+  preferred when posts exist" assumed the words would be usable, and said nothing about the
+  common case where a contact has posted twice in three months and one of them is a
+  greeting. The gap was filled by improvisation, which invents a voice for a real person.
+  The ladder is now explicit — the person's own posts, then the company's public voice from
+  the account research, then plain and thin with no mirror line — along with the reason to
+  prefer thin over fluent, and the instruction to record which rung was used so a later
+  reader can tell a deliberate thin opener from a lazy one.
+
+## [1.7.0] - 2026-09-06
+
+Additive. Nothing changes how an existing install is invoked or configured, and an upgrade
+needs no action. Three things arrive: the same Get Started steps in every entry point, an
+honest statement of how well the engine speaks each platform, and a way for a setup run to
+report itself instead of leaving the write-up as homework.
+
+### Added
+
+- **Get Started, in three places on purpose.** The install path was buried, and the most
+  common way to get it wrong is to open the repo URL in a chat window — which installs
+  nothing and runs nothing, while looking like it is working. The four steps now appear
+  verbatim in `README.md`, `CLAUDE.md`, and a new `AGENTS.md`, so whichever file a person
+  or an agent opens first, the correct start is already there. `references/get-started.md`
+  is the source and `tests/test_get_started_consistent.py` fails the build if the copies
+  drift or if the install commands stop matching the marketplace manifest — three copies
+  are only safe while something pins them together.
+- **`references/platform-support.md`: native, generic, or not built.** You choose your
+  stack, and the engine now says plainly how well it speaks each part of it. **Native**
+  (Apollo, Airtable, Apify, Firecrawl) means the skills are written against that
+  platform's real MCP semantics and a deployment has run it end to end. **Generic**
+  (HubSpot, Clay, CB Insights, Brand Kit OS, a file home, a warehouse) means the motion
+  runs with the same gates, composition rules, and audits, but nobody built the
+  platform-specific path: you map fields yourself and its failure modes are undocumented.
+  **Not built** means there is no path here at all, whatever the vendor's own server can
+  do — Salesforce is the worked example, with a first-rate official MCP server and no GTM
+  OS integration. Tier is assigned on evidence in this repository, and
+  `tests/test_platform_support.py` fails if a claim outruns it. `environment-setup` now
+  states the tier and the specific cost once, at the ladder, and is told not to talk
+  anyone out of their stack.
+- **Setup runs can report themselves.** `scripts/setup_feedback.py` turns a run into a
+  redacted report and, with the user's explicit approval, files it upstream through their
+  own `gh`. The module's core claim — *not set up does not mean not owned* — can only fail
+  on somebody else's half-configured accounts, and a tester who has to remember to write
+  it up mostly does not. The report carries connector names, S0-S4 states, the checkpoint,
+  the outcome, and short notes; notes are **rejected rather than stripped** when they
+  contain a credential, a workspace ID, an email address, or a link outside vendor
+  documentation, because a stripped note is one the approving person never actually read.
+  `environment-setup` offers it at three moments, including when a run is abandoned — the
+  finding that otherwise never gets reported. Consent is explicit and a no ends it.
+
+### Changed
+
+- **`references/mcp-coverage-map.md` now says which question it answers.** Whether a
+  vendor publishes an MCP server and whether GTM OS has been built against it are
+  different facts, and conflating them is how someone ends up expecting Apollo-grade
+  behavior from a platform nobody here has ever written a line for.
+
 ## [1.6.1] - 2026-09-06
 
 A correction to `scrape-linkedin-posts`, found by running it rather than by reading it.

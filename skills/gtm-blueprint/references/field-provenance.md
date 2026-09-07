@@ -1,5 +1,12 @@
 # Field provenance map (per-deployment template)
 
+Every field this engine reads or writes is listed here with its purpose, because a CRM
+field's label is not its contract. "LinkedIn Posts" does not say that an empty value means
+"verified not a poster" rather than "not researched yet", and that difference decides
+whether a run should re-scrape. Most CRMs, Apollo included, expose no place to store this
+next to the field itself, so this file is the field documentation and it is the copy that
+must stay correct.
+
 **This file is a template. Rebuild it for each deployment** from that CRM's field
 inventory, via the connector's field-listing tool, before running the gate.
 
@@ -13,31 +20,31 @@ on the record is populated, never by asking whether the job ran.
 
 ## Contact-modality fields (blueprint inputs)
 
-| Field | Config key | Populated by | Trigger | Gate role |
-|---|---|---|---|---|
-| System enrichment (funding stage/amount/date, dept sizes, technologies, description) | system | CRM org enrichment, 1 credit | On demand during runs | REQUIRED all motions |
-| LinkedIn Profile Summary | `{APOLLO_CF_CONTACT_LINKEDIN_PROFILE_SUMMARY}` | Enrichment workflow | List membership | REQUIRED |
-| Research Company Profile | `{APOLLO_CF_CONTACT_RESEARCH_COMPANY_PROFILE}` | AI research play (cited web research) | Workflow | REQUIRED (or posts digest) |
-| LinkedIn Posts | `{APOLLO_CF_CONTACT_LINKEDIN_POSTS}` | `scrape-linkedin-posts` skill | Manual / batch / scheduled | Required if Research Company Profile blank; otherwise optional |
-| Persona Intelligence | `{APOLLO_CF_CONTACT_PERSONA_INTELLIGENCE}` | AI play | Workflow | Optional |
-| Has LinkedIn | `{APOLLO_CF_CONTACT_HAS_LINKEDIN}` | AI qualification play | Workflow | Optional |
-| Startup/SMB Fit | `{APOLLO_CF_CONTACT_STARTUP_SMB_FIT}` | AI qualification play | Workflow | Optional |
-| Opener | `{APOLLO_CF_CONTACT_OPENER}` | Composed by this engine | AFTER gate passes | Output |
-| Blueprint | `{APOLLO_CF_CONTACT_BLUEPRINT}` | Composed by this engine | AFTER gate passes | Output |
+| Field | Purpose (what it holds, what consumes it) | Config key | Populated by | Trigger | Gate role |
+|---|---|---|---|---|---|
+| System enrichment (funding stage/amount/date, dept sizes, technologies, description) | The company's hard facts. Drives motion routing (dept sizes decide GTM-present vs not), ICP gates, and every funding number quoted in an opener. | system | CRM org enrichment, 1 credit | On demand during runs | REQUIRED all motions |
+| LinkedIn Profile Summary | Career history and role context for THIS person. Establishes persona (founder vs operator vs IC), which decides motion fit and opener framing. Verify the employer it names matches the account before trusting it. | `{APOLLO_CF_CONTACT_LINKEDIN_PROFILE_SUMMARY}` | Enrichment workflow | List membership | REQUIRED |
+| Research Company Profile | Cited web research: recent developments, pain points, common ground, conversation starters. The richest single source for blueprint content, and the fallback voice source when the contact's own posts are thin. | `{APOLLO_CF_CONTACT_RESEARCH_COMPANY_PROFILE}` | AI research play (cited web research) | Workflow | REQUIRED (or posts digest) |
+| LinkedIn Posts | Digest of authored posts in the lookback window, with dates and engagement. The mirror-line source: the recipient's own words, and the only field that proves a claimed post reference is real. Empty means not a poster, not "not researched". | `{APOLLO_CF_CONTACT_LINKEDIN_POSTS}` | `scrape-linkedin-posts` skill | Manual / batch / scheduled | Required if Research Company Profile blank; otherwise optional |
+| Persona Intelligence | One-line role read plus identity-confidence notes. Read the identity flags before composing: a name-match warning here means the research may describe a different person. | `{APOLLO_CF_CONTACT_PERSONA_INTELLIGENCE}` | AI play | Workflow | Optional |
+| Has LinkedIn | Whether a usable profile URL exists. Gates scraping entirely; a contact without one cannot be post-personalized or tenure-checked. | `{APOLLO_CF_CONTACT_HAS_LINKEDIN}` | AI qualification play | Workflow | Optional |
+| Startup/SMB Fit | Qualification verdict for the size/stage band this engine serves. A "Not Qualified" here should stop composition, not just flag it. | `{APOLLO_CF_CONTACT_STARTUP_SMB_FIT}` | AI qualification play | Workflow | Optional |
+| Opener | ENGINE OUTPUT. The 1-2 sentence opening of email 1, merged as `{{contact.<prefix> Opener}}`. Composed per the outreach-audit composition spec, anchored on persona. Never hand-edited in the CRM without recording it. | `{APOLLO_CF_CONTACT_OPENER}` | Composed by this engine | AFTER gate passes | Output |
+| Blueprint | ENGINE OUTPUT. The 30-day Week 1 / Week 2 / Weeks 3-4 plan, merged as `{{contact.<prefix> Blueprint}}`. Its closer must match the motion the contact is enrolled in. | `{APOLLO_CF_CONTACT_BLUEPRINT}` | Composed by this engine | AFTER gate passes | Output |
 
 ## Account-modality fields
 
-| Field | Config key | Populated by | Gate role |
-|---|---|---|---|
-| GTM Jobs w/ URL | `{APOLLO_CF_ACCOUNT_GTM_JOBS_WITH_URL}` | AI field prompt | REQUIRED for hiring motion |
-| JD Summary | `{APOLLO_CF_ACCOUNT_JD_SUMMARY}` | AI field prompt | REQUIRED for hiring motion |
-| Role Archetypes | `{APOLLO_CF_ACCOUNT_ROLE_ARCHETYPES}` | Set during signal-scan runs | REQUIRED for hiring motion |
-| Available GTM Roles list | `{APOLLO_CF_ACCOUNT_AVAILABLE_GTM_ROLES}` | Set during signal-scan runs | Optional |
-| LinkedIn Company Summary | `{APOLLO_CF_ACCOUNT_LINKEDIN_COMPANY_SUMMARY}` | Enrichment workflow | Optional |
-| Company LinkedIn Posts | `{APOLLO_CF_ACCOUNT_COMPANY_LINKEDIN_POSTS}` | `scrape-linkedin-posts` skill | Optional |
-| CBI Mosaic Score | `{APOLLO_CF_ACCOUNT_CBI_MOSAIC_SCORE}` | CB Insights, when connected | Optional (scoring input) |
-| CBI Commercial Maturity | `{APOLLO_CF_ACCOUNT_CBI_COMMERCIAL_MATURITY}` | CB Insights, when connected | Optional (scoring + routing hint) |
-| Named Investors | `{APOLLO_CF_ACCOUNT_NAMED_INVESTORS}` | Manual or CBI | Optional (opener context only) |
+| Field | Purpose (what it holds, what consumes it) | Config key | Populated by | Gate role |
+|---|---|---|---|---|
+| GTM Jobs w/ URL | Role title, posting URL, and posted date, pipe-separated. The posted date is the opener's "open N days" number and the URL is what a JD audit re-scrapes. Without the date the hiring opener has no hard number. | `{APOLLO_CF_ACCOUNT_GTM_JOBS_WITH_URL}` | AI field prompt | REQUIRED for hiring motion |
+| JD Summary | Condensed first-90-days scope of the open role: the named tools and the work the hire inherits. Source of the blueprint's real-tool requirement. Lossy by nature — audit the stored full JD for reporting line and seniority. | `{APOLLO_CF_ACCOUNT_JD_SUMMARY}` | AI field prompt | REQUIRED for hiring motion |
+| Role Archetypes | Normalized role classification, so different titles for the same job route the same way. Drives motion selection and which persona owns the req. | `{APOLLO_CF_ACCOUNT_ROLE_ARCHETYPES}` | Set during signal-scan runs | REQUIRED for hiring motion |
+| Available GTM Roles list | Every open GTM req at the account, not just the one being anchored on. Reveals multi-role patterns worth naming in copy. | `{APOLLO_CF_ACCOUNT_AVAILABLE_GTM_ROLES}` | Set during signal-scan runs | Optional |
+| LinkedIn Company Summary | The company's own positioning in its own words. The rung-2 voice source when a contact's posts are too thin to mirror. | `{APOLLO_CF_ACCOUNT_LINKEDIN_COMPANY_SUMMARY}` | Enrichment workflow | Optional |
+| Company LinkedIn Posts | Company-page post digest. Corporate voice and announcement timing; distinct from any individual's posts. | `{APOLLO_CF_ACCOUNT_COMPANY_LINKEDIN_POSTS}` | `scrape-linkedin-posts` skill | Optional |
+| CBI Mosaic Score | Third-party composite health score, 0-1000. Scoring input only; never quoted to a recipient. | `{APOLLO_CF_ACCOUNT_CBI_MOSAIC_SCORE}` | CB Insights, when connected | Optional (scoring input) |
+| CBI Commercial Maturity | 1-5 rating of how built-out the commercial function is. Calibrates blueprint ambition and hints at motion (2 suggests founder-led, 3 suggests a team in place). A hint, never the routing decision. | `{APOLLO_CF_ACCOUNT_CBI_COMMERCIAL_MATURITY}` | CB Insights, when connected | Optional (scoring + routing hint) |
+| Named Investors | Lead and participating investors on the latest round. Opener credibility context ONLY; never a claim of relationship. | `{APOLLO_CF_ACCOUNT_NAMED_INVESTORS}` | Manual or CBI | Optional (opener context only) |
 
 When rebuilding for a deployment, also record any auto-numbered duplicate fields the
 CRM has accumulated (e.g. `Research Company Profile 2453`) as **deprecated, never

@@ -1,6 +1,6 @@
 ---
 name: environment-setup
-description: Diagnose and wire the connectors this engine runs on, from whatever state the user is already in. Use when the user says "set up my environment", "run environment-setup", "set up Apollo", "connect Airtable", "my Apify isn't working", "I haven't set up Firecrawl", "why is this skill saying no connector", "set up the Research Vault", or when any other skill stops because a connector is missing, unauthenticated, or its instance-config keys are empty. Produces a per-connector state diagnosis, the specific next action for each, the filled instance-config.json, and a proven one-target dry run.
+description: Diagnose and wire the connectors this engine runs on, from whatever state the user is already in. Use when the user says "set up my environment", "run environment-setup", "set up Apollo", "connect Airtable", "my Apify isn't working", "I haven't set up Firecrawl", "why is this skill saying no connector", "set up the Research Vault", or when any other skill stops because a connector is missing, unauthenticated, or its instance-config keys are empty. Produces a per-connector state diagnosis, the specific next action for each, the filled instance-config.json, a proven one-target dry run, and — only with the user's explicit approval — a redacted setup report filed upstream.
 ---
 
 # Environment Setup
@@ -63,6 +63,17 @@ never blocking: the Research Vault base, CB Insights, Brand Kit OS, a file home,
 warehouse. Say which of the user's gaps are actually blocking and which are not, because
 a user told everything is required will stop at the first optional one.
 
+**Say which support tier their platforms are on, once, here.** The user picks their own
+stack, and the plugin root's [references/platform-support.md](../../references/platform-support.md)
+is the honest answer about each one: Native means the skills are written against that
+platform's real semantics and a deployment has run it end to end; Generic means the motion
+runs with the same gates and audits but nobody built the platform-specific path, so field
+mapping is theirs and its failure modes are undocumented; Not built means there is no path
+here at all, whatever the vendor's own MCP server can do. State the tier and the specific
+thing they lose, then continue. Do not talk anyone out of their stack, do not imply a
+Generic platform is unsupported, and never imply it is equivalent to Native — that last one
+sets an expectation of deterministic behavior that was never built.
+
 ## Step 3: Close the gaps, in dependency order
 
 Follow the reference per connector. The order matters in three places:
@@ -113,6 +124,49 @@ duplicates.
 Report what was fixed, what remains at which state, and what the user must do themselves
 (UI-only steps, purchases, auth in a browser). A connector left below S4 is named
 explicitly along with which skills degrade because of it.
+
+## Feedback checkpoints (offer at each; never skip the asking)
+
+This module has been read far more than it has been watched. The failure it exists to
+prevent — telling somebody to buy a tool they already pay for — can only be observed on
+someone else's half-configured accounts, so the run reports itself instead of leaving the
+write-up as homework nobody does.
+
+Offer to file a report at exactly three moments:
+
+1. **After Step 2**, once the ladder is on screen and before anything has been changed.
+   This is the highest-value one: it captures the diagnosis, which is the part under test.
+2. **After Step 5**, when a write has been proven.
+3. **Whenever the run stops early** — a blocked purchase, a UI-only step the user will not
+   do now, a probe that could not be resolved. An abandoned run is a finding, not a
+   non-event, and it is the one that never gets reported voluntarily.
+
+Build the report and render it:
+
+```bash
+python3 scripts/setup_feedback.py --report <report.json>          # renders, sends nothing
+python3 scripts/setup_feedback.py --report <report.json> --submit # files it upstream
+```
+
+`--schema` prints the input shape. The report carries connector names, S0-S4 states, the
+checkpoint, the outcome, whether a state was misdiagnosed, and short free-text notes.
+Notes are **rejected, not stripped**, when they contain a credential, a workspace ID, an
+email address, or a link outside vendor documentation — rewrite the note in terms of what
+happened rather than what the value was, and run it again.
+
+**Three rules, and none of them bends:**
+
+- **Show the rendered body and get an explicit yes before `--submit`.** It posts to a
+  public issue tracker using the user's own `gh` credentials. Rendering first is not a
+  formality — it is how the person approves text they have actually read.
+- **A no ends it.** Do not re-ask at the next checkpoint, do not ask a second way, and do
+  not treat silence as consent. Continue the setup exactly as if the offer had not been
+  made.
+- **Never put anything in a note that the user has not seen.** The notes are the user's
+  account of what happened, not your summary of their workspace.
+
+If `gh` is missing or unauthenticated, the script says so and prints the body for the user
+to paste. That is a fine outcome; do not go looking for another way to send it.
 
 ## What this skill never does
 
