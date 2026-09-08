@@ -12,6 +12,60 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-09-08
+
+Additive. Nothing changes for an install that does not use the new step, and there is no
+configuration to add. This release changes the engine's posture: runs now repair the
+workspace they read from instead of only consuming it.
+
+### Added
+
+- **The gap ledger, and a gate on writing back.** The engine reads far more than it writes.
+  A run learns a company's tool stack, spends one fact from it, and lets the rest evaporate;
+  the next run pays for the same research again. Observed 2026-09-07: a run held eleven
+  verified tools, used one, and dropped ten, into a field that already existed and was empty.
+
+  Gaps are now work to do rather than findings to report. The timing is the whole argument:
+  **during a run the data is already in hand and writing it costs nothing**, while a week
+  later the same field costs a full re-research.
+
+  What makes that safe is `scripts/gap_ledger.py`. A bad blueprint gets caught because a
+  person reads it before it sends; a bad field write is caught by nothing and propagates
+  into every later run, with no way to tell a written fact from a researched one. So every
+  write is gated on how well the fact is known and on who put the current value there:
+
+  | field state \ confidence | verified | estimate | inferred |
+  |---|---|---|---|
+  | empty | write | write only if the field accepts estimates | propose |
+  | stale (machine) | write | propose | propose |
+  | human-entered | propose | propose | propose |
+  | filled and fresh | skip | skip | skip |
+
+  Two rules carry it. **A human's value is never overwritten** whatever the confidence and
+  however old it is, because age does not demote a person's decision to a machine's, though
+  a blank a person left is a gap rather than a choice. **An inferred fact is never written**,
+  which is the `organization_revenue: 0.0` defect: written once, an absent value becomes
+  indistinguishable from a researched zero forever, and the falsifiability test cannot catch
+  it because the number came from a tool.
+
+  `0`, `0.0` and `false` are values, not gaps. Only null, empty strings, and empty
+  collections are absence.
+- **`references/gap-ledger.md`**, the doctrine: why during the run, what the gate protects,
+  what a skill does with each queue, and where the gaps usually are (the CRM first, then the
+  seller's own brand kit, then the Vault).
+- **`gtm-blueprint` Step 5 now writes back what the run learned**, not only what it composed.
+  It writes the write queue without asking and surfaces the propose queue once, at the end,
+  as a list rather than as a series of interruptions, then records what was filled and what
+  was declined in the run's Notes.
+
+### Changed
+
+- **`tests/test_gap_ledger.py` asserts the decision table cell by cell** rather than spot
+  checking it, and was verified by mutation: overwriting a human, treating zero as absent,
+  and writing an inferred fact each break the suite (11, 3 and 3 failures respectively).
+  Per the convention added in 1.7.1, a new check earns trust by being broken on purpose and
+  observed failing.
+
 ### Changed
 
 - **The opener now ends in a question, because the first touch is discovery and not a

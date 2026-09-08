@@ -83,6 +83,24 @@ Read references/motion-templates.md for the five templates and the custom-motion
 
 Apollo: contacts_update with typed_custom_fields; verify persistence in the response. HubSpot: multi-line contact property. Clay: add-data-points column. No CRM: markdown/PDF proposal. Multi-line rendering must be verified with ONE contact's email preview before any batch write; HTML emails sometimes collapse line breaks.
 
+**Write back what the run learned, not only what it composed.** A run gathers far more than
+it spends: the A11 tool stack, the open roles, the aliases, the funding detail. Composing
+uses one or two of those and the rest evaporates unless this step writes them. Do it here,
+while the data is in hand, because during the run it costs nothing and a week later the same
+field costs a full re-research.
+
+Build the ledger with the plugin root's `scripts/gap_ledger.py`, one record at a time, and
+follow it: write the write queue without asking, and surface the propose queue ONCE at the
+end as a list rather than as a series of interruptions. The gate is in the plugin root's
+[references/gap-ledger.md](../../references/gap-ledger.md) and it is not negotiable per run:
+a verified fact fills an empty or stale machine field automatically, an estimate fills only
+a field declared to accept one, an inferred fact is never written at all, and a value a
+person entered is never overwritten however confident the run is. A blank a person left is
+a gap, not a decision.
+
+Record what was filled and what was declined in the run's Notes. A run that closes nothing
+and says nothing is the failure this step exists to end.
+
 ## Client provisioning mode
 
 1. Inventory the client's company and person fields via their connector's field-listing tool; rebuild references/field-provenance.md for their instance (populator + trigger + remediation per field).
