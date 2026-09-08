@@ -103,6 +103,14 @@ Most CRMs cannot store field descriptions, so this file is the canonical diction
 
 ## Operating conventions
 
+- **Apollo's own `organization_revenue` returns `0.0` when revenue is UNKNOWN, not zero.**
+  Private companies routinely come back this way. Write `N/A`, never `$0`, and never cite
+  the figure. Observed 2026-09-07: one enrichment call returned real estimates for two
+  companies and `0.0` for a third that is privately held — the absent value sits in the
+  same column as the good ones, which is what makes it dangerous. A blueprint citing "$0
+  revenue" to a real prospect is a fabricated hard number, and the falsifiability test
+  will not catch it because the number came from a tool. When revenue matters and Apollo
+  has none, the gap is filled by CB Insights or a primary source, or it stays N/A.
 - **The N/A rule:** when an enrichment RUNS but returns no data for a TEXT field,
   write "N/A" instead of leaving it blank, so blank always means "never run" and "N/A"
   means "ran, nothing found". NUMBER fields use 0 for the same purpose.

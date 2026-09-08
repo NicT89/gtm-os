@@ -62,7 +62,16 @@ Append-only. The atom of the whole system.
 | Run | link to Runs | |
 | Supersedes | link to Facts | Points at the row this one replaces |
 
-**Supersede protocol (refined in production)**: before writing a fact, query current facts for the same Entity + Field Key. Supersede on CONTRADICTION or REPLACEMENT: if the new fact corrects or enriches-and-replaces the old one, write the new row with Supersedes → old row and flip the old row to `superseded`. COEXIST on COMPLEMENT: two facts under the same field key that are both true and about different aspects both stay `current` (a B5 fact naming the team and a B5 fact naming its director are complements, not conflicts). If the value is the same, do not write a duplicate. The re-validation report for a run is: all rows that run superseded, paired with their replacements.
+**Supersede protocol (refined in production)**: before writing a fact, query current facts for the same Entity + Field Key. Supersede on CONTRADICTION or REPLACEMENT: if the new fact corrects or enriches-and-replaces the old one, write the new row with Supersedes → old row and flip the old row to `superseded`. COEXIST on COMPLEMENT: two facts under the same field key that are both true and about different aspects both stay `current` (a B5 fact naming the team and a B5 fact naming its director are complements, not conflicts). If the value is the same, do not write a duplicate.
+
+**A single source can contradict ITSELF, and that is neither a supersede nor a coexist.**
+Observed 2026-09-07: one enrichment record carried a structured `founded_year` of 2009
+while its own description text said the company was founded in 2008. There is no older
+fact to supersede and the two are not complements. Write ONE fact that records the
+disagreement and names both values, set Confidence `low`, and do not cite either number
+until a primary source settles it. The failure mode this prevents is silent: whichever
+field the agent happened to read first becomes the hard number in a blueprint, and the
+other value is never seen again. The re-validation report for a run is: all rows that run superseded, paired with their replacements.
 
 ### Runs
 One row per research execution (a skill invocation, a fan-out batch, a scheduled refresh).
