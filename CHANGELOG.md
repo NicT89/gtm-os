@@ -12,6 +12,20 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Changed
+
+- **Catch-all handling is an operator policy with a recorded decision, not a hard-coded
+  exclusion.** The rule read as an absolute: catch-all contacts were never enrolled in an
+  email sequence. That is the right conservative default and the wrong thing to hard-code,
+  because catch-all is common on small-company domains and on a small-business ICP the
+  exclusion can remove most of a sourced cohort — one live run had it removing five of six
+  composed contacts. Both positions are now stated with their arguments, the choice is
+  required to be recorded with a date and a reason, and it is paired with a monitored bounce
+  threshold, since enrolling catch-alls *without* an auto-pause armed is the combination that
+  actually burns a sending domain. Also states plainly that `email_status` and
+  `email_domain_catchall` are independent flags — reading only the first is how a catch-all
+  reaches a send unnoticed.
+
 ## [1.9.0] - 2026-09-08
 
 Additive. Nothing changes for an install that does not use the new step, and there is no
