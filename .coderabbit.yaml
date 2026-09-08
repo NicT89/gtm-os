@@ -91,11 +91,18 @@ reviews:
         strips useful writing without protecting anything. Flag an unsourced
         number when a reader could act on it as fact.
 
-        "No client data" includes real company names, even inside a war story
-        about a production incident. Describe the incident, anonymize the company.
-        Synthetic names (Cobalt Systems, Harbor Labs, Meridian Data) and
-        .example domains are correct and must not be flagged. This repo has never
-        carried a real client name.
+        "No client data" means real CLIENT and PROSPECT names: companies the operator
+        sells to or researches. That holds even inside a war story about a production
+        incident, so describe the incident and anonymize the company. Synthetic names
+        (Cobalt Systems, Harbor Labs, Meridian Data) and .example domains are correct and
+        must not be flagged. This repo has never carried a real client name.
+
+        VENDOR names are not client data and must never be flagged as such. Apollo,
+        Airtable, Apify, Firecrawl, HubSpot, Salesforce, Clay, ZoomInfo, Snowflake, CB
+        Insights and the rest are the tools this engine integrates with, and they are named
+        by necessity throughout: the coverage map, the platform-support tiers, the credit
+        table, and the CRM_PROVIDER key itself all depend on naming them exactly.
+        Anonymizing a vendor makes the document useless.
 
     - path: "scripts/fanout_workflow.js"
       instructions: >

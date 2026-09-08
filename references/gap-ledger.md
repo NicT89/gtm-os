@@ -13,9 +13,10 @@ moment when that is anybody's job, so it has to be the run's job.
 already paid for. Writing it costs no extra call and no extra credit.
 
 A week later the same field costs a full re-research: the postings call, the scrape, the
-reconciliation against what is already there. Observed 2026-09-07: a run held eleven
-verified tools for a company, used one of them in a composed field, and dropped the other
-ten on the floor. The field that would have held them already existed and was empty.
+reconciliation against what is already there. Observed 2026-09-07: a run gathered a
+company's whole verified tool stack from a primary source, cited a single tool from it in a
+composed field, and discarded the rest. A CRM field that would have held all of it already
+existed on that account and was empty.
 
 Assume the workspace is incomplete. It nearly always is, and a run that only consumes
 context while never repairing it leaves the next run exactly as poor as this one.
@@ -74,8 +75,11 @@ python3 scripts/gap_ledger.py --record record.json --json   # for the audit trai
 python3 scripts/gap_ledger.py --schema                      # the input shape
 ```
 
-Exit 0 means every gap this run can close is closed and nothing needs a person. Exit 1 means
-the propose queue is not empty. Exit 2 is a malformed record.
+**The ledger decides; it does not write.** Exit 0 means no item needs a human decision. It
+does NOT mean the write queue has been applied, and a non-empty write queue at exit 0 is the
+normal case. The calling skill is what performs the writes, and a caller that reads exit 0
+as "done" leaves permitted updates unprocessed, which is the failure this whole document is
+trying to end. Exit 1 means the propose queue is not empty. Exit 2 is a malformed record.
 
 Each field carries its `confidence`, its `provenance` (`machine`, `human`, or `unknown`), an
 `updated_at`, and optionally its own `stale_after_days` and an `accepts_estimates` flag. The
