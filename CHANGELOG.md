@@ -12,6 +12,72 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Changed
+
+- **The opener now ends in a question, because the first touch is discovery and not a
+  pitch.** The spec produced openers that stated a conclusion and stopped — one live example
+  closed "that is a build, and it sits in the queue until someone starts", which tells the
+  reader something they already know, gives them nothing to correct, and leaves nowhere to
+  reply. The rule added: spend the hard fact, then ask how the thing actually works for them
+  today, and if the last sentence could be true without the recipient existing, it is the
+  wrong last sentence. The blueprint follows the same turn — it is written from outside the
+  company, parts of it are wrong by construction, so it says so and asks which part, since a
+  reader who reorders the weeks has told you more than one who agrees.
+- **Composition aligns to the seat, not only to the company.** The same open requisition
+  means three different things: to a VP of Sales it is reps working badly scored leads, to
+  the Marketing Director who wrote the posting it is her own governance debt, to a founder
+  with no GTM leader it is a decision they funded. The spec now requires naming what the
+  person is measured on and what breaks in their week before composing, because a message
+  aligned to the company and not the seat reads as researched-but-generic — worse than
+  brief, since it proves the research happened and still missed them.
+
+## [1.8.0] - 2026-09-08
+
+Additive, with **one action on upgrade** (see the Field Key note below). Everything here came
+out of running the engine against live companies, where a single job description returned
+more usable fact than every inferred data source combined.
+
+### Added
+
+- **A11: the target's internal tool stack.** Every blueprint must cite one real tool the
+  target runs, and the taxonomy had nowhere to put one. `A6` is the *product's* integration
+  ecosystem, which is a different thing, so a verified stack had to be filed under `other`
+  and stopped being retrievable by key. A11 is now that home.
+
+  **On upgrade:** add `A11` as an option on the Field Key select in your Vault's Facts and
+  Questions tables. Without it, A11 facts fall to `other`.
+- **A source waterfall for finding that stack**, in `references/scraping-playbook.md`,
+  ranked by whether a result may be QUOTED to the prospect rather than by convenience: the
+  company's own job descriptions first, then Clay, then ZoomInfo, and inferred
+  technographics last and never citable. Job descriptions are the best source by a wide
+  margin. One GTM Engineer posting returned eleven named tools, the role's reporting line,
+  its KPI, and the fact that the company was hiring the exact capability being sold. Read
+  every open role, not only the GTM ones. **Absence is a finding too**: zero postings closes
+  the route and, alongside a negative headcount trend, usually means a freeze, which changes
+  who the buyer is.
+- **`gtm-blueprint` now pulls job postings on every account, whatever the motion.** They
+  were treated as a hiring-motion input. They are the highest-yield single source in the
+  engine.
+
+### Changed
+
+- **Only a `verified` fact may be quoted to a prospect.** The Vault's Confidence field
+  already carried the vocabulary and nothing depended on it, so a `low`-confidence estimate
+  could be composed into outreach as a hard number. `verified` now means a primary source
+  states it. An enrichment vendor's estimate sizes and routes an account; it does not go in
+  the field. The test is one question: if the recipient asked "where did you get that?",
+  is the answer a link to something they wrote?
+
+  This closes a gap the falsifiability test cannot: a number that came from a tool reads
+  exactly like a number that came from research. Observed 2026-09-07 — inferred
+  technographics named two tools for one company, one right and one absent from that
+  company's own job description, which named eleven.
+- **`gtm-blueprint` Step 2 preflights the seller source before reading the target.** A
+  stale or self-contradicting brand kit is worse than a bad target fact, because it goes
+  into every blueprint rather than one. On a mismatch the skill stops and asks which is
+  current instead of picking. Observed 2026-09-07: a brand kit's description said web
+  development agency while its own product list described an AI implementation retainer.
+
 ### Added
 
 - **People search is run twice, by title and by seniority, and read together.** Each misses
