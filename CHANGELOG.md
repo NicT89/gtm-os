@@ -12,6 +12,29 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Added
+
+- **People search is run twice, by title and by seniority, and read together.** Each misses
+  the other's blind spot and they fail in opposite directions. A title search does not match
+  `Founding <function>` staff at all: on a live run it returned zero people at two companies
+  that both have go-to-market staff, titled "Founding Technical Account Executive",
+  "Founding Growth" and "Founding Account Executive", and one of those companies was marked
+  as having no GTM employee on that evidence. A seniority search over-reports the same
+  people, because the provider reads "Founding" as founder-level: five founder-seniority
+  results at one company, every one an individual contributor. The rule is now explicit —
+  treat `Founding <anything commercial>` as an IC, never conclude "no GTM staff" from titles
+  alone, and generally **not found is not the same as absent**: vary the query shape before
+  deciding a value does not exist.
+
+### Fixed
+
+- **The documented contact-creation step told you to set `label_names`, and that silently
+  does nothing.** On a live run the bulk-create call reported success while every created
+  contact came back with an empty label set, so the enrollment queue it was supposed to fill
+  stayed empty and nothing downstream noticed. The step now says to add list membership in a
+  separate call and verify the count moved. A queue that looks filled and is not is exactly
+  the class of defect this repo treats as worse than no check at all.
+
 ## [1.7.2] - 2026-09-07
 
 Three corrections, all found by running the engine against live companies rather than by
