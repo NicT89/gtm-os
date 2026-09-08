@@ -54,11 +54,24 @@ reviews:
 
     - path: "scripts/**/*.py"
       instructions: >
-        House shape is: standard library only, a module docstring with usage,
-        exit codes 0 pass / 1 fail / 2 usage error, and JSON on stdout so results
-        are loggable to the audit trail. Flag departures from that, and flag a
-        validator that cannot fail — a check that always passes reads as a gate
-        while being none.
+        House shape is: standard library only, a module docstring with usage, and exit codes
+        0 pass / 1 fail / 2 usage error. Output is PROSE BY DEFAULT with a `--json` flag for
+        machine consumers; that is the shape every script in this repo actually has
+        (scan_secrets, setup_status, setup_feedback, gap_ledger) because a human reads the
+        default path. Do not flag a prose default as a departure, and do not ask for JSON on
+        stdout unconditionally.
+
+        Flag a validator that cannot fail — a check that always passes reads as a gate while
+        being none. That is the highest-value finding class in this repo and it has been hit
+        four times.
+
+    - path: ".claude-plugin/plugin.json"
+      instructions: >
+        Since 1.7.1 a release PR bumps BOTH `VERSION` and this manifest's `version`, in the
+        same commit, and `scripts/check_version_sync.py` fails CI when they disagree. The
+        release workflow no longer pushes a sync commit to main, because that bot push was
+        the one thing preventing `main` from requiring a pull request. Do NOT advise leaving
+        the manifest to the release process; that is the pre-1.7.1 convention.
 
     - path: "tests/**/*.py"
       instructions: >
@@ -78,11 +91,18 @@ reviews:
         strips useful writing without protecting anything. Flag an unsourced
         number when a reader could act on it as fact.
 
-        "No client data" includes real company names, even inside a war story
-        about a production incident. Describe the incident, anonymize the company.
-        Synthetic names (Cobalt Systems, Harbor Labs, Meridian Data) and
-        .example domains are correct and must not be flagged. This repo has never
-        carried a real client name.
+        "No client data" means real CLIENT and PROSPECT names: companies the operator
+        sells to or researches. That holds even inside a war story about a production
+        incident, so describe the incident and anonymize the company. Synthetic names
+        (Cobalt Systems, Harbor Labs, Meridian Data) and .example domains are correct and
+        must not be flagged. This repo has never carried a real client name.
+
+        VENDOR names are not client data and must never be flagged as such. Apollo,
+        Airtable, Apify, Firecrawl, HubSpot, Salesforce, Clay, ZoomInfo, Snowflake, CB
+        Insights and the rest are the tools this engine integrates with, and they are named
+        by necessity throughout: the coverage map, the platform-support tiers, the credit
+        table, and the CRM_PROVIDER key itself all depend on naming them exactly.
+        Anonymizing a vendor makes the document useless.
 
     - path: "scripts/fanout_workflow.js"
       instructions: >
