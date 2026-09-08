@@ -58,6 +58,23 @@ Append-only. The atom of the whole system.
 | Agent | text | Which agent or session wrote it (e.g. "cowork-fable", "fanout-researcher-3") |
 | Confidence | select: high, medium, low | |
 | Status | select: current, superseded | New facts land `current`. Superseding flips the OLD row, never deletes it |
+
+**Only a `verified` fact may be quoted to a prospect.** Confidence already carries the
+vocabulary; until 1.8.0 nothing depended on it, so a `low`-confidence estimate could be
+composed into outreach as though it were a hard number. `verified` means a primary source
+states it: the company's own site, their own job description, their own filing. An
+enrichment vendor's ESTIMATE is `medium` at best and is for sizing and routing, never for
+quoting. An inference is `inferred` and is never quoted at all.
+
+The test is one question: if the recipient replied "where did you get that?", is the answer
+a link to something they wrote? If not, the fact may inform the plan but may not appear in
+it as a number.
+
+**Adding a Field Key means adding the select option.** The taxonomy in
+`references/onboarding-template.md` is the source of truth, and the Vault's Field Key
+select must match it. 1.8.0 adds **A11, the target's internal tool stack**; add that option
+to the Facts and Questions tables before the next run, or A11 facts will fall to `other` and
+stop being retrievable by key.
 | Entity | link to Entities | |
 | Run | link to Runs | |
 | Supersedes | link to Facts | Points at the row this one replaces |

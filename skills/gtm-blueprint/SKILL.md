@@ -42,6 +42,25 @@ On FAIL, remediate by populator before composing (paths in field-provenance.md):
 
 Seller side: load positioning, offer, and voice from the configured context source; the blueprint proposes THEIR delivery in THEIR voice. Target side, in priority order: Research Company Profile (richest: cited recent developments and pain points), system enrichment fields, CB Insights when connected (funding stage and round with named lead investors for opener credibility, commercial maturity 1-5 to calibrate the plan's ambition, Mosaic score, competitors for positioning lines, recent news for recency hooks), JD summaries (hiring motion), posts digests (also for voice-matching the recipient's own language), website scrape as fallback. See references/field-provenance.md for the field dictionary including CBI field semantics.
 
+**Preflight the SELLER source before reading the target.** The context source can be stale
+or self-contradicting, and a seller-side error is worse than a target-side one: it goes into
+every blueprint rather than one. Check that the brand's description, mission, and product
+list describe the same business, and that the stated ICP matches who is actually being
+composed for. On a mismatch, STOP and ask which is current rather than picking. Observed
+2026-09-07: a brand kit's description said web development agency while its products
+described an AI implementation retainer, and composing from the description would have
+offered the wrong service to every recipient. Prefer the product list and mission over a
+name or description field, which are the ones that go stale first, and say which you used.
+
+**Pull the target's open job postings on every account, whatever the motion.** They are the
+highest-yield single source in this engine. One posting returned the tool stack, the
+reporting line, the role's KPI, and a buying signal. Read every role, not only the GTM ones.
+The stack it names is the A11 fact that Step 4's composition rule requires, and it is
+quotable because it is the company's own words. Zero postings is itself a finding: record
+it, and read it alongside the headcount trend before assuming budget or new headcount. The
+source order for a stack is in the plugin root's
+[references/scraping-playbook.md](../../references/scraping-playbook.md).
+
 ## Step 3: Classify the GTM motion
 
 Decide by observable signals, in this order: (1) B2C check: consumer sellers get no cold-outbound blueprint, propose channel framings or flag to the human. (2) PLG/dev-first: self-serve, open source, docs-heavy. (3) Enterprise sales-led: book-a-call CTA, high ACV, compliance buyers. (4) Founder-led early: <20 employees, no sales function. (5) Channel/partner-led: resellers, marketplaces, partner nav. (6) Regulated vertical: healthcare/finance/defense/gov buyers. (7) None fits cleanly: do NOT force the nearest preset — compose a custom motion aligned to the framework (the Custom motion section in references/motion-templates.md walks the four questions that build one). Multi-model companies get one blueprint per distribution model, matched to each contact's role.
@@ -57,6 +76,8 @@ The five presets are options, not a closed list, and the motion is the operator'
 ## Step 4: Compose against the motion template
 
 Read references/motion-templates.md for the five templates and the custom-motion builder for a company none of them fit, the exact output format (hyphen-bullet week lines, closer line, intro line lives in the email template not the field), and the composition rules: cite at least one real stack tool and one hard number, name their actual buyer, no flattery, no fabrication, falsifiability test. A custom motion follows the same format and the same rules; it is a different emphasis, not a lower standard.
+
+**Only quote a fact recorded as `verified`.** The required real stack tool and hard number must come from a primary source, which in practice means the company's own site, filing, or job description. An enrichment vendor's estimate sizes the account and routes it; it does not go in the field. Inferred technographics never do. The falsifiability test does not catch this class of error, because a number that came from a tool reads exactly like a number that came from research.
 
 ## Step 5: Write back
 

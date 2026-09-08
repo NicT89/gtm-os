@@ -32,6 +32,7 @@ Rules: mark inferences "(inferred)"; every hard fact carries a source URL; unver
 | A8 | Competitors |
 | A9 | Partners and partnership types (tech-embed vs channel vs co-sell) |
 | A10 | Funding, size, HQ, locations, headcount trend |
+| A11 | Internal tool stack: what THEY run to sell and operate. Not A6, which is what their PRODUCT integrates with. Every blueprint must cite one real stack tool, so this is a required input, and it had no home until 1.8.0. |
 
 ## Section B: GTM Organization
 
