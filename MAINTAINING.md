@@ -75,8 +75,27 @@ The flow, in order:
 
 ### The review loop
 
-CodeRabbit reviews every PR on this repo, and it is treated as a second reviewer
-rather than as a linter to clear. On the v1.5.0 PR it produced fifteen findings,
+CodeRabbit reviews PRs on this repo **when it has capacity**, and when it runs it is
+treated as a second reviewer rather than as a linter to clear.
+
+**It runs on the free OSS tier and is not being upgraded, so it is best-effort.** That
+matters more than it sounds, because of how it fails:
+
+**A green CodeRabbit status check is not evidence that the PR was reviewed.** When the
+limit is reached the bot posts a "Review limit reached" comment, leaves zero findings, and
+the check still reports SUCCESS. Zero findings from a rate-limited run is indistinguishable
+from zero findings from a clean one. Observed on the v1.9.0 PR, where a rate-limited run was
+one sentence away from being reported as a clean review.
+
+The local CLI fails the same way: a rate-limited `coderabbit review` exits with empty output,
+which reads as "no findings". In `--agent` mode a real review ends with a `complete` event
+carrying a findings count; a limited one prints "Rate limit exceeded". **Check for the
+completion signal. Never infer a clean review from an absence of findings.**
+
+So: try the CLI first, since its allowance is separate from the hosted bot's. If neither is
+available, say so plainly in the PR rather than implying a review happened, and substitute a
+deliberate self-review against the conventions in CLAUDE.md. Do not wait for a limit to
+reset. On the v1.5.0 PR it produced fifteen findings,
 all fifteen were valid, and two were defects no amount of re-reading would have
 surfaced: a writer stage told to persist data it was never passed, and a prompt
 whose supersede instruction contradicted the reference document added alongside

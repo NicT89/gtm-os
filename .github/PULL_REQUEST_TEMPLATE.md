@@ -61,7 +61,9 @@ Full process: MAINTAINING.md.
 ## Review
 
 - [ ] Reviewed locally before pushing (`coderabbit review --base main`), or noted
-      below why not (CLI not authenticated is a fine reason)
+      below why not (an exhausted free-tier limit is a fine reason, and common)
+- [ ] If CodeRabbit did **not** run, that is stated here rather than left implied.
+      A green check with zero findings can mean rate-limited, not reviewed
 - [ ] Every CodeRabbit finding is answered **in its own thread**, including any
       declined, with the reason
 - [ ] Findings were verified against the code before being accepted, not only
@@ -82,8 +84,8 @@ Full process: MAINTAINING.md.
 - [ ] The `description` carries **trigger phrases** a user would actually say, not
       just a summary of behavior
 - [ ] Version-check preamble present (first, never blocking)
-- [ ] Human gates intact — no step automates past ICP sign-off, credit spend, or
-      pre-send review
+- [ ] Human gates intact — no step automates past ICP sign-off, credit spend, catch-all
+      enrollment policy, or pre-send review
 - [ ] Credit-consuming actions state total cost before spending, report burn after
 - [ ] Connector preflight routes to `environment-setup` rather than carrying its
       own setup prose

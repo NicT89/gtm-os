@@ -144,8 +144,14 @@ Four structural conventions every skill in this repo follows:
 
 1. **Version check first, never blocking.** Fetch the repo VERSION, compare, notify
    on mismatch, continue.
-2. **Human gates are named and explicit.** ICP sign-off, credit spend, and pre-send
-   review are gates. Do not add a step that automates past one.
+2. **Human gates are named and explicit.** There are four: **ICP sign-off**, **credit
+   spend**, **catch-all enrollment policy**, and **pre-send review**. Do not add a step
+   that automates past one. Catch-all joined the list in 1.9.1: `gtm-signal-scan` Step 5
+   already required the operator to choose exclusion or enrollment, record the decision
+   with a date and a reason, and arm a bounce threshold, but it was written as prose and
+   was not registered as a gate, so nothing enumerating the gates included it. A gate
+   nobody lists is a gate nobody checks for. (Some skills also gate **sequence
+   activation**, which is a per-skill gate rather than one of the four.)
 3. **Credit-consuming actions state the total before spending** and report actual
    burn after, costed from `references/apollo-credit-costs.md`.
 4. **Everything Claude creates in Apollo carries "[Claude]" in its name.**
@@ -161,8 +167,12 @@ Four structural conventions every skill in this repo follows:
 
 ## Shipping a change: the PR loop
 
-Every change lands through a PR, and CodeRabbit reviews it as a second pair of
-eyes. Full process in [MAINTAINING.md](MAINTAINING.md#the-review-loop); the part
+Every change lands through a PR. CodeRabbit reviews it as a second pair of eyes **when it
+has capacity**: it runs on the free OSS tier here and is not being upgraded, so treat it as
+best-effort. A green CodeRabbit check does NOT mean the PR was reviewed — a rate-limited run
+leaves zero findings and still reports SUCCESS, which is indistinguishable from a clean pass.
+Never report a PR as reviewed on the strength of an absent finding; check for the review's
+own completion signal, and when it did not run, say so. Full process in [MAINTAINING.md](MAINTAINING.md#the-review-loop); the part
 you need before starting:
 
 1. **Branch.** Never commit to `main`.

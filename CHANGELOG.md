@@ -12,6 +12,34 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-09-08
+
+Two documented things did not match reality. Nothing to do on upgrade; no configuration
+changes and no behavior changes.
+
+### Fixed
+
+- **The review loop claimed a review that often does not happen.** `MAINTAINING.md` said
+  "CodeRabbit reviews every PR on this repo"; it runs on the free OSS tier here and is not
+  being upgraded, so it is best-effort. The failure mode is the problem: when the limit is
+  reached the bot leaves **zero findings and the status check still reports SUCCESS**, which
+  is indistinguishable from a clean review. The local CLI fails the same way, exiting with
+  empty output that reads as "no findings".
+
+  Observed on the v1.9.0 PR, where a rate-limited run was one sentence away from being
+  reported as reviewed. That PR was then reviewed properly through the CLI and three real
+  defects came out of it, including one that could have silently overwritten hand-typed CRM
+  values, so the tool earns its place when it runs. The docs now say when it runs, how to
+  tell a real review from a limited one (check for the completion signal, never infer from
+  absent findings), and that an unavailable reviewer is stated plainly rather than implied.
+- **Catch-all enrollment was a gate that no list of gates included.** `gtm-signal-scan`
+  Step 5 already required the operator to choose exclusion or enrollment, record the decision
+  with a date and a reason, and arm a monitored bounce threshold. But it was written as prose
+  and never registered, so `CLAUDE.md`, `README.md` and the PR template all enumerated three
+  gates and omitted it. A gate nobody lists is a gate nobody checks for, and this one guards
+  a sending domain shared by every other motion. The named set is now four: ICP sign-off,
+  credit spend, catch-all enrollment policy, and pre-send review.
+
 ### Changed
 
 - **Catch-all handling is an operator policy with a recorded decision, not a hard-coded
