@@ -87,8 +87,12 @@ def is_empty(value):
     return False
 
 
-def classify(field, as_of):
+def classify(field, as_of, provenance=None):
     """Return the field's state: empty, human, unattributed, stale, or fresh.
+
+    `provenance` may be passed already normalized. The caller validates a lowercased,
+    stripped copy, so reading the raw field here would classify " MACHINE " as unattributed
+    and hand back a reason that is not true of it.
 
     Order matters twice.
 
@@ -101,9 +105,12 @@ def classify(field, as_of):
     a wrong one. Only an explicitly machine-written value may be overwritten on age.
     An EMPTY field needs no such protection: there is nothing there to destroy.
     """
+    if provenance is None:
+        provenance = str(field.get("provenance", "unknown")).strip().lower()
+
     if is_empty(field.get("value")):
         return "empty"
-    if field.get("provenance") == "human":
+    if provenance == "human":
         return "human"
 
     stale_after = field.get("stale_after_days", DEFAULT_STALE_AFTER_DAYS)
@@ -111,7 +118,7 @@ def classify(field, as_of):
     if updated is not None and (as_of - updated).days <= stale_after:
         return "fresh"
 
-    if field.get("provenance") != "machine":
+    if provenance != "machine":
         return "unattributed"
     # A machine value with no date could be from any era. Treat as stale rather than
     # fresh: refreshing costs a call, while trusting an undated value costs correctness.
@@ -168,7 +175,7 @@ def build(record, as_of=None):
             problems.append(f"{name}: provenance {provenance!r} not one of {list(PROVENANCES)}")
             continue
 
-        state = classify(field, as_of)
+        state = classify(field, as_of, provenance)
         action, why = decide(state, confidence, bool(field.get("accepts_estimates")))
         entries.append({"name": name, "state": state, "confidence": confidence,
                         "provenance": provenance, "action": action, "reason": why})

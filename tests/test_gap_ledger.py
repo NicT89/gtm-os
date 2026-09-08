@@ -239,6 +239,20 @@ class ItRejectsMalformedInput(unittest.TestCase):
         problems, _ = build({"fields": [field(name="  ")]}, AS_OF)
         self.assertTrue(problems)
 
+    def test_provenance_is_classified_on_the_normalized_value(self):
+        """Validation lowercases and strips; classification must read the same value.
+
+        Found by review 2026-09-08. Reading the raw field meant " MACHINE " validated fine
+        and then classified as unattributed, so a stale machine value was proposed with a
+        reason that was untrue of it. It failed safe, which is why nothing else caught it.
+        """
+        for raw, expected in ((" MACHINE ", "stale"), ("Human", "human"),
+                              ("  human", "human"), ("UNKNOWN", "unattributed")):
+            with self.subTest(provenance=raw):
+                led = ledger_for(field(provenance=raw, updated_at=OLD))
+                self.assertEqual(led["write"][0]["state"] if led["write"]
+                                 else led["propose"][0]["state"], expected)
+
     def test_the_provenance_vocabulary_is_pinned(self):
         self.assertEqual(set(PROVENANCES), {"machine", "human", "unknown"})
 
