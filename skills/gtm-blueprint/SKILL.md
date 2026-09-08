@@ -83,7 +83,7 @@ Read references/motion-templates.md for the five templates and the custom-motion
 
 Apollo: contacts_update with typed_custom_fields; verify persistence in the response. HubSpot: multi-line contact property. Clay: add-data-points column. No CRM: markdown/PDF proposal. Multi-line rendering must be verified with ONE contact's email preview before any batch write; HTML emails sometimes collapse line breaks.
 
-**Write back what the run learned, not only what it composed.** A run gathers far more than
+**Write back what the run learned, not only what it composed. Field pipeline and client provisioning modes only.** Ad hoc proposal mode has no CRM record to write to, so it has no write queue: surface what the run learned in the single end-of-run list and stop there. A run gathers far more than
 it spends: the A11 tool stack, the open roles, the aliases, the funding detail. Composing
 uses one or two of those and the rest evaporates unless this step writes them. Do it here,
 while the data is in hand, because during the run it costs nothing and a week later the same

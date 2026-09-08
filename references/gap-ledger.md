@@ -34,13 +34,21 @@ current value there.
 |---|---|---|---|
 | **empty** | write | write **only** if the field accepts estimates, else propose | propose |
 | **stale** (machine-written) | write | propose | propose |
+| **unattributed** (stale, nobody recorded who wrote it) | propose | propose | propose |
 | **human-entered** | propose | propose | propose |
 | **filled and fresh** | skip | skip | skip |
 
 `scripts/gap_ledger.py` is that table, and `tests/test_gap_ledger.py` asserts it cell by
 cell rather than spot-checking, because a wrong cell here is not visible anywhere else.
 
-### The two rules that carry the table
+### The three rules that carry the table
+
+**Unknown provenance is not machine provenance.** A value whose author was never recorded
+might be hand-typed, so it is protected exactly as a human's is. Only an explicitly
+machine-written value may be refreshed on age. Found by review 2026-09-08: without this,
+the never-overwrite-a-human rule was defeated by an ABSENT attribution rather than by a
+wrong one, which is the harder failure to notice. An empty field needs no such protection;
+there is nothing there to destroy.
 
 **Never overwrite a human without asking.** Somebody who typed a value made a decision. The
 engine may propose a replacement and may not quietly make one, whatever its confidence, and
@@ -75,6 +83,9 @@ default freshness window is 90 days, deliberately generous: churning a field eve
 credits and teaches people to ignore the diff.
 
 ## What a skill does with the result
+
+**Only CRM-backed modes have a write queue at all.** A run with no record to write to, such
+as `gtm-blueprint`'s ad hoc proposal mode, produces a propose list and nothing else.
 
 1. **Write the write queue.** No approval needed; that is what the gate is for.
 2. **Surface the propose queue once**, at the end, as a list rather than as a series of

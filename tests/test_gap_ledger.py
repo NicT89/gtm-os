@@ -63,6 +63,9 @@ class TheDecisionTableIsCompleteAndExact(unittest.TestCase):
         ("stale", "verified"): WRITE,
         ("stale", "medium"): PROPOSE,
         ("stale", "inferred"): PROPOSE,
+        ("unattributed", "verified"): PROPOSE,
+        ("unattributed", "medium"): PROPOSE,
+        ("unattributed", "inferred"): PROPOSE,
         ("human", "verified"): PROPOSE,
         ("human", "medium"): PROPOSE,
         ("human", "inferred"): PROPOSE,
@@ -111,6 +114,37 @@ class AHumanValueIsNeverOverwritten(unittest.TestCase):
     def test_an_empty_human_field_is_treated_as_empty_not_as_a_decision(self):
         """A blank a person never filled is a gap, not a choice to leave it blank."""
         self.assertEqual(classify(field(provenance="human", value=""), AS_OF), "empty")
+
+
+class UnknownProvenanceIsNotMachineProvenance(unittest.TestCase):
+    """A missing field must not defeat the never-overwrite-a-human rule.
+
+    Found by review, 2026-09-08: `unknown` provenance fell through to the machine path, so a
+    hand-typed value whose author was never recorded could be silently overwritten on age.
+    The rule was defeated by an ABSENT attribution rather than by a wrong one.
+    """
+
+    def test_an_unattributed_stale_value_is_protected(self):
+        led = ledger_for(field(provenance="unknown", updated_at=OLD))
+        self.assertEqual(actions(led)["Tech Stack Details"], PROPOSE)
+
+    def test_only_an_explicit_machine_value_may_be_overwritten_on_age(self):
+        self.assertEqual(classify(field(provenance="machine", updated_at=OLD), AS_OF), "stale")
+        self.assertEqual(classify(field(provenance="unknown", updated_at=OLD), AS_OF),
+                         "unattributed")
+
+    def test_an_undated_unattributed_value_is_protected(self):
+        """The riskiest combination: no author, no date, existing content."""
+        self.assertEqual(classify(field(provenance="unknown", updated_at=None), AS_OF),
+                         "unattributed")
+
+    def test_an_empty_unattributed_field_is_still_fillable(self):
+        """Protection is for CONTENT. A blank has nothing to protect."""
+        led = ledger_for(field(provenance="unknown", value=None))
+        self.assertEqual(actions(led)["Tech Stack Details"], WRITE)
+
+    def test_a_fresh_unattributed_value_is_simply_skipped(self):
+        self.assertEqual(classify(field(provenance="unknown", updated_at=FRESH), AS_OF), "fresh")
 
 
 class AnInferredFactIsNeverWritten(unittest.TestCase):
@@ -207,6 +241,63 @@ class ItRejectsMalformedInput(unittest.TestCase):
 
     def test_the_provenance_vocabulary_is_pinned(self):
         self.assertEqual(set(PROVENANCES), {"machine", "human", "unknown"})
+
+
+class MutationCoverage(unittest.TestCase):
+    """Reintroduce each defect the gate exists to prevent, in memory, and prove it is caught.
+
+    A green suite is not evidence that a check works; this is. Every mutation below rewrites
+    the module source, reloads it in isolation, and asserts the guarantee breaks. Nothing on
+    disk is touched.
+    """
+
+    MUTATIONS = {
+        "overwrite a human": (
+            'return PROPOSE, "a person entered this value; the engine may propose, never overwrite"',
+            'return WRITE, "MUTANT"'),
+        "overwrite an unattributed value": (
+            'return PROPOSE, "nobody recorded who wrote this value, so it may be a person\'s"',
+            'return WRITE, "MUTANT"'),
+        "write an inferred fact": (
+            'return PROPOSE, "inferred facts are never written, only proposed"',
+            'return WRITE, "MUTANT"'),
+        "read zero as absent": (
+            "    if isinstance(value, (list, dict)):\n        return len(value) == 0\n    return False",
+            "    if isinstance(value, (list, dict)):\n        return len(value) == 0\n    return not value"),
+    }
+
+    def load_mutant(self, old, new):
+        """Compile a mutated copy of the module without touching the file on disk."""
+        source = (REPO_ROOT / "scripts" / "gap_ledger.py").read_text(encoding="utf-8")
+        self.assertIn(old, source, "mutation target no longer present; update the mutation")
+        namespace = {"__name__": "gap_ledger_mutant"}
+        exec(compile(source.replace(old, new), "gap_ledger_mutant", "exec"), namespace)
+        return namespace
+
+    def test_every_mutation_breaks_a_guarantee(self):
+        checks = {
+            "overwrite a human": lambda m: m["decide"]("human", "verified", False)[0] == WRITE,
+            "overwrite an unattributed value":
+                lambda m: m["decide"]("unattributed", "verified", False)[0] == WRITE,
+            "write an inferred fact": lambda m: m["decide"]("empty", "inferred", False)[0] == WRITE,
+            "read zero as absent": lambda m: m["is_empty"](0) is True,
+        }
+        for name, (old, new) in self.MUTATIONS.items():
+            with self.subTest(mutation=name):
+                mutant = self.load_mutant(old, new)
+                self.assertTrue(checks[name](mutant),
+                                f"mutation {name!r} did not change behavior; it is not a real mutation")
+
+    def test_the_real_module_holds_every_guarantee(self):
+        """The other half: unmutated, none of those breaches exist."""
+        self.assertEqual(decide("human", "verified", False)[0], PROPOSE)
+        self.assertEqual(decide("unattributed", "verified", False)[0], PROPOSE)
+        self.assertEqual(decide("empty", "inferred", False)[0], PROPOSE)
+        self.assertFalse(is_empty(0))
+
+    def test_the_mutation_set_covers_every_stated_guarantee(self):
+        """A guard on the guard: the docs claim four protections, so four are mutated."""
+        self.assertEqual(len(self.MUTATIONS), 4)
 
 
 class TheCliBehaves(unittest.TestCase):

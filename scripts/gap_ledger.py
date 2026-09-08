@@ -22,6 +22,9 @@ and who put the current value there.
                                                   estimates,
                                                   else propose
     stale (machine-written)     write             propose           propose
+    unattributed (stale, and    propose           propose           propose
+      nobody recorded who
+      wrote it)
     human-entered               propose           propose           propose
     filled and fresh            skip              skip              skip
 
@@ -85,10 +88,18 @@ def is_empty(value):
 
 
 def classify(field, as_of):
-    """Return the field's state: empty, human, stale, or fresh.
+    """Return the field's state: empty, human, unattributed, stale, or fresh.
 
-    Order matters. `human` outranks `stale`, because a human-entered value that is old is
-    still a human's decision and must not be overwritten on age alone.
+    Order matters twice.
+
+    `human` outranks `stale`, because a human-entered value that is old is still a human's
+    decision and must not be overwritten on age alone.
+
+    `unattributed` exists because `unknown` provenance is not the same as `machine`. A value
+    whose author was never recorded MIGHT be hand-typed, and treating it as machine-written
+    is how the never-overwrite-a-human rule gets defeated by a missing field rather than by
+    a wrong one. Only an explicitly machine-written value may be overwritten on age.
+    An EMPTY field needs no such protection: there is nothing there to destroy.
     """
     if is_empty(field.get("value")):
         return "empty"
@@ -97,13 +108,14 @@ def classify(field, as_of):
 
     stale_after = field.get("stale_after_days", DEFAULT_STALE_AFTER_DAYS)
     updated = parse_date(field.get("updated_at"))
-    if updated is None:
-        # A machine value with no date could be from any era. Treat as stale rather than
-        # fresh: refreshing costs a call, while trusting an undated value costs correctness.
-        return "stale"
-    if (as_of - updated).days > stale_after:
-        return "stale"
-    return "fresh"
+    if updated is not None and (as_of - updated).days <= stale_after:
+        return "fresh"
+
+    if field.get("provenance") != "machine":
+        return "unattributed"
+    # A machine value with no date could be from any era. Treat as stale rather than
+    # fresh: refreshing costs a call, while trusting an undated value costs correctness.
+    return "stale"
 
 
 def decide(state, confidence, accepts_estimates):
@@ -112,6 +124,8 @@ def decide(state, confidence, accepts_estimates):
         return SKIP, "already filled and within its freshness window"
     if state == "human":
         return PROPOSE, "a person entered this value; the engine may propose, never overwrite"
+    if state == "unattributed":
+        return PROPOSE, "nobody recorded who wrote this value, so it may be a person's"
 
     if confidence == "verified":
         return WRITE, f"{state} field and the fact is verified by a primary source"

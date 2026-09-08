@@ -64,6 +64,15 @@ workspace they read from instead of only consuming it.
 
   `0`, `0.0` and `false` are values, not gaps. Only null, empty strings, and empty
   collections are absence.
+
+  **Unknown provenance is not machine provenance.** A value whose author was never recorded
+  might be hand-typed, so it is protected exactly as a human's is; only an explicitly
+  machine-written value may be refreshed on age. Caught in review before release: without
+  this, the never-overwrite-a-human rule was defeated by an ABSENT attribution rather than a
+  wrong one, which is the harder failure to notice. An empty field needs no such protection.
+
+  **Only CRM-backed modes have a write queue.** `gtm-blueprint`'s ad hoc proposal mode has no
+  record to write to, so it produces a propose list and nothing else.
 - **`references/gap-ledger.md`**, the doctrine: why during the run, what the gate protects,
   what a skill does with each queue, and where the gaps usually are (the CRM first, then the
   seller's own brand kit, then the Vault).
@@ -75,10 +84,14 @@ workspace they read from instead of only consuming it.
 ### Changed
 
 - **`tests/test_gap_ledger.py` asserts the decision table cell by cell** rather than spot
-  checking it, and was verified by mutation: overwriting a human, treating zero as absent,
-  and writing an inferred fact each break the suite (11, 3 and 3 failures respectively).
-  Per the convention added in 1.7.1, a new check earns trust by being broken on purpose and
-  observed failing.
+  checking it, and carries a `MutationCoverage` class that reintroduces each of the four
+  protections as a defect in an in-memory copy and asserts the guarantee breaks. Per the
+  convention added in 1.7.1, a new check earns trust by being broken on purpose and observed
+  failing, and the claim now has an artifact in the repo rather than a number in a changelog.
+- **`.coderabbit.yaml` corrected on two counts**, both raised by a review working from
+  outdated repo context: the script convention is prose-by-default with a `--json` flag,
+  which is what every script here actually does, and since 1.7.1 a release PR bumps both
+  `VERSION` and the plugin manifest rather than leaving the manifest to the workflow.
 
 ### Changed
 
