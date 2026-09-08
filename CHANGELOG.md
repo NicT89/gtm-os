@@ -12,6 +12,25 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Changed
+
+- **The opener now ends in a question, because the first touch is discovery and not a
+  pitch.** The spec produced openers that stated a conclusion and stopped — one live example
+  closed "that is a build, and it sits in the queue until someone starts", which tells the
+  reader something they already know, gives them nothing to correct, and leaves nowhere to
+  reply. The rule added: spend the hard fact, then ask how the thing actually works for them
+  today, and if the last sentence could be true without the recipient existing, it is the
+  wrong last sentence. The blueprint follows the same turn — it is written from outside the
+  company, parts of it are wrong by construction, so it says so and asks which part, since a
+  reader who reorders the weeks has told you more than one who agrees.
+- **Composition aligns to the seat, not only to the company.** The same open requisition
+  means three different things: to a VP of Sales it is reps working badly scored leads, to
+  the Marketing Director who wrote the posting it is her own governance debt, to a founder
+  with no GTM leader it is a decision they funded. The spec now requires naming what the
+  person is measured on and what breaks in their week before composing, because a message
+  aligned to the company and not the seat reads as researched-but-generic — worse than
+  brief, since it proves the research happened and still missed them.
+
 ## [1.8.0] - 2026-09-08
 
 Additive, with **one action on upgrade** (see the Field Key note below). Everything here came
