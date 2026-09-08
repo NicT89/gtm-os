@@ -45,3 +45,7 @@ Costs are stated BEFORE spend, covering all meters, not just the obvious one:
 - **Token cost** (for fan-out runs: rough per-agent estimate times agent count)
 
 The pre-spend statement to the human names each meter, the estimate, and the cap. Actual spend lands in the manifest's `spent_so_far` as it accrues and in the Vault Run row's Cost Summary at the end. A run projected to exceed its stated cap STOPS and asks; it does not finish and apologize.
+
+**Compute that, do not remember it.** `scripts/run_cost.py` takes the meters and caps and returns the tally, the Cost Summary line in the Vault's exact format, and a non-zero exit the moment any meter is over its cap. Before 1.10.0 nothing produced the number, so a rule that depends on comparing spend to cap depended on someone doing arithmetic in their head and writing it down afterwards. On the 2026-09-07 run the figure was tracked by hand in a chat window and would have been lost with the conversation.
+
+It also carries the write half, because since 1.9.0 runs fill fields as well as spend on them. A run that spent credits and filled nothing is a different event from one that spent the same and closed six gaps, and only one of those is worth repeating.

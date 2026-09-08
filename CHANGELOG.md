@@ -12,6 +12,46 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-09-08
+
+Additive. Nothing changes for a run that does not call the new script, and there is no
+configuration to add.
+
+### Added
+
+- **`scripts/run_cost.py`: the arithmetic two standing rules already depended on.** The
+  Vault's `Cost Summary` field has had a fixed format since the Vault existed, and nothing
+  produced it. "State the total before spending, report actual burn after" and "a run
+  projected to exceed its stated cap STOPS and asks" both need a number, and that number was
+  being kept in someone's head. On the 2026-09-07 run it was tracked by hand in a chat
+  window and would have been lost with the conversation. **A rule enforced by memory is a
+  rule enforced sometimes.**
+
+  The script takes the meters and their caps and returns the tally, the Cost Summary line in
+  the Vault's exact positional format, and **a non-zero exit the moment any meter is over its
+  cap** — which is what makes the stop-and-ask rule checkable rather than aspirational.
+
+  Three details that are deliberate. Meters are open rather than an allowlist, so a run names
+  whatever it actually spends. **Units are per-meter and never summed**, because a total that
+  adds credits to dollars is worse than no total. And `Status` is `final` only for a completed
+  run: a partial tally written as final reads as the run's whole cost forever after.
+
+  It also carries the **write half**, since 1.9.0 runs fill fields as well as spend on them.
+  A run that spent credits and filled nothing is a different event from one that spent the
+  same and closed six gaps, and the tally says which happened. Run against the 2026-09-07
+  figures it reports exactly that: within cap, and nothing filled.
+
+### Changed
+
+- **`references/run-manifest.md` and `references/research-vault.md` now say to build the
+  Cost Summary rather than type it**, and why the format is positional: an absent meter is
+  reported as `0` instead of omitted, so two runs can be compared by eye.
+- **`tests/test_run_cost.py`** pins the cap boundary (at-cap is not over-cap), that every
+  over-cap meter is named rather than only the first, that units are never combined, and that
+  a boolean never passes as a quantity. Its `MutationCoverage` reintroduces three guarantees
+  as defects — letting a run exceed its cap, calling a partial run final, accepting a negative
+  spend — and asserts each is caught.
+
 ## [1.9.1] - 2026-09-08
 
 Two documented things did not match reality. Nothing to do on upgrade; no configuration

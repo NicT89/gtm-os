@@ -100,7 +100,7 @@ One row per research execution (a skill invocation, a fan-out batch, a scheduled
 | Target | text, human-readable summary only |
 | Target Entities | link to Entities: every company AND person the run researched. People researched by a run must exist as Person entities |
 | Skills | MULTI-select from the known skill roster; new skills are added as options, never free-typed |
-| Cost Summary | text, written ONLY after the run completes, fixed format: `Apollo credits: N \| Actor USD: N \| Firecrawl credits: N \| Status: final`. Pre-run estimates live in Notes |
+| Cost Summary | text, written ONLY after the run completes, fixed format: `Apollo credits: N \| Actor USD: N \| Firecrawl credits: N \| Status: final`. Build it with `scripts/run_cost.py` rather than typing it: the format is positional so runs can be diffed by eye, an absent meter is reported as 0 rather than omitted, and `Status` is `final` only for a completed run. Pre-run estimates live in Notes |
 | Artifacts | long text: file paths and URLs to what the run produced. Where the base supports attachments, drop the files in directly |
 | Notes | long text |
 
