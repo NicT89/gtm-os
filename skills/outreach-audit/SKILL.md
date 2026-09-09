@@ -23,6 +23,12 @@ Contact custom fields merge as {{contact.Field Name}} with the object prefix; ac
 
 Opener: three to four sentences in four named beats (see below), at least one hard number or date, anchored to the recipient's strongest signal (hiring: role + posting age + JD detail; funding: raise + sales-team size + growth), their own words preferred when posts exist, no flattery, no adjectives about the company, no exclamation marks. Blueprint: 3-4 sentences structured Week 1 / Week 2 / Weeks 3-4, naming their ICP and at least one real tool or vertical, ending "documented for the hire" (hiring motion) or "proof before headcount" (funding motion).
 
+**This section is the authoritative opener contract.** Length, structure, and the
+falsifiability tests are defined here and nowhere else. Other documents may point at the
+Opener field and must not restate its shape: `field-provenance.md` carried "1-2 sentences"
+for a release after this spec moved to four beats, which is what a second copy of a contract
+always eventually does.
+
 **The opener has four beats, and the first one is where openers usually fail.**
 
 1. **The arc, and what it means.** Where this person came from, what changed, and what they

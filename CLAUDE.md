@@ -121,10 +121,30 @@ is not confused with the skill's own folder.
   It replaced `git log --all -p | grep -iE 'APOLLO|APIFY|API_KEY'`, which matched
   vendor *names*: 271 hits on this repo's own prose and not one credential. An
   audit that can never come back clean teaches everyone to ignore it.
-- **Do not invent numbers.** The skills demand "one hard number, verifiable, true
-  for this specific recipient" and forbid fabrication. That standard applies to the
-  repo's own documentation too: if a figure for the adopter's own pipeline is not in
-  hand, leave the placeholder rather than inventing a plausible one.
+- **Do not invent numbers. This is a rule, not a preference, and it has no exceptions.**
+  The skills demand "one hard number, verifiable, true for this specific recipient" and
+  forbid fabrication. The standard applies to the repo's own documentation too: if a figure
+  for the adopter's own pipeline is not in hand, leave the placeholder rather than inventing
+  a plausible one.
+
+  **A number that is derived is invented unless its inputs are sourced.** Observed
+  2026-09-09 in a live workspace: a draft asserted a role was "a $130K-$180K hire" costing
+  "$13K-$19K per month", from a job posting that publishes no compensation at all. The range
+  was plausible, the arithmetic on top of it was sound, and the whole thing was fabricated.
+  Plausibility is what makes this class dangerous: nobody stops to check a number that
+  sounds about right.
+
+  **Every quantity in composed output needs a source you can name in the same breath**, and
+  a market rate, an industry average, or a benchmark is not a source unless you cite the
+  specific one and can link it. When there is no figure, write the qualitative claim instead
+  and lose nothing: "an open req your team is carrying" says what "a $130K-$180K hire" was
+  trying to say, and is true.
+
+  **This rule binds anything that writes into a field the engine reads**, including plays
+  and automations configured outside this repo. The engine cannot validate a field another
+  system populated, so a play that fabricates a number puts it one merge away from a send
+  with nothing in between. Audit those separately; a composed field is only as trustworthy
+  as the least careful thing with write access to it.
 - **Keep `README.md` shippable as-is.** It is the README installed copies carry.
   Maintainer-only material goes in MAINTAINING.md or here.
 
