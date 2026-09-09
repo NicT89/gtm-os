@@ -12,6 +12,56 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-09-09
+
+Additive, with **one action on upgrade** (a new Vault field). Both changes came from a live
+run: one from reading three composed openers side by side and seeing that only one of them
+worked, and one from noticing that 1.9.0 described a queue without ever saying where it was
+kept.
+
+### Added
+
+- **Every Vault fact is four things: title, description, content, reference.** The Facts
+  table gains a **`Description`** field, because those four are read at different moments and
+  collapsing them makes retrieval worse as the Vault grows. Title is what you scan,
+  Description is how you decide whether this is the row you wanted, Value is what you use,
+  Source URL is what you audit or cite.
+
+  **A reference is required for anything sourced from the internet.** That rule is what
+  makes the composition rules work: only a fact the recipient could check may be quoted, so
+  a fact with no retrievable source can inform a plan and never appear in one.
+
+  **On upgrade:** add a long-text field named `Description` to your Vault's Facts table.
+  Existing facts stay valid without it.
+- **The opener now has four named beats, and the first one is where openers fail.** The arc
+  (where they came from, what changed, **what they consequently own now**), the reference
+  named so they can check it, the observation that reference makes possible, and the
+  question. Beat 1 is tested by deleting its consequence clause: if the sentence still says
+  something about their situation, the clause was decorative and the beat is not written yet.
+
+  **The falsifiability test gains a second half for openers.** The blueprint's version asks
+  whether it could be sent to a different COMPANY unchanged. An opener must also survive
+  being sent to a different PERSON at the same company. Swap the recipient for the colleague
+  one seat over, and if it still reads correctly, beat 1 is missing and what you have is a
+  company fact with a name on top. Observed 2026-09-09: three openers for one account, all
+  passing the old test, and only the one with a real arc survived the new one.
+
+  Opener length moves from "1-2 sentences" to three or four, because four beats do not fit
+  in two sentences and the old limit is what pushed composition toward company facts.
+- **Never assert a relationship, motive, or causation you inferred.** Two people overlapping
+  at a prior employer is a fact; one of them hiring the other is a story. State what is
+  checkable and let the question carry the implication.
+
+### Changed
+
+- **The Vault is now named as the propose queue's home.** 1.9.0 introduced a write/propose/skip
+  split and said to "surface the propose queue once" without ever saying where it persists,
+  so in practice it lived in a chat transcript and died with it. Proposals are now written as
+  ordinary facts at their real confidence with a Description saying they are proposals and
+  what promoting one would require. A queue that exists only in the session that produced it
+  is a list of things somebody is about to forget, which is the failure the ledger was
+  written to end rather than to relocate.
+
 ### Added
 
 - **A stated standard for what an outreach message has to be: relevant, evidently

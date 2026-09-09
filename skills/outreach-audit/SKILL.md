@@ -21,7 +21,38 @@ Contact custom fields merge as {{contact.Field Name}} with the object prefix; ac
 
 ## Composition spec (what goes in those fields)
 
-Opener: 1-2 sentences, at least one hard number or date, anchored to the recipient's strongest signal (hiring: role + posting age + JD detail; funding: raise + sales-team size + growth), their own words preferred when posts exist, no flattery, no adjectives about the company, no exclamation marks. Blueprint: 3-4 sentences structured Week 1 / Week 2 / Weeks 3-4, naming their ICP and at least one real tool or vertical, ending "documented for the hire" (hiring motion) or "proof before headcount" (funding motion).
+Opener: three to four sentences in four named beats (see below), at least one hard number or date, anchored to the recipient's strongest signal (hiring: role + posting age + JD detail; funding: raise + sales-team size + growth), their own words preferred when posts exist, no flattery, no adjectives about the company, no exclamation marks. Blueprint: 3-4 sentences structured Week 1 / Week 2 / Weeks 3-4, naming their ICP and at least one real tool or vertical, ending "documented for the hire" (hiring motion) or "proof before headcount" (funding motion).
+
+**The opener has four beats, and the first one is where openers usually fail.**
+
+1. **The arc, and what it means.** Where this person came from, what changed, and what they
+   consequently own now. The consequence clause is the beat, not the history: "came into the
+   company in September 2025 after five years running revenue operations elsewhere, **and has
+   been rebuilding the function since**" is an arc, while "moved into the Director seat in
+   April 2026, coming from digital product and revenue operations before that" is a CV
+   extract wearing an arc's clothes. Test it by deleting the consequence clause: if the
+   sentence still tells you something about their situation today, the consequence was doing
+   no work and the beat has not been written yet.
+2. **The reference, named.** The specific artifact you read, named so they can go and check
+   it: "reading the GTM Engineer posting your team has open". A reference the reader cannot
+   locate is indistinguishable from a guess.
+3. **The observation.** What that reference shows that is not obvious from it. A tension, a
+   shape, an implication. "That reads as a build seat rather than a support seat."
+4. **The question.** Answerable in one line, about how the thing works for them today.
+
+**Every beat traces to a source you could name inside the sentence.** Their own posts,
+their own job posting, their own filing, their own public career history. Enrichment
+estimates and vendor summaries are orientation, never quotable.
+
+**Never assert a relationship, a motive, or a causation you inferred.** Two people
+overlapping at a prior employer is a fact; one of them hiring the other is a story you made
+up. State the facts that are checkable and let the question carry the implication.
+
+**The falsifiability test has a second half for openers.** The blueprint's version is
+whether it could be sent to a different COMPANY unchanged. An opener must also survive being
+sent to a different PERSON at the same company: swap the recipient for their colleague one
+seat over, and if it still reads correctly, beat 1 is missing and what you have is a company
+fact with a name on top.
 
 **The opener ends in a question, and the question is the point.** A first touch is discovery, not a pitch: the goal is to learn enough to build a proposal that fits, not to assert one before you know what they need. So the opener earns its place with a hard fact and then spends it on a genuine question about how the thing works *for them today* — what their scoring actually keys on, where their attribution stops being trustworthy, which part of the cleanup is blocked. A closing line that states a conclusion instead ("that is a build, and it sits in the queue until someone starts") tells the reader something they already know, gives them nothing to correct, and leaves no opening to reply into. **If the last sentence could be true without the recipient existing, it is the wrong last sentence.**
 

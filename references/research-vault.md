@@ -49,6 +49,7 @@ Append-only. The atom of the whole system.
 |---|---|---|
 | Fact | primary text | Short scannable label, a few words. Never repeat the field key (it has its own column) and never carry the detail (that is Value) |
 | Field Key | select | The onboarding template taxonomy (A1-E7) plus `other`. This is the join key between research and the intake spine |
+| Description | long text | One or two sentences: what this fact is and why it matters, for a reader who was not on the run. Retrieval reads this to decide whether to open Value, so a Description that restates the title wastes the slot |
 | Value | long text | The fact itself, complete sentences, no em dashes |
 | Value Type | select: text, number, date, url, json | |
 | Source URL | text | REQUIRED unless Method is `inference`, then Value carries "(inferred)" |
@@ -118,6 +119,44 @@ The Ask column, made durable and agent-consumable. gap-closer reads from here.
 | Notes | long text | Why the question matters and what the answer would change, written for the human who will ask it. Never restate the field key or cite pipeline internals (critic names, run mechanics) |
 | Entity | link to Entities | |
 | Answer Fact | link to Facts | Set when answered; the answer is written as a Fact with Source Type `human-answer` or `support-channel`, and the question flips to `answered` |
+
+## Every fact is four things
+
+**Title, description, content, reference.** They exist separately because they are read at
+different moments, and collapsing them makes the Vault harder to retrieve from as it grows:
+
+| Part | Field | Read when |
+|---|---|---|
+| **Title** | `Fact` | Scanning a list. A few words, no detail, never the field key. |
+| **Description** | `Description` | Deciding whether this row is the one. What it is, why it matters. |
+| **Content** | `Value` | Actually using it. Full sentences, all the detail. |
+| **Reference** | `Source URL` | Auditing it, or citing it to a prospect. |
+
+**A reference is required for anything sourced from the internet**, and that rule is what
+makes the rest of the engine work: the composition rules only permit quoting a fact the
+recipient could check, so a fact with no retrievable source can inform a plan and can never
+appear in one. The single exception is `Method: inference`, where Value opens with
+"(inferred)" and the fact is unquotable by construction.
+
+Two failure modes this shape prevents. A Vault of long Values under terse titles is one
+where nobody finds anything and every retrieval reads everything. And a fact whose source
+was recorded as a vendor name with no URL cannot be re-verified a quarter later, which
+quietly turns the re-validation diff into a diff of claims nobody can check.
+
+## The Vault is where the propose queue lives
+
+`references/gap-ledger.md` sorts every field into write, propose or skip. The write queue
+executes. **The propose queue has to persist somewhere, and that somewhere is here.**
+
+Write each proposal as an ordinary fact at its real confidence, `medium` for a vendor
+estimate and `inferred` for an inference, with a Description that says plainly it is a
+proposal and what promoting it would require. It then survives the session that produced it,
+is retrievable on the next run, and can be promoted later by finding a primary source and
+writing a new fact that supersedes it.
+
+A propose queue that exists only in a chat transcript is not a queue. It is a list of things
+somebody is about to forget, which is the failure the ledger was written to end rather than
+to relocate.
 
 ## Write rules for every skill and agent
 
