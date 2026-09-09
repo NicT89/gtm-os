@@ -57,10 +57,10 @@ Append-only. The atom of the whole system.
 | Method | MULTI-select: firecrawl, webfetch, apify-actor, apollo, github-search, manual, agent-interview, inference | One fact can combine methods. New methods are added as options, never free-typed |
 | Captured At | date | The capture date, not the write date, if they differ |
 | Agent | text | Which agent or session wrote it (e.g. "cowork-fable", "fanout-researcher-3") |
-| Confidence | select: high, medium, low | |
+| Confidence | select: verified, high, medium, low, inferred | Descending strength. `verified` and `high` both mean a primary source states it, and are the only two that may be QUOTED to a prospect or written to a field unasked. `medium` is a strong secondary source or a vendor estimate: sizing and routing only. `low` is a weak or self-reported claim. `inferred` is reasoned rather than sourced. `scripts/gap_ledger.py` enforces exactly this list |
 | Status | select: current, superseded | New facts land `current`. Superseding flips the OLD row, never deletes it |
 
-**Only a `verified` fact may be quoted to a prospect.** Confidence already carries the
+**Only a `verified` or `high` fact may be quoted to a prospect.** Confidence already carries the
 vocabulary; until 1.8.0 nothing depended on it, so a `low`-confidence estimate could be
 composed into outreach as though it were a hard number. `verified` means a primary source
 states it: the company's own site, their own job description, their own filing. An

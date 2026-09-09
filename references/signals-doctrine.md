@@ -22,4 +22,4 @@ Active today: 1-6 (scan gates), 7-9 (passive scoring inputs). Expansion queue: 1
 
 Waterfall order when multiple gates run in one scan: deepest intent first (10 social language when active, then 4 new-leader, then 2/3 postings by age, then 1 funding, then lookalike fill). Tag every sourced account with its gate; the tag rides into the run-shape JSON and the account's scoring.
 
-Catch-all rule (hard): T3 catch-all contacts are never enrolled in email sequences regardless of signal strength; LinkedIn/referral paths only.
+Catch-all rule: catch-all enrollment is one of the four NAMED HUMAN GATES, not a rule this document gets to settle. The operator chooses exclusion or enrollment once, on the record, with a bounce threshold armed; `skills/gtm-signal-scan/SKILL.md` Step 5 carries the two defensible positions and is authoritative. Exclusion is the conservative default and it is a default, not a ban. This line stated an absolute prohibition until 1.9.2, which would have had an agent automate past a registered gate.

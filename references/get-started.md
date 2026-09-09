@@ -36,8 +36,8 @@ set up my environment
 The `environment-setup` skill drives it, and it diagnoses what you already have before it
 suggests anything, because **not set up almost never means not owned**. The usual
 situation is that you own the tool and have simply never shaped it for this engine.
-Diagnosis is free: every probe it runs is a read-only call, and none of them spends a
-credit.
+Diagnosis costs almost nothing: every probe is a read-only call except the Firecrawl one,
+which performs a scrape, spends a single credit, and states that before it runs.
 
 **3. Know how well it speaks your stack.** Bring the CRM and data tools you already use.
 `references/platform-support.md` puts each one in a tier: **native** (built against that

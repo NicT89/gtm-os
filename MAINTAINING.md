@@ -17,7 +17,7 @@ version check surfaces updates.
 | File | Field |
 |---|---|
 | `VERSION` | the whole file (e.g. `1.0.0`) — **the source of truth, bump this** |
-| `.claude-plugin/plugin.json` | `"version"` — **auto-synced, do not hand-edit** |
+| `.claude-plugin/plugin.json` | `"version"` — **bump it in the PR, together with VERSION**. `scripts/check_version_sync.py` fails CI when they disagree |
 
 `.github/workflows/release.yml` reads `VERSION` on every push to `main` that changes
 it, rewrites `.claude-plugin/plugin.json`'s `version` to match, and commits that back
@@ -62,8 +62,11 @@ happens after merge, not before.
    Incoming deliveries sometimes propose their own version number. Check it against
    these rules rather than adopting it: the delivery knows what it changed, not what
    the rest of the repo already contains.
-3. Bump `VERSION`. Leave `.claude-plugin/plugin.json` alone — the release workflow
-   syncs it for you after merge.
+3. Bump `VERSION` **and** `.claude-plugin/plugin.json`'s `version`, in the same commit.
+   `scripts/check_version_sync.py` fails CI when they disagree. This changed in 1.7.1:
+   the release workflow's sync push to `main` was the one thing preventing branch
+   protection from requiring a pull request, so the PR does the sync and the workflow's
+   step never fires.
 4. Move the relevant notes from `## [Unreleased]` into a new dated section in
    `CHANGELOG.md` (add an `### Added` / `### Changed` / `### Fixed` group as needed).
 5. Commit, open a PR, let CI pass, and merge to `main`. Merging (with a changed

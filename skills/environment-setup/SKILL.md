@@ -33,8 +33,14 @@ wired. Only S0 needs a signup, and S1 through S3 are the normal case.
 
 Run the probes in the reference's order and stop at the first that answers: list the tools,
 make the cheapest read-only call the connector offers, read the schema for the engine's
-objects, then run `python3 scripts/validate_instance_config.py`. All four are free and
-none of them spends a credit.
+objects, then run `python3 scripts/validate_instance_config.py`.
+
+**All of those are free EXCEPT the Firecrawl probe, which performs a scrape and spends a
+credit.** State that one credit before running it, per the plugin root's
+[references/environment-setup.md](../../references/environment-setup.md), which is the
+authoritative per-connector procedure. Describing the whole diagnosis as free was wrong
+until 1.9.2 and had this skill spend unannounced, which is the credit gate failing in the
+one place a new user meets it first.
 
 Ask the user only when probes 1 and 2 both fail, and ask it as a connection question, not
 a purchase question: *"Do you already have a <tool> account? If so this is a connection

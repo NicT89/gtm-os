@@ -1,11 +1,8 @@
 {
-  "_README": "Copy to instance-config.json and fill in. That file is gitignored — it holds your workspace's IDs and never belongs in this repo. Every key below is referenced by name from the skills as {KEY_NAME}. Run scripts/validate_instance_config.py after filling it in. See references/instance-config.md for where to find each value.",
-
+  "_README": "Copy to instance-config.json and fill in. That file is gitignored \u2014 it holds your workspace's IDs and never belongs in this repo. Every key below is referenced by name from the skills as {KEY_NAME}. Run scripts/validate_instance_config.py after filling it in. See references/instance-config.md for where to find each value.",
   "INSTANCE_NAME": "",
   "INSTANCE_FIELD_PREFIX": "",
-
   "CRM_PROVIDER": "apollo",
-
   "APOLLO_CF_CONTACT_LINKEDIN_PROFILE_SUMMARY": "",
   "APOLLO_CF_CONTACT_RESEARCH_COMPANY_PROFILE": "",
   "APOLLO_CF_CONTACT_PERSONA_INTELLIGENCE": "",
@@ -14,7 +11,6 @@
   "APOLLO_CF_CONTACT_LINKEDIN_POSTS": "",
   "APOLLO_CF_CONTACT_OPENER": "",
   "APOLLO_CF_CONTACT_BLUEPRINT": "",
-
   "APOLLO_CF_ACCOUNT_GTM_JOBS_WITH_URL": "",
   "APOLLO_CF_ACCOUNT_JD_SUMMARY": "",
   "APOLLO_CF_ACCOUNT_ROLE_ARCHETYPES": "",
@@ -24,23 +20,19 @@
   "APOLLO_CF_ACCOUNT_CBI_MOSAIC_SCORE": "",
   "APOLLO_CF_ACCOUNT_CBI_COMMERCIAL_MATURITY": "",
   "APOLLO_CF_ACCOUNT_NAMED_INVESTORS": "",
-
+  "APOLLO_CF_ACCOUNT_TECH_STACK_DETAILS": "",
   "APOLLO_LIST_ACCOUNTS_HIRING": "",
   "APOLLO_LIST_ACCOUNTS_FUNDING": "",
   "APOLLO_LIST_CONTACTS_HIRING": "",
   "APOLLO_LIST_CONTACTS_FUNDING": "",
   "APOLLO_LIST_LINKEDIN_PROFILE_ENRICHMENT": "",
-
   "AIRTABLE_POSTS_BASE_ID": "",
-
   "AIRTABLE_TBL_CONTACTS": "",
   "AIRTABLE_FLD_CONTACTS_NAME": "",
   "AIRTABLE_FLD_CONTACTS_LINKEDIN_URL": "",
-
   "AIRTABLE_TBL_COMPANY": "",
   "AIRTABLE_FLD_COMPANY_NAME": "",
   "AIRTABLE_FLD_COMPANY_LINKEDIN_URL": "",
-
   "AIRTABLE_TBL_PERSON_POST": "",
   "AIRTABLE_FLD_PERSON_POST_NAME": "",
   "AIRTABLE_FLD_PERSON_POST_POST_ID": "",
@@ -55,7 +47,6 @@
   "AIRTABLE_FLD_PERSON_POST_SHARES": "",
   "AIRTABLE_FLD_PERSON_POST_SCRAPED_AT": "",
   "AIRTABLE_FLD_PERSON_POST_CONTACT_LINK": "",
-
   "AIRTABLE_TBL_COMPANY_POSTS": "",
   "AIRTABLE_FLD_COMPANY_POSTS_NAME": "",
   "AIRTABLE_FLD_COMPANY_POSTS_POST_ID": "",
@@ -69,7 +60,6 @@
   "AIRTABLE_FLD_COMPANY_POSTS_SHARES": "",
   "AIRTABLE_FLD_COMPANY_POSTS_SCRAPED_AT": "",
   "AIRTABLE_FLD_COMPANY_POSTS_COMPANY_LINK": "",
-
   "AIRTABLE_TBL_POST_COMMENTS": "",
   "AIRTABLE_FLD_POST_COMMENTS_COMMENT_ID": "",
   "AIRTABLE_FLD_POST_COMMENTS_COMMENTER_NAME": "",
@@ -80,18 +70,14 @@
   "AIRTABLE_FLD_POST_COMMENTS_PERSON_POST_LINK": "",
   "AIRTABLE_FLD_POST_COMMENTS_COMPANY_POST_LINK": "",
   "AIRTABLE_FLD_POST_COMMENTS_SCRAPED_AT": "",
-
   "AIRTABLE_VAULT_BASE_ID": "",
   "AIRTABLE_TBL_VAULT_FIELD_KEYS": "",
   "AIRTABLE_TBL_VAULT_ENTITIES": "",
   "AIRTABLE_TBL_VAULT_FACTS": "",
   "AIRTABLE_TBL_VAULT_RUNS": "",
   "AIRTABLE_TBL_VAULT_QUESTIONS": "",
-
   "AIRTABLE_FLD_CONTACTS_TRACKING": "",
   "AIRTABLE_FLD_COMPANY_TRACKING": "",
-
   "SCRAPE_ROSTER_ARTIFACT": "scrape-roster.md",
-
   "APIFY_POSTS_ACTOR": "harvestapi/linkedin-profile-posts"
 }

@@ -60,7 +60,9 @@ ladder from [references/environment-setup.md](references/environment-setup.md):
 
 **Only S0 needs a signup. S1 through S3 are the normal case and none of them cost
 money.** The probes — list the tools, make the cheapest read-only call, read the schema,
-run the config validator — are all free and answer the question faster than asking does.
+run the config validator — are free except the Firecrawl probe, which performs a scrape,
+spends one credit, and says so before it runs. They answer the question faster than asking
+does.
 
 In scope:
 

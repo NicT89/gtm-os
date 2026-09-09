@@ -21,9 +21,10 @@ Full process: MAINTAINING.md.
      breaks. If a user could invoke something after upgrading that they could not
      invoke before, it is a minor. See MAINTAINING.md.
 
-     Bump VERSION alone. Never hand-edit .claude-plugin/plugin.json's version;
-     release.yml syncs it after merge. Make the bump the LAST edit before opening
-     this PR, since merging it fires the release. -->
+     Bump VERSION AND .claude-plugin/plugin.json's version together, in the same
+     commit; check_version_sync.py fails CI if they disagree. Make the bump the LAST
+     edit before opening this PR, since merging it fires the release. Patch is the
+     default: minor is for a new skill or something an operator can newly ask for. -->
 
 ## Changelog
 
