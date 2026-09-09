@@ -12,6 +12,43 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-09-09
+
+Contract mismatches found by an audit that read every document against every other. Six of
+the eighteen findings are fixed here, chosen because following the wrong copy causes harm
+rather than confusion. The rest are listed in the PR and scheduled.
+
+### Fixed
+
+- **The `Confidence` vocabulary existed in three incompatible versions, one of them
+  executable.** The live Vault select carries `verified, high, medium, low, inferred`.
+  `research-vault.md` documented `high, medium, low`. `scripts/gap_ledger.py` enforced
+  `verified, medium, inferred` and **rejected the other two**, so it exited 2 on most facts
+  in a populated Vault. All three now agree on the live five, with the strengths stated:
+  `verified` and `high` both mean a primary source says it and are the only two quotable or
+  writable without asking; `medium` is a vendor estimate for sizing and routing; `low` is a
+  weak or self-reported claim; `inferred` is reasoned rather than sourced.
+- **`signals-doctrine.md` banned catch-all enrollment outright**, while the skill, CLAUDE.md,
+  the README and the PR template all treat it as one of the four named human gates. An agent
+  following the doctrine automates past a registered gate, which CLAUDE.md forbids in the
+  same breath. The doctrine now defers to `gtm-signal-scan` Step 5 and says exclusion is a
+  default rather than a ban.
+- **The version-bump procedure contradicted itself in four places.** `MAINTAINING.md` said
+  both "auto-synced, do not hand-edit" and "the PR bumps both"; the PR template's prose said
+  bump VERSION alone while its own checklist ran `check_version_sync.py`. Anyone following
+  the stale copies shipped a PR that fails CI every time. All copies now say: bump both, in
+  the same commit.
+- **"Diagnosis is free" was wrong, and it was in five places including the pinned Get Started
+  block.** The per-connector reference says plainly that the Firecrawl probe performs a scrape
+  and spends a credit, and that it must not be described as free. Every other copy asserted
+  the whole diagnosis was free, so the skill spent unannounced in the one place a new user
+  meets the engine first, which is the credit gate failing at first contact.
+- **`CLAUDE.md` called Airtable and Apify optional and omitted Firecrawl entirely**, while
+  three other documents call all four required, conditionally.
+- **`Tech Stack Details` was the gap ledger's flagship example and existed nowhere.** No row
+  in the field dictionary, no config key, so an agent told to fill it had no field ID and is
+  forbidden from guessing one. It now has both.
+
 ## [1.9.1] - 2026-09-09
 
 One release of corrections, not four. Everything here is a patch: an operator who upgrades

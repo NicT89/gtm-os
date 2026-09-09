@@ -58,19 +58,29 @@ class TheDecisionTableIsCompleteAndExact(unittest.TestCase):
 
     TABLE = {
         ("empty", "verified"): WRITE,
+        ("empty", "high"): WRITE,
         ("empty", "medium"): PROPOSE,      # accepts_estimates False
+        ("empty", "low"): PROPOSE,
         ("empty", "inferred"): PROPOSE,
         ("stale", "verified"): WRITE,
+        ("stale", "high"): WRITE,
         ("stale", "medium"): PROPOSE,
+        ("stale", "low"): PROPOSE,
         ("stale", "inferred"): PROPOSE,
         ("unattributed", "verified"): PROPOSE,
+        ("unattributed", "high"): PROPOSE,
         ("unattributed", "medium"): PROPOSE,
+        ("unattributed", "low"): PROPOSE,
         ("unattributed", "inferred"): PROPOSE,
         ("human", "verified"): PROPOSE,
+        ("human", "high"): PROPOSE,
         ("human", "medium"): PROPOSE,
+        ("human", "low"): PROPOSE,
         ("human", "inferred"): PROPOSE,
         ("fresh", "verified"): SKIP,
+        ("fresh", "high"): SKIP,
         ("fresh", "medium"): SKIP,
+        ("fresh", "low"): SKIP,
         ("fresh", "inferred"): SKIP,
     }
 
@@ -145,6 +155,42 @@ class UnknownProvenanceIsNotMachineProvenance(unittest.TestCase):
 
     def test_a_fresh_unattributed_value_is_simply_skipped(self):
         self.assertEqual(classify(field(provenance="unknown", updated_at=FRESH), AS_OF), "fresh")
+
+
+class TheVocabularyMatchesTheLiveSchema(unittest.TestCase):
+    """The module rejected two real Confidence options until 1.9.2.
+
+    The Vault's select carries verified, high, medium, low and inferred. This module
+    accepted only three of them, so it exited 2 on most facts in a populated Vault, and
+    `references/research-vault.md` documented a third list again (high, medium, low). Three
+    vocabularies for one field, only one of them executable.
+    """
+
+    def test_all_five_live_options_are_accepted(self):
+        for confidence in ("verified", "high", "medium", "low", "inferred"):
+            with self.subTest(confidence=confidence):
+                problems, _ = build({"record": "t",
+                                     "fields": [field(confidence=confidence)]}, AS_OF)
+                self.assertEqual(problems, [], f"{confidence} must be a valid confidence")
+
+    def test_the_module_vocabulary_is_exactly_the_live_one(self):
+        self.assertEqual(set(CONFIDENCES),
+                         {"verified", "high", "medium", "low", "inferred"})
+
+    def test_high_writes_like_verified(self):
+        """`high` is the older wording for "a primary source states it directly"."""
+        self.assertEqual(decide("empty", "high", False)[0], WRITE)
+        self.assertEqual(decide("stale", "high", False)[0], WRITE)
+
+    def test_low_is_proposed_never_written(self):
+        """A self-reported vendor claim is not strong enough to fill a field unasked."""
+        for state in ("empty", "stale"):
+            with self.subTest(state=state):
+                self.assertEqual(decide(state, "low", False)[0], PROPOSE)
+
+    def test_only_primary_source_strengths_are_quotable(self):
+        from gap_ledger import QUOTABLE
+        self.assertEqual(set(QUOTABLE), {"verified", "high"})
 
 
 class AnInferredFactIsNeverWritten(unittest.TestCase):

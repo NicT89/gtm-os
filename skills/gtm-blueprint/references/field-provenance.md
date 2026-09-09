@@ -45,6 +45,7 @@ on the record is populated, never by asking whether the job ran.
 | CBI Mosaic Score | Third-party composite health score, 0-1000. Scoring input only; never quoted to a recipient. | `{APOLLO_CF_ACCOUNT_CBI_MOSAIC_SCORE}` | CB Insights, when connected | Optional (scoring input) |
 | CBI Commercial Maturity | 1-5 rating of how built-out the commercial function is. Calibrates blueprint ambition and hints at motion (2 suggests founder-led, 3 suggests a team in place). A hint, never the routing decision. | `{APOLLO_CF_ACCOUNT_CBI_COMMERCIAL_MATURITY}` | CB Insights, when connected | Optional (scoring + routing hint) |
 | Named Investors | Lead and participating investors on the latest round. Opener credibility context ONLY; never a claim of relationship. | `{APOLLO_CF_ACCOUNT_NAMED_INVESTORS}` | Manual or CBI | Optional (opener context only) |
+| Tech Stack Details (A11) | What THEY run to sell and operate, not what their product integrates with. Composition requires citing one real stack tool, so this is where a verified stack lives, and it is the canonical gap-ledger write target. NEVER write inferred technographics here: those are for filtering and are not quotable. | `{APOLLO_CF_ACCOUNT_TECH_STACK_DETAILS}` | The engine, from a primary source. Job descriptions first; source order in the plugin root's `references/scraping-playbook.md` | Optional |
 
 When rebuilding for a deployment, also record any auto-numbered duplicate fields the
 CRM has accumulated (e.g. `Research Company Profile 2453`) as **deprecated, never

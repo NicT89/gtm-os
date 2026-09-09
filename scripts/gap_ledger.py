@@ -54,7 +54,23 @@ from pathlib import Path
 # generous: churning a field every run costs credits and teaches people to ignore the diff.
 DEFAULT_STALE_AFTER_DAYS = 90
 
-CONFIDENCES = ("verified", "medium", "inferred")
+# The Vault's Confidence vocabulary, in descending strength. All five are real options in
+# the live schema and this module rejected two of them until 1.9.2, which would have failed
+# on most facts already in a populated Vault.
+#
+#   verified  a primary source states it and this run captured it
+#   high      a primary source states it directly (the older wording for the same strength)
+#   medium    strong secondary source, partial confirmation, or a vendor estimate
+#   low       weak, or a self-reported vendor claim
+#   inferred  reasoned rather than sourced
+CONFIDENCES = ("verified", "high", "medium", "low", "inferred")
+
+# May be quoted to a prospect. The test is whether the answer to "where did you get that?"
+# is a link to something they wrote.
+QUOTABLE = ("verified", "high")
+
+# Strong enough to fill or refresh a machine-written field without asking.
+WRITE_STRENGTH = ("verified", "high")
 PROVENANCES = ("machine", "human", "unknown")
 
 WRITE = "write"
@@ -134,14 +150,16 @@ def decide(state, confidence, accepts_estimates):
     if state == "unattributed":
         return PROPOSE, "nobody recorded who wrote this value, so it may be a person's"
 
-    if confidence == "verified":
-        return WRITE, f"{state} field and the fact is verified by a primary source"
+    if confidence in WRITE_STRENGTH:
+        return WRITE, f"{state} field and the fact is stated by a primary source"
     if confidence == "medium":
         if state == "empty" and accepts_estimates:
             return WRITE, "empty field that is declared to accept estimates"
         if state == "empty":
             return PROPOSE, "estimate into an empty field that does not accept estimates"
         return PROPOSE, "estimate may not overwrite an existing machine value"
+    if confidence == "low":
+        return PROPOSE, "a weak or self-reported claim is proposed, never written"
     return PROPOSE, "inferred facts are never written, only proposed"
 
 

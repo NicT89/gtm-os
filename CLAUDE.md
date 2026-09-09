@@ -43,8 +43,8 @@ set up my environment
 The `environment-setup` skill drives it, and it diagnoses what you already have before it
 suggests anything, because **not set up almost never means not owned**. The usual
 situation is that you own the tool and have simply never shaped it for this engine.
-Diagnosis is free: every probe it runs is a read-only call, and none of them spends a
-credit.
+Diagnosis costs almost nothing: every probe is a read-only call except the Firecrawl one,
+which performs a scrape, spends a single credit, and states that before it runs.
 
 **3. Know how well it speaks your stack.** Bring the CRM and data tools you already use.
 `references/platform-support.md` puts each one in a tier: **native** (built against that
@@ -322,8 +322,12 @@ went unchecked in the first place. For behavior, review against the harness refe
 
 ## Connectors
 
-Apollo is required; Apify, Airtable, Google Drive, and CB Insights are optional and
-each skill degrades explicitly when one is missing rather than guessing. The Research
+Apollo, Airtable, Apify and Firecrawl are each required, conditionally: Airtable for the
+posts base, Apify for post scraping, Firecrawl as the default web extractor. Google Drive,
+CB Insights, Brand Kit OS and a warehouse are optional, and each skill degrades explicitly
+when one is missing rather than guessing. The authoritative per-connector list is
+[references/environment-setup.md](references/environment-setup.md); this paragraph called
+Airtable and Apify optional and omitted Firecrawl entirely until 1.9.2. The Research
 Vault base is optional in the same way: with its keys empty, the research skills produce
 their reports and persist nothing, and say so. Note that
 interactively-authenticated MCP connectors may be unavailable in headless or
