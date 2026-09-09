@@ -12,6 +12,19 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Added
+
+- **A stated standard for what an outreach message has to be: relevant, evidently
+  researched, and offering help.** The spec had rules about structure, anchoring and
+  persona, but never said plainly what the reader is meant to feel. Relevant means true of
+  them *this month* — a fact from their own last fortnight beats a better one from six months
+  ago. Evidently researched means the reader can tell work happened without being told it
+  did, so quote what they wrote and name the tool their posting names, because claiming to
+  have researched someone is not evidence of it. Offering help means the message costs
+  nothing to answer: ask about their situation, offer the plan for correction, and do not
+  ask for time in a first touch, since asking for a meeting before earning one converts the
+  research into a transaction, which is what the reader is already filtering for.
+
 ## [1.10.0] - 2026-09-08
 
 Additive. Nothing changes for a run that does not call the new script, and there is no
