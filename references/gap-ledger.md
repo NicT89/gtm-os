@@ -94,9 +94,14 @@ as `gtm-blueprint`'s ad hoc proposal mode, produces a propose list and nothing e
 1. **Write the write queue.** No approval needed; that is what the gate is for.
 2. **Surface the propose queue once**, at the end, as a list rather than as a series of
    interruptions. Say what each item would become and what it would cost.
-3. **Record both in the run's Cost Summary and Notes**, so a later reader can tell which
+3. **Persist the propose queue in the Vault**, as facts at their real confidence, with a
+   Description saying they are proposals and what promoting one would require. See
+   `references/research-vault.md`. A queue that lives only in the session that produced it
+   is not a queue, and this document described one for a full release before saying where it
+   was kept.
+4. **Record both in the run's Cost Summary and Notes**, so a later reader can tell which
    fields this run filled and which it declined to.
-4. **Never silently skip the propose queue.** A run that closes nothing and says nothing is
+5. **Never silently skip the propose queue.** A run that closes nothing and says nothing is
    the behavior this document exists to end.
 
 ## Where the gaps usually are

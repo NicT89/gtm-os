@@ -21,7 +21,44 @@ Contact custom fields merge as {{contact.Field Name}} with the object prefix; ac
 
 ## Composition spec (what goes in those fields)
 
-Opener: 1-2 sentences, at least one hard number or date, anchored to the recipient's strongest signal (hiring: role + posting age + JD detail; funding: raise + sales-team size + growth), their own words preferred when posts exist, no flattery, no adjectives about the company, no exclamation marks. Blueprint: 3-4 sentences structured Week 1 / Week 2 / Weeks 3-4, naming their ICP and at least one real tool or vertical, ending "documented for the hire" (hiring motion) or "proof before headcount" (funding motion).
+Opener: three to four sentences in four named beats (see below), at least one hard number or date, anchored to the recipient's strongest signal (hiring: role + posting age + JD detail; funding: raise + sales-team size + growth), their own words preferred when posts exist, no flattery, no adjectives about the company, no exclamation marks. Blueprint: 3-4 sentences structured Week 1 / Week 2 / Weeks 3-4, naming their ICP and at least one real tool or vertical, ending "documented for the hire" (hiring motion) or "proof before headcount" (funding motion).
+
+**This section is the authoritative opener contract.** Length, structure, and the
+falsifiability tests are defined here and nowhere else. Other documents may point at the
+Opener field and must not restate its shape: `field-provenance.md` carried "1-2 sentences"
+for a release after this spec moved to four beats, which is what a second copy of a contract
+always eventually does.
+
+**The opener has four beats, and the first one is where openers usually fail.**
+
+1. **The arc, and what it means.** Where this person came from, what changed, and what they
+   consequently own now. The consequence clause is the beat, not the history: "came into the
+   company in September 2025 after five years running revenue operations elsewhere, **and has
+   been rebuilding the function since**" is an arc, while "moved into the Director seat in
+   April 2026, coming from digital product and revenue operations before that" is a CV
+   extract wearing an arc's clothes. Test it by deleting the consequence clause: if the
+   sentence still tells you something about their situation today, the consequence was doing
+   no work and the beat has not been written yet.
+2. **The reference, named.** The specific artifact you read, named so they can go and check
+   it: "reading the GTM Engineer posting your team has open". A reference the reader cannot
+   locate is indistinguishable from a guess.
+3. **The observation.** What that reference shows that is not obvious from it. A tension, a
+   shape, an implication. "That reads as a build seat rather than a support seat."
+4. **The question.** Answerable in one line, about how the thing works for them today.
+
+**Every beat traces to a source you could name inside the sentence.** Their own posts,
+their own job posting, their own filing, their own public career history. Enrichment
+estimates and vendor summaries are orientation, never quotable.
+
+**Never assert a relationship, a motive, or a causation you inferred.** Two people
+overlapping at a prior employer is a fact; one of them hiring the other is a story you made
+up. State the facts that are checkable and let the question carry the implication.
+
+**The falsifiability test has a second half for openers.** The blueprint's version is
+whether it could be sent to a different COMPANY unchanged. An opener must also survive being
+sent to a different PERSON at the same company: swap the recipient for their colleague one
+seat over, and if it still reads correctly, beat 1 is missing and what you have is a company
+fact with a name on top.
 
 **The opener ends in a question, and the question is the point.** A first touch is discovery, not a pitch: the goal is to learn enough to build a proposal that fits, not to assert one before you know what they need. So the opener earns its place with a hard fact and then spends it on a genuine question about how the thing works *for them today* — what their scoring actually keys on, where their attribution stops being trustworthy, which part of the cleanup is blocked. A closing line that states a conclusion instead ("that is a build, and it sits in the queue until someone starts") tells the reader something they already know, gives them nothing to correct, and leaves no opening to reply into. **If the last sentence could be true without the recipient existing, it is the wrong last sentence.**
 
@@ -29,6 +66,14 @@ Two rules that follow:
 
 - **Ask about the present, not the future.** "How does X work today" invites an answer; "here is what X should be" invites a decision they are not ready to make. Questions about current state are cheap for them to answer and are the only way to find out whether the proposal you would have pitched was right.
 - **The blueprint is a hypothesis offered for correction, not a plan delivered.** It is written from outside their company and parts of it are wrong by construction. Say so, and close it by asking which part is wrong — a reader who reorders your weeks has told you more than one who agrees.
+
+**The standard the whole message is judged against: it must read as relevant, evidently researched, and offering help.** Those three, in that order, and they are not style notes — they are what separates a message someone answers from one that looks like every other one in the inbox.
+
+- **Relevant** means it is about something true of them this month, not this year. A fact from their own last two weeks beats a better fact from six months ago.
+- **Evidently researched** means the reader can tell work happened without being told it did. Quote what they wrote, name the tool their posting names, cite the number they published. Never *claim* to have researched them; the evidence does that or nothing does.
+- **Offering help** means the message costs them nothing to answer. Ask about their situation, offer the plan for correction, and do not ask for time in a first touch. A message that asks for a meeting before it has earned one converts the research into a transaction, which is exactly what the reader is filtering for.
+
+The falsifiability test still governs everything: **if the message could be sent to a different company unchanged, it fails.** And its sharper form for the closing line — if the last sentence could be true without the recipient existing, it is the wrong last sentence.
 
 **Align to the person, not only to the company.** Persona decides which facts land, and the same fact means different things by seat. An open requisition for a lead-routing role is, to a **VP of Sales**, the reason his reps are working leads that were scored badly — he feels it downstream. To the **Marketing Director who owns the function and wrote the posting**, it is her own backlog and her own governance debt. To a **founder with no GTM leader**, it is a decision they funded and a function running thin. Before composing, name what this person is measured on and what breaks in their week, and write the question about that. A message aligned to the company and not the seat reads as researched-but-generic, which is worse than brief, because it proves the research happened and still missed them.
 

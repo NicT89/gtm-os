@@ -106,8 +106,10 @@ rather than merely fast:
 1. **Show, don't tell.** Every outreach claim must be true for the specific recipient
    and grounded in captured research. If an email could be sent to a different company
    unchanged, it has failed.
-2. **Human gates never automate away.** ICP sign-off, credit spend approval, and
-   pre-send review are gates, not steps.
+2. **Human gates never automate away.** ICP sign-off, credit spend approval, catch-all
+   enrollment policy, and pre-send review are gates, not steps. A catch-all domain accepts
+   every address, so a wrong one never bounces and never announces itself; whether to
+   enroll them is your decision to make once, on the record, with a bounce threshold armed.
 3. **Credit-consuming actions state their cost first** and report actual burn after.
    Search is free; reveals are not. Ranking happens before spending.
 4. **Everything the agent creates is labeled**, and human-managed assets are never

@@ -12,19 +12,77 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
-### Changed
+## [1.9.1] - 2026-09-09
 
-- **Catch-all handling is an operator policy with a recorded decision, not a hard-coded
-  exclusion.** The rule read as an absolute: catch-all contacts were never enrolled in an
-  email sequence. That is the right conservative default and the wrong thing to hard-code,
-  because catch-all is common on small-company domains and on a small-business ICP the
-  exclusion can remove most of a sourced cohort — one live run had it removing five of six
-  composed contacts. Both positions are now stated with their arguments, the choice is
-  required to be recorded with a date and a reason, and it is paired with a monitored bounce
-  threshold, since enrolling catch-alls *without* an auto-pause armed is the combination that
-  actually burns a sending domain. Also states plainly that `email_status` and
-  `email_domain_catchall` are independent flags — reading only the first is how a catch-all
-  reaches a send unnoticed.
+One release of corrections, not four. Everything here is a patch: an operator who upgrades
+runs the same commands and asks for the same things, and gets a better answer. **One action
+on upgrade**, called out below.
+
+### Fixed
+
+- **The versioning rule was producing version inflation, so it is rewritten.** It said any
+  additive release was a minor, which took this repo from 1.7 to 1.11 in two days for what
+  was one release of corrections. The test is now whether the OPERATOR'S CAPABILITY changed,
+  not whether a file was added: a reference, a rule, a validator, or a script the engine
+  calls on its own is a **patch**, and minor is reserved for a new skill or something an
+  operator can newly ask for. A required upgrade action no longer forces a minor either; it
+  is a communication problem, solved by saying so loudly.
+
+  `MAINTAINING.md` also now says to group related work into ONE release. One PR per concern
+  is about keeping a diff reviewable, not about splitting a coherent release into fragments
+  that must merge in a fixed order.
+- **"Do not invent numbers" is stated as a rule with no exceptions, and extended.** A
+  derived number is invented unless its inputs are sourced. Observed 2026-09-09 in a live
+  workspace: a draft asserted a role was "a $130K-$180K hire" costing "$13K-$19K per month",
+  from a posting that publishes no compensation at all. The range was plausible, the
+  arithmetic on it was sound, and the whole thing was fabricated. Plausibility is what makes
+  this class dangerous. The rule now also binds anything that writes into a field the engine
+  reads, including plays configured outside this repo, because a composed field is only as
+  trustworthy as the least careful thing with write access to it.
+- **The opener length contract existed in two places and drifted.**
+  `skills/outreach-audit/SKILL.md` is now declared the authoritative composition spec and
+  owns length, structure and the falsifiability tests; `field-provenance.md` points at it
+  and deliberately states neither, because when it did the two disagreed for a release.
+- **The review loop claimed a review that often does not happen.** CodeRabbit runs on the
+  free tier here and is not being upgraded. When its limit is reached it leaves zero findings
+  and the status check still reports SUCCESS, which is indistinguishable from a clean review.
+  The docs now say how to tell the difference (check for the completion signal, never infer
+  from absent findings) and to state plainly when no review happened.
+- **Catch-all enrollment was a gate no list of gates included.** `gtm-signal-scan` Step 5
+  already required the operator to choose exclusion or enrollment, record it, and arm a
+  bounce threshold, but it was prose and was never registered. The named set is now four:
+  ICP sign-off, credit spend, catch-all enrollment policy, pre-send review.
+- **The propose queue had no home.** The write/propose/skip split said to "surface the
+  propose queue once" and never said where it persists, so it lived in a chat transcript and
+  died with it. Proposals are now ordinary Vault facts at their real confidence.
+
+### Added
+
+- **`scripts/run_cost.py`.** The Vault's `Cost Summary` has had a fixed format since the
+  Vault existed and nothing produced it, so "state the total before spending" and "a run
+  projected to exceed its cap STOPS and asks" both depended on someone doing arithmetic in
+  their head. Returns the tally, the summary line, and a non-zero exit the moment a meter is
+  over cap. Units are per-meter and never summed; `Status` is `final` only for a completed
+  run.
+- **Every Vault fact is four things: title, description, content, reference.** The Facts
+  table gains a **`Description`** field. A reference is required for anything sourced from
+  the internet, which is what makes the composition rules work: only a fact the recipient
+  could check may be quoted.
+
+  **On upgrade:** add a long-text field named `Description` to your Vault's Facts table.
+  Existing facts stay valid without it.
+- **The opener has four named beats**, and the first is where openers fail: the arc (where
+  they came from, what changed, **what they consequently own now**), the reference named so
+  they can check it, the observation it makes possible, and the question. Beat 1 is tested by
+  deleting its consequence clause; if the sentence still says something about their situation,
+  the clause was decorative.
+
+  **The falsifiability test gains a second half for openers.** The blueprint asks whether it
+  could go to a different COMPANY unchanged. An opener must also survive going to a different
+  PERSON at the same company. Observed 2026-09-09: three openers for one account all passed
+  the old test and only one passed the new one.
+- **Never assert a relationship, motive, or causation you inferred.** Two people overlapping
+  at a prior employer is a fact; one hiring the other is a story.
 
 ## [1.9.0] - 2026-09-08
 

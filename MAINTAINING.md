@@ -31,17 +31,33 @@ happens after merge, not before.
 
 1. Make your changes (edit skills, README, etc.).
 2. Decide the new version with [Semantic Versioning](https://semver.org):
-   - **patch** (`1.0.x`) — wording fixes, clarifications, non-behavioral tweaks.
-   - **minor** (`1.x.0`) — new skill, new capability, backward-compatible additions.
-   - **major** (`x.0.0`) — changes that alter how existing skills behave or are invoked.
+   - **patch** (`1.0.x`) — the default, and where most releases belong. Corrections,
+     clarifications, new or rewritten reference documents, new rules and conventions,
+     tightened composition contracts, new helper scripts the engine calls internally, and
+     schema notes. Anything an operator does not have to *do* anything differently for.
+   - **minor** (`1.x.0`) — a **new skill**, or a genuinely new thing an operator invokes
+     and could not invoke before. Reserved and rare.
+   - **major** (`x.0.0`) — changes that break how existing skills behave or are invoked.
 
-   **"Additive" is not the test for patch; it is the test for *not major*.** A release
-   that adds a skill, a script, a reference, or a config key is a **minor** even though
-   nothing breaks and every existing install keeps working untouched. Patch is for
-   releases that change no capability at all. This trips people up because a purely
-   additive release feels low-risk, and low-risk reads as "patch" — but the number is
-   telling users what is *there*, not how nervous the maintainer was. If a user could
-   invoke something after upgrading that they could not invoke before, it is a minor.
+   **The test is whether the OPERATOR'S CAPABILITY changed, not whether a file was added.**
+   Adding a reference, a rule, a validator, or a script the engine calls on its own is a
+   patch: an operator who upgrades runs the same commands and asks for the same things, and
+   simply gets a better answer. Minor is for the day they can ask for something new.
+
+   *(This rule was rewritten in 1.9.1. It previously said any additive release was a minor,
+   which produced four version bumps in two days for what was one release of corrections.
+   Bumping fast makes the number stop meaning anything: a jump from 1.7 to 1.11 should tell
+   a reader that four new capabilities arrived, and if it does not, the number is noise.)*
+
+   **A required upgrade action does not force a minor.** If a release needs the operator to
+   add a field or flip a setting, say so loudly at the top of the changelog section. That is
+   a communication problem, not a version-number problem.
+
+   **Group related work into ONE release.** The one-PR-per-concern rule is about keeping a
+   diff reviewable, not about splitting a coherent release across several. Several changes
+   that must merge in a fixed order and would each be a fragment on their own are one
+   release, and stacking them as separate PRs makes review harder rather than easier. Split
+   when the pieces are genuinely independent and could land in either order.
 
    Incoming deliveries sometimes propose their own version number. Check it against
    these rules rather than adopting it: the delivery knows what it changed, not what
@@ -75,8 +91,27 @@ The flow, in order:
 
 ### The review loop
 
-CodeRabbit reviews every PR on this repo, and it is treated as a second reviewer
-rather than as a linter to clear. On the v1.5.0 PR it produced fifteen findings,
+CodeRabbit reviews PRs on this repo **when it has capacity**, and when it runs it is
+treated as a second reviewer rather than as a linter to clear.
+
+**It runs on the free OSS tier and is not being upgraded, so it is best-effort.** That
+matters more than it sounds, because of how it fails:
+
+**A green CodeRabbit status check is not evidence that the PR was reviewed.** When the
+limit is reached the bot posts a "Review limit reached" comment, leaves zero findings, and
+the check still reports SUCCESS. Zero findings from a rate-limited run is indistinguishable
+from zero findings from a clean one. Observed on the v1.9.0 PR, where a rate-limited run was
+one sentence away from being reported as a clean review.
+
+The local CLI fails the same way: a rate-limited `coderabbit review` exits with empty output,
+which reads as "no findings". In `--agent` mode a real review ends with a `complete` event
+carrying a findings count; a limited one prints "Rate limit exceeded". **Check for the
+completion signal. Never infer a clean review from an absence of findings.**
+
+So: try the CLI first, since its allowance is separate from the hosted bot's. If neither is
+available, say so plainly in the PR rather than implying a review happened, and substitute a
+deliberate self-review against the conventions in CLAUDE.md. Do not wait for a limit to
+reset. On the v1.5.0 PR it produced fifteen findings,
 all fifteen were valid, and two were defects no amount of re-reading would have
 surfaced: a writer stage told to persist data it was never passed, and a prompt
 whose supersede instruction contradicted the reference document added alongside
