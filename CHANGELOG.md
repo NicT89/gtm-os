@@ -12,6 +12,35 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.9.3] - 2026-09-10
+
+One ordering bug, fixed with the check that could have caught it. It was the only finding
+in the 1.9.2 audit that silently produced wrong data rather than confusing a reader.
+
+### Fixed
+
+- **`gtm-signal-scan` scraped LinkedIn posts one step too late, so the posts summary was
+  written from an empty field and reported success.** `field-provenance.md` requires the
+  posts field to be filled by `scrape-linkedin-posts` BEFORE the contact joins the
+  enrichment trigger list, because Apollo's summarize-posts step fires on list membership
+  and reads that field. The skill added contacts to the list in Step 5 and scraped in
+  Step 6. Every required thing was done, and two of them in the wrong order. The scrape is
+  now sub-step 2 of Step 5, between the create and the list-add; Step 6 verifies the
+  digests it used to fetch, and says what to do when a summary is empty but the digest is
+  not. Nothing about the failure was visible downstream: a contact who posts weekly and one
+  who has never posted produced byte-identical fields.
+
+### Added
+
+- **`tests/test_posts_before_list_add.py` asserts the order, not the presence.** Every
+  other check in this repo validates that something exists; this one compares positions
+  within Step 5 and re-reads the rule at its source in `field-provenance.md`, so it fails
+  if either the procedure or the rule moves. Falsified by swapping the two sub-steps back:
+  two of its four assertions fail.
+- **A fifth defect class in `CLAUDE.md`:** a check that only sees presence cannot see
+  order. Named because the repo's existing doctrine covers checks that cannot fail, and
+  this was a check that could fail and had nothing to look at.
+
 ## [1.9.2] - 2026-09-09
 
 Contract mismatches found by an audit that read every document against every other. Six of

@@ -275,6 +275,25 @@ Two habits that follow from it:
   greps for "untrusted" passes on prose about untrusted input; a test that asserts
   the tokenized delimiters match each other cannot.
 
+### A check that only sees presence cannot see order
+
+Everything above is about checks that cannot fail. This is the neighboring class: a check
+that *can* fail, works exactly as written, and is pointed at the wrong property.
+
+Every validator in this repo asserted presence — a field exists, a name matches a
+directory, a number has a source. `gtm-signal-scan` did every required thing and did two of
+them in the wrong order: it added contacts to the enrichment trigger list in Step 5 and
+scraped their LinkedIn posts in Step 6, while Apollo's summarize-posts step fires on list
+membership and reads the posts field. So the summary was written from an empty field and
+reported success, and a contact who posts weekly produced the same bytes as one who has
+never posted. Presence was perfect. Fixed in 1.9.3.
+
+**When a rule contains the word "before", the check for it has to compare positions.**
+`tests/test_posts_before_list_add.py` is the shape: it reads the rule at its source and the
+procedure that must obey it, from two different files, and compares indexes. Any rule about
+sequencing — scrape before enrich, gate before spend, verify before send — is unchecked
+until something compares an order rather than counting occurrences.
+
 Where a check is genuinely hard to falsify by hand, pin it the way
 `tests/test_fanout_workflow.py` does: reintroduce the defects into an in-memory copy
 and assert each one is caught.
