@@ -45,6 +45,18 @@ rather than confusion. The rest are listed in the PR and scheduled.
   meets the engine first, which is the credit gate failing at first contact.
 - **`CLAUDE.md` called Airtable and Apify optional and omitted Firecrawl entirely**, while
   three other documents call all four required, conditionally.
+- **`scripts/setup_status.py` told people to build things they already own.** Every "how to
+  close it" line assumed the object was absent, so a fresh reader was told to "build the
+  base" and "create the field definitions" when the overwhelmingly likely case, and the one
+  the whole setup module is built around, is that they own it and nobody recorded the ID.
+  Observed on a real workspace: the script reported 62 open keys against a deployment whose
+  Vault was already built to spec, whose Apollo custom fields all existed, and whose lists
+  all existed. Every group now says CHECK BEFORE YOU CREATE and names the probe, and the
+  no-config banner states plainly that a blank means not recorded rather than not built.
+
+  The Airtable line also gains the third outcome it was missing: a posts archive on a
+  DIFFERENT schema is not a gap to fill, it is a decision between adopting the reference
+  schema and mapping the engine onto yours.
 - **`Tech Stack Details` was the gap ledger's flagship example and existed nowhere.** No row
   in the field dictionary, no config key, so an agent told to fill it had no field ID and is
   forbidden from guessing one. It now has both.
