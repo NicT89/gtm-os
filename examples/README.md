@@ -7,7 +7,7 @@ describe in prose, so a run has something concrete to match.
 |---|---|
 | `scan-report.md` | gtm-signal-scan step 7 |
 | `audit-log-entry.md` | the audit-log append every skill ends with |
-| `blueprint-hiring.md` | gtm-blueprint step 4 output, hiring motion |
+| `blueprint-hiring.md` | gtm-blueprint step 4 output, hiring signal |
 
 ## These are synthetic
 

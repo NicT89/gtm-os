@@ -1,6 +1,45 @@
 # Signals Doctrine
 ### The canonical buying-signal taxonomy for the GTM Engine. Every signal maps to a source, cost, decay window, motion route, and action. Apollo's native buying-intent settings cap at 6 options; this document is the richer definition the engine actually runs on.
 
+## Two axes, two words: signal type and GTM motion
+
+The word "motion" named both of these until 1.9.4, and the collision wrote wrong copy.
+
+**Signal type** is what pulled the account into a run: `hiring` or `funding`. It selects
+the search filters, the account list, and which account fields the opener's hard number can
+come from. `field_gate.py --signal-type` is the executable form. (The flag was `--motion`
+through 1.9.3; that spelling still works and warns.)
+
+**GTM motion** is the shape of the target company's own go-to-market: one of the five in
+`skills/gtm-blueprint/references/motion-templates.md`, or a custom one. It decides the
+blueprint's week lines and its closer, and it is classified in `gtm-blueprint` Step 3 —
+later in the run, from different evidence.
+
+They are independent. A company sourced on a hiring signal may run any of the five motions,
+and the same company sourced on funding would run the same motion. **The closer comes from
+the motion, never from the signal type.** `outreach-audit` said the opposite until 1.9.4 —
+it keyed the closer on hiring-vs-funding and named a closer line ("documented for the
+hire") that exists in no template — and `examples/blueprint-hiring.md`, the format anchor
+everything is copied from, carried that closer under a blueprint classified
+enterprise sales-led. It would have failed `gtm-blueprint`'s own quality gate, which checks
+the closer against the recorded motion.
+
+## The M1-M5 routing codes are NOT DEFINED in this repo
+
+The `Routes to` column below uses `M1`-`M5`. **No legend for them exists anywhere in this
+repo**, which means every routing cell in this table is currently unreadable to anyone who
+did not already know the scheme, and an agent reading it cannot act on it.
+
+They are not being guessed at here. Inventing a mapping that reads plausibly is the exact
+failure mode `CLAUDE.md` prohibits, and a wrong routing legend would send whole cohorts
+into the wrong motion while looking authoritative.
+
+So, for now: **treat `Routes to` as operator-defined and unresolved.** Do not route on it.
+The `Action` column is the column that is safe to act on. Closing this needs one of two
+things from the deployment's owner — either the five codes written out here with what each
+one means, or the codes replaced by the motion names from `motion-templates.md` if that is
+what they were always shorthand for.
+
 Rule: a signal without an owner and an action is trivia. A signal is ACTIVE for a deployment only when its row is fully filled in and its gate is wired into the scan.
 
 | # | Signal | Source (tool) | Cost | Decay | Routes to | Action |

@@ -110,7 +110,8 @@ Custom field IDs, resolved from `instance-config.json`:
 
 Never write posts data to a field named "View professional posts". Earlier versions of this engine used it; it is permanently deprecated because a silent-empty scrape wrote a false "no posts" verdict for someone who does post. It has no config key, by design.
 
-For each target just scraped, build:
+**Two different shapes, and until 1.9.4 this step conflated them.** The JSON below is the
+INTERMEDIATE the Airtable write is built from. It is not what goes into the Apollo field.
 
 ```json
 {
@@ -125,6 +126,23 @@ For each target just scraped, build:
 ```
 
 `has_content: false` and `posts: []` if the target had no posts in the window.
+
+**The Apollo field takes the pipe-delimited digest, one post per line, defined in
+`gtm-blueprint`'s `references/field-provenance.md`** — that file is the dictionary, it
+carries the column order, the excerpt cap and the window, and this step does not restate
+them because a second copy is a second thing to drift. Read the format there and render to
+it. Writing the raw JSON into the field, which is what this step read as saying, breaks
+every consumer: the Apollo-side summarize step and the blueprint composer both parse lines,
+so they get one unparseable blob and the mirror line silently loses its source.
+
+**A zero-post result is not an empty field.** Retry once. If the second attempt is also
+empty, write the sentinel from the dictionary — `Scrape returned empty - verify manually
+(checked <date>)` — never an empty string and never a "no posts" verdict. An empty field
+means "not scraped" to everything downstream, so a silent-empty scrape on somebody who
+posts weekly reads as a person with nothing to mirror. That is the exact failure that
+permanently deprecated the "View professional posts" field, and this skill had inherited it
+back by having no sentinel of its own: `has_content: false` describes the intermediate and
+was never something the field could carry.
 
 Match to the Apollo contact/account by linkedin_url. Push via `apollo_contacts_update` / `apollo_accounts_update`, passing only the record id and `typed_custom_fields`, nothing else (these calls overwrite whatever fields you pass, don't blank out unrelated fields). This is a destructive write with no undo surfaced by the tool: double-check the record id and the authored-posts-only filter before calling it. Skip and report, don't guess, if no confident Apollo match exists. If a company has no Apollo Account object at all (contacts exist but the account was never created), skip the account-level push and flag it, don't create one without asking first.
 
