@@ -24,21 +24,17 @@ everything is copied from, carried that closer under a blueprint classified
 enterprise sales-led. It would have failed `gtm-blueprint`'s own quality gate, which checks
 the closer against the recorded motion.
 
-## The M1-M5 routing codes are NOT DEFINED in this repo
+## The M1-M5 routing codes
 
-The `Routes to` column below uses `M1`-`M5`. **No legend for them exists anywhere in this
-repo**, which means every routing cell in this table is currently unreadable to anyone who
-did not already know the scheme, and an agent reading it cannot act on it.
+The `Routes to` column below uses `M1`-`M5`. **The legend is
+[references/motion-codes.md](motion-codes.md)** — read it before acting on a routing cell.
 
-They are not being guessed at here. Inventing a mapping that reads plausibly is the exact
-failure mode `CLAUDE.md` prohibits, and a wrong routing legend would send whole cohorts
-into the wrong motion while looking authoritative.
-
-So, for now: **treat `Routes to` as operator-defined and unresolved.** Do not route on it.
-The `Action` column is the column that is safe to act on. Closing this needs one of two
-things from the deployment's owner — either the five codes written out here with what each
-one means, or the codes replaced by the motion names from `motion-templates.md` if that is
-what they were always shorthand for.
+No legend existed anywhere in this repo until 1.9.4, which made every cell in that column
+unreadable to anyone who did not already know the scheme. It was not guessed at then and is
+not guessed at now: each definition was recovered from the enrollment criterion in the
+corresponding Apollo sequence's own description, cross-checked against the list names and
+against this table's routing hints. M1-M4 are the four quadrants of the 2x2 that signal 6
+names; M5 is a recency override that outranks M3 and M4.
 
 Rule: a signal without an owner and an action is trivia. A signal is ACTIVE for a deployment only when its row is fully filled in and its gate is wired into the scan.
 

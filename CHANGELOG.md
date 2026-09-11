@@ -98,14 +98,19 @@ delete the copy and point at the source.
 - **Eleven new `field_gate.py` tests**, covering the account fields per signal type and the
   fact floor. Falsified by reverting both checks: five of twenty fail.
 
-### Open, and NOT fixed here
+- **`references/motion-codes.md`: the `M1`-`M5` legend, which existed nowhere.** Every
+  routing cell in `signals-doctrine.md` was unreadable without it. **Recovered, not
+  invented**: each definition is the enrollment criterion from the corresponding Apollo
+  sequence's own description, cross-checked against the list names and the doctrine's routing
+  hints. M1-M4 turn out to be the four quadrants of the 2x2 that signal 6 names (has GTM
+  team? x hiring GTM?) and M5 is a recency override that outranks M3 and M4. M1 is the only
+  code with no Apollo list because its trigger is an ABSENCE — no live postings — and a list
+  is built from what a search returns. The file also fixes the naming convention (every
+  Apollo object a motion touches carries the code at the front of its own name; lists already
+  do, sequences do not) and carves out the two job-search tracks as `JS-HM`/`JS-REC`, which
+  are not motions and must never run at a company that is live in one.
 
-- **The `M1`-`M5` routing codes in `signals-doctrine.md` have no legend anywhere in this
-  repo.** Deliberately not invented: a plausible-reading mapping is precisely what
-  `CLAUDE.md` prohibits, and a wrong routing legend would send whole cohorts into the wrong
-  motion while looking authoritative. The table now says so and directs readers to the
-  `Action` column, which is safe to act on. Closing it needs the five codes written out, or
-  replaced by the motion names if that is what they were shorthand for.
+### Open, and NOT fixed here
 - **`gtm-signal-scan`'s scoring line still reads "archetype/motion fit 25".** At scan time
   the target's GTM motion has not been classified yet — that happens in `gtm-blueprint`
   Step 3 — so this cannot mean the five templates, and it is left alone rather than guessed
