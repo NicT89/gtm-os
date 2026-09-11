@@ -32,15 +32,15 @@ Read `instance-config.json` at the plugin root and resolve every `{KEY}` in this
 
 Blueprints synthesized from blank inputs fabricate or generalize; both are fatal to a show-don't-tell motion. So verify inputs first.
 
-Workflows and enrichment jobs are usually invisible to CRM APIs. Never ask "did the workflow run"; instead check whether the OUTPUT field on the record is populated. Pull the full contact record, then either run `scripts/field_gate.py <record.json> --motion <funding|hiring>` (deterministic, loggable) or check manually against references/field-provenance.md.
+Workflows and enrichment jobs are usually invisible to CRM APIs. Never ask "did the workflow run"; instead check whether the OUTPUT field on the record is populated. Pull the full contact record, then either run `scripts/field_gate.py <record.json> --signal-type <funding|hiring>` (deterministic, loggable) or check manually against references/field-provenance.md.
 
-Gate rules: account system enrichment complete (funding, dept sizes, technologies) AND LinkedIn Profile Summary present AND at least one of {Research Company Profile, posts digest}. Hiring motion additionally requires GTM Jobs w/ URL, JD Summary, and Role Archetypes on the account. Never compose from fewer than three hard facts.
+Gate rules: account system enrichment complete (funding, dept sizes, technologies) AND LinkedIn Profile Summary present AND at least one of {Research Company Profile, posts digest}. Hiring signal additionally requires GTM Jobs w/ URL, JD Summary, and Role Archetypes on the account. Never compose from fewer than three hard facts.
 
 On FAIL, remediate by populator before composing (paths in field-provenance.md): workflow fields → re-add to trigger list and re-check; Claude pipeline fields → run the pipeline; system enrichment → enrich the org. Remediation that spends credits (org enrichment, people match) is confirmed with the user first, costed per the plugin root's references/apollo-credit-costs.md. Log gate results to the audit log.
 
 ## Step 2: Gather context
 
-Seller side: load positioning, offer, and voice from the configured context source; the blueprint proposes THEIR delivery in THEIR voice. Target side, in priority order: Research Company Profile (richest: cited recent developments and pain points), system enrichment fields, CB Insights when connected (funding stage and round with named lead investors for opener credibility, commercial maturity 1-5 to calibrate the plan's ambition, Mosaic score, competitors for positioning lines, recent news for recency hooks), JD summaries (hiring motion), posts digests (also for voice-matching the recipient's own language), website scrape as fallback. See references/field-provenance.md for the field dictionary including CBI field semantics.
+Seller side: load positioning, offer, and voice from the configured context source; the blueprint proposes THEIR delivery in THEIR voice. Target side, in priority order: Research Company Profile (richest: cited recent developments and pain points), system enrichment fields, CB Insights when connected (funding stage and round with named lead investors for opener credibility, commercial maturity 1-5 to calibrate the plan's ambition, Mosaic score, competitors for positioning lines, recent news for recency hooks), JD summaries (hiring signal), posts digests (also for voice-matching the recipient's own language), website scrape as fallback. See references/field-provenance.md for the field dictionary including CBI field semantics.
 
 **Preflight the SELLER source before reading the target.** The context source can be stale
 or self-contradicting, and a seller-side error is worse than a target-side one: it goes into
@@ -110,7 +110,7 @@ and says nothing is the failure this step exists to end.
 
 ## Data handling and disclosure
 
-Check the do-not-contact/exclusion list before composing for any contact; a blueprint for an excluded contact is wasted work and a governance defect. Use only public professional data (CRM enrichment, public posts, public web); prospect data stays inside the CRM and this workspace, never in third-party tools outside the configured stack. Disclosure is strategy here, not fine print: the outreach copy itself reveals that an AI engine sourced and researched the recipient (the engine IS the product), so keep that reveal intact in any sequence that carries these fields. In client provisioning mode, set the client's disclosure stance explicitly during setup; do not default to silence about AI involvement.
+Check the exclusion list **in the CRM** before composing for any contact; a blueprint for an excluded contact is wasted work and a governance defect. The engine does not keep an exclusion list of its own and must never start one: the operator's CRM already holds it (in Apollo, the do-not-contact settings and the account/contact exclusions), and a second list is a second thing to be out of date. This line read as though the list lived here until 1.9.4. Use only public professional data (CRM enrichment, public posts, public web); prospect data stays inside the CRM and this workspace, never in third-party tools outside the configured stack. Disclosure is strategy here, not fine print: the outreach copy itself reveals that an AI engine sourced and researched the recipient (the engine IS the product), so keep that reveal intact in any sequence that carries these fields. In client provisioning mode, set the client's disclosure stance explicitly during setup; do not default to silence about AI involvement.
 
 ## Quality gate
 

@@ -59,6 +59,15 @@ Append-only. The atom of the whole system.
 | Agent | text | Which agent or session wrote it (e.g. "cowork-fable", "fanout-researcher-3") |
 | Confidence | select: verified, high, medium, low, inferred | Descending strength. `verified` and `high` both mean a primary source states it, and are the only two that may be QUOTED to a prospect or written to a field unasked. `medium` is a strong secondary source or a vendor estimate: sizing and routing only. `low` is a weak or self-reported claim. `inferred` is reasoned rather than sourced. `scripts/gap_ledger.py` enforces exactly this list |
 | Status | select: current, superseded | New facts land `current`. Superseding flips the OLD row, never deletes it |
+| Entity | link to Entities | |
+| Run | link to Runs | |
+| Supersedes | link to Facts | Points at the row this one replaces |
+
+*(Entity, Run and Supersedes sat BELOW three paragraphs of prose until 1.9.4, which ended
+the table at Status and re-opened a second, header-less one further down. All three are
+required columns; a schema built from this file as it rendered would have been missing the
+two links that make a fact retrievable and the one that makes supersede possible. Prose
+between table rows is not a formatting nit -- it silently truncates the schema.)*
 
 **Only a `verified` or `high` fact may be quoted to a prospect.** Confidence already carries the
 vocabulary; until 1.8.0 nothing depended on it, so a `low`-confidence estimate could be
@@ -76,9 +85,6 @@ it as a number.
 select must match it. 1.8.0 adds **A11, the target's internal tool stack**; add that option
 to the Facts and Questions tables before the next run, or A11 facts will fall to `other` and
 stop being retrievable by key.
-| Entity | link to Entities | |
-| Run | link to Runs | |
-| Supersedes | link to Facts | Points at the row this one replaces |
 
 **Supersede protocol (refined in production)**: before writing a fact, query current facts for the same Entity + Field Key. Supersede on CONTRADICTION or REPLACEMENT: if the new fact corrects or enriches-and-replaces the old one, write the new row with Supersedes → old row and flip the old row to `superseded`. COEXIST on COMPLEMENT: two facts under the same field key that are both true and about different aspects both stay `current` (a B5 fact naming the team and a B5 fact naming its director are complements, not conflicts). If the value is the same, do not write a duplicate.
 

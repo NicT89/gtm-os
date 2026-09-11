@@ -12,6 +12,110 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.9.4] - 2026-09-10
+
+The rest of the 1.9.2 contract audit, as one release. Every finding here is the same defect
+wearing different clothes: a document carried a COPY of something another document owns, the
+copy drifted, and following the copy did the wrong thing. The fix in nearly every case is to
+delete the copy and point at the source.
+
+### Fixed
+
+- **`field_gate.py` accepted a `--motion` argument it never read.** It was echoed into the
+  verdict and nothing branched on it, so a hiring record with no `GTM Jobs w/ URL`, no
+  `JD Summary` and no `Role Archetypes` — all three required by SKILL.md — exited 0 = PASS.
+  The argument being MANDATORY is what hid this: a required flag reads as a required check.
+  The gate now checks the account fields the signal type calls for, and `--signal-type` is
+  the flag's name (`--motion` still works, with a notice).
+- **`min_hard_facts` sat in the gate config with no reader**, so "never compose from fewer
+  than three hard facts" was enforced by nothing. The gate now counts populated
+  FACT-BEARING SOURCES and names them in the verdict. Stated plainly in the docstring and
+  the verdict's own note: a source count is a necessary condition for three hard facts and
+  never a sufficient one, because no script can tell whether a populated field yields a
+  quotable number. Pre-send review is still where a human reads the facts.
+- **A malformed `--config` raised a traceback instead of exiting 2**, so a typo in the path
+  read as a crash inside the gate.
+- **The word "motion" named two different things**, and the collision wrote wrong copy. The
+  two axes are now defined once, in `references/signals-doctrine.md`: **signal type**
+  (`hiring`/`funding`) is what sourced the account and anchors the OPENER; **GTM motion** is
+  the target's own go-to-market shape, one of the five templates, and it decides the plan and
+  the CLOSER. They are independent.
+- **`outreach-audit` keyed the blueprint's closer on the signal type**, offering
+  "documented for the hire" (a string that exists in no motion template) or "proof before
+  headcount" (a real closer, but PLG's and founder-led's). `gtm-blueprint`'s quality gate
+  checks the closer against the recorded MOTION, so following the authoritative composition
+  spec produced blueprints that failed the gate. It now points at `motion-templates.md`,
+  which is the only place closers are defined.
+- **`examples/blueprint-hiring.md` — the format anchor step 4 output is copied from — was
+  filed under the enterprise sales-led motion and ended "Documented for the hire."** It
+  would have failed the quality gate, and everything copied from it inherited that.
+- **`gtm-signal-scan` restated the signal taxonomy and had lost four of the twelve rows**,
+  including signal 6, GTM persona presence/absence, which the doctrine marks ALWAYS ON. A
+  partial copy of a taxonomy is worse than a pointer, because it reads complete.
+- **The same skill restated the reachability tiers and had lost two flags**: `likely` from
+  T3 and `unverified` from T4. Dropping `unverified` from T4 is the expensive one — it reads
+  as spendable, so every `unverified` candidate bought a match credit to learn the address
+  was never sendable, which is the one spend that step exists to prevent.
+- **`scrape-linkedin-posts` Step 6 read as pushing raw JSON into the Apollo posts field**,
+  while the field dictionary specifies a pipe-delimited digest, one post per line, with an
+  excerpt cap and a window. Both the Apollo-side summarize step and the blueprint composer
+  parse lines, so they would get one unparseable blob. The JSON is now labeled as the
+  Airtable intermediate, and the field format is read from the dictionary rather than
+  restated.
+- **The same step had no zero-post sentinel.** `has_content: false` describes the
+  intermediate and was never something the field could carry, so a silent-empty scrape wrote
+  an empty field — which means "not scraped" downstream. That is the failure that
+  permanently deprecated the "View professional posts" field, inherited back by omission.
+  Retry once, then write the dictionary's sentinel.
+- **`JD Summary` and `GTM Jobs w/ URL` have TWO populators and the dictionary named one.**
+  `jd-intake` writes both when the CRM-side AI field runs have not, and must reconcile
+  rather than overwrite when they have. A second writer to a field the engine reads was
+  invisible in the dictionary — exactly what `CLAUDE.md` says to audit separately.
+- **`gap-closer` said it needs "three" keys and then listed four**, with the fourth in
+  parentheses. `{AIRTABLE_TBL_VAULT_ENTITIES}` is not optional: an unlinked fact is not
+  retrievable by entity, which is the only way anything reads it.
+- **`CBI Mosaic Score` was documented as both 0-1000 and 1-1000**, and the file separately
+  reserves 0 as the attempted-but-empty sentinel. The 0-1000 spelling made a real score of
+  zero indistinguishable from a failed retrieval.
+- **Three paragraphs of prose had accumulated between rows of the Vault's Facts table**,
+  which in markdown ends the table and re-opens a header-less one. The rendered schema was
+  missing `Entity`, `Run` and `Supersedes` — the two links that make a fact retrievable and
+  the one that makes the supersede protocol possible. Every row was present in the source,
+  which is why nobody caught it; the render is what a person building the base reads.
+- **The exclusion-list rule read as though the engine kept the list.** It does not and must
+  never start one: the operator's CRM already holds it, and a second list is a second thing
+  to be out of date.
+
+### Added
+
+- **`tests/test_closer_contract.py`** parses the closers out of `motion-templates.md` and
+  asserts the example's closer is the one its RECORDED MOTION has. Falsified by restoring
+  the old closer.
+- **`tests/test_markdown_tables_intact.py`** asserts no table in the repo is split by prose,
+  by requiring a separator line as the second line of every run of table rows. It carries
+  its own positive and negative cases so a broken detector cannot pass silently. Zero
+  suspect blocks repo-wide after the Facts-table repair.
+- **Eleven new `field_gate.py` tests**, covering the account fields per signal type and the
+  fact floor. Falsified by reverting both checks: five of twenty fail.
+
+- **`references/motion-codes.md`: the `M1`-`M5` legend, which existed nowhere.** Every
+  routing cell in `signals-doctrine.md` was unreadable without it. **Recovered, not
+  invented**: each definition is the enrollment criterion from the corresponding Apollo
+  sequence's own description, cross-checked against the list names and the doctrine's routing
+  hints. M1-M4 turn out to be the four quadrants of the 2x2 that signal 6 names (has GTM
+  team? x hiring GTM?) and M5 is a recency override that outranks M3 and M4. M1 is the only
+  code with no Apollo list because its trigger is an ABSENCE — no live postings — and a list
+  is built from what a search returns. The file also fixes the naming convention (every
+  Apollo object a motion touches carries the code at the front of its own name; lists already
+  do, sequences do not) and carves out the two job-search tracks as `JS-HM`/`JS-REC`, which
+  are not motions and must never run at a company that is live in one.
+
+### Open, and NOT fixed here
+- **`gtm-signal-scan`'s scoring line still reads "archetype/motion fit 25".** At scan time
+  the target's GTM motion has not been classified yet — that happens in `gtm-blueprint`
+  Step 3 — so this cannot mean the five templates, and it is left alone rather than guessed
+  at.
+
 ## [1.9.3] - 2026-09-10
 
 One ordering bug, fixed with the check that could have caught it. It was the only finding

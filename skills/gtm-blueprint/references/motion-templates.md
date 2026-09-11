@@ -1,5 +1,15 @@
 # GTM Motion Templates
 
+**A GTM motion is not a signal type.** The motion is the shape of the target's own
+go-to-market and it decides this file's week lines and closer. The signal type — `hiring` or
+`funding` — is what pulled the account into the run and decides the OPENER's anchor. They
+are independent axes, defined once in the plugin root's `references/signals-doctrine.md`,
+and conflating them is how a blueprint ends up with a closer its recorded motion does not
+have. **This file is the only source of closer lines.** Nothing else may name one: five
+templates carry four distinct closers between them (PLG and founder-led share one), and a
+sixth string, "documented for the hire", circulated in two other documents until 1.9.4
+without ever existing here.
+
 Select ONE motion per blueprint using the classification rules in SKILL.md — one of the five templates below, or a **custom motion** (see the Custom motion section) when the company fits none of them cleanly. Each template defines what Weeks 1, 2, and 3-4 emphasize and the closer line. The emphases exist because the plan must describe what a GTM engineer would actually build first at THAT kind of company; a PLG company's pipeline hides in usage data, an enterprise seller's pipeline hides in a finite account universe. Getting the emphasis wrong makes the plan feel templated, which defeats its purpose. The five are the common shapes, not a closed list: forcing the nearest preset onto a company it does not fit produces exactly the templated feel the skill exists to avoid.
 
 ## Output format (all motions)

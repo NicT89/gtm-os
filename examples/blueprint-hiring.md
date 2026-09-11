@@ -1,4 +1,4 @@
-# Composed blueprint — hiring motion
+# Composed blueprint — hiring signal, enterprise sales-led motion
 
 SYNTHETIC EXAMPLE. Invented company, role, and figures; `.example` domain. Format
 anchor for gtm-blueprint step 4 output.
@@ -34,9 +34,18 @@ compliance buyer in two posts). Hard facts available: 6. Minimum is 3.
   attribution wired back into Apollo so the hire arrives to a system that already
   reports, instead of one they spend a quarter building.
 
-Documented for the hire.
+Documented for the team as it grows: the system outlives any one seller.
 
 ---
+
+## Why the closer is the one it is
+
+The closer is the **enterprise sales-led** template's, because that is the motion recorded
+above — not the hiring signal that sourced the account. Until 1.9.4 this file ended
+"Documented for the hire.", a line that appears in no motion template, and since this file
+is the format anchor for step 4 output, every blueprint copied from it inherited a closer
+that `gtm-blueprint`'s quality gate would reject. Signal type sources the account; motion
+shapes the plan and picks the closer. See the plugin root's `references/signals-doctrine.md`.
 
 ## Why this passes the falsifiability test
 

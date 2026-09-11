@@ -14,9 +14,9 @@ Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION and compare t
 ## Instance variables (confirm on first run, then reuse)
 
 - {MOTION}: "hiring" (companies hiring GTM Engineer / RevOps / AI Ops roles) or "funding" (recently raised, no established sales function)
-- {ACCOUNT_LIST}: accounts list per motion (defaults: "Companies Hiring" / "Funding Signal - No GTM")
-- {CONTACT_LISTS}: every new contact gets "LinkedIn Profile Enrichment" (when a LinkedIn URL exists) plus the motion contact list
-- {SEQUENCE}: the motion's sequence; NEVER enroll anyone from this skill, enrollment is a human gate
+- {ACCOUNT_LIST}: accounts list per SIGNAL TYPE, not per GTM motion (defaults: "Companies Hiring" / "Funding Signal - No GTM"). The two axes are defined in references/signals-doctrine.md.
+- {CONTACT_LISTS}: every new contact gets "LinkedIn Profile Enrichment" (when a LinkedIn URL exists) plus the contact list for this signal type
+- {SEQUENCE}: the sequence for this signal type; NEVER enroll anyone from this skill, enrollment is a human gate
 
 ## Credit rules (non-negotiable)
 
@@ -24,22 +24,22 @@ State total credit cost before any spend and get explicit approval. Costs, the e
 
 ## Step 1: Signal search (1 credit)
 
-Signal selection and any additional gates come from references/signals-doctrine.md at the plugin root: the canonical taxonomy of buying signals (funding, postings, job changes, posting disappearance, website intent, commercial-maturity shifts, social buying language, review-site switch intent), each with source, cost, decay window, motion routing, and owner. The two searches below are gates 1-2 of that taxonomy; run additional gates only when the doctrine marks them active for this deployment.
+Signal selection and any additional gates come from references/signals-doctrine.md at the plugin root, which is the canonical taxonomy: every signal with its source, cost, decay window, routing and owner, and a line saying which are active for this deployment. **Read the taxonomy there; it is not summarized here.** This paragraph used to list the signals by name, and the list drifted to eight of the twelve rows — dropping, among others, signal 6, GTM persona presence/absence, which the doctrine marks a structural gate that is ALWAYS ON. A partial copy of a taxonomy is worse than a pointer to it, because it reads complete. The two searches below are gates 1-2; run additional gates only when the doctrine marks them active.
 
-Hiring motion, Apollo company search: US, 11-200 employees, q_organization_job_titles ["gtm engineer","go-to-market engineer","revenue operations","gtm operations","ai operations"], job posted within 60 days, keywords SaaS/software/AI.
-Funding motion: latest_funding_date_range last 6 months, latest_funding_amount_range min 2000000, organization_department_or_subdepartment_counts master_sales 0-3, same size/geo/keywords.
+Hiring signal, Apollo company search: US, 11-200 employees, q_organization_job_titles ["gtm engineer","go-to-market engineer","revenue operations","gtm operations","ai operations"], job posted within 60 days, keywords SaaS/software/AI.
+Funding signal: latest_funding_date_range last 6 months, latest_funding_amount_range min 2000000, organization_department_or_subdepartment_counts master_sales 0-3, same size/geo/keywords.
 
 Dedupe rule: the response's "accounts" array = already in the CRM (route to update, never create); "organizations" array = net new.
 
 ## Step 2: Score and tier
 
-Score 0-100: archetype/motion fit 25, stage and funding 20, signal age 15, budget signal 15, stack overlap 10, geography 10, warm path 5. Exclude on sight: competitors (agencies selling GTM/AI services), job boards, staffing firms, offshore-only relevant roles, companies with an established sales/RevOps team of 4+ (funding motion) or dedicated GTM engineering team of 2+ (hiring motion).
+Score 0-100: archetype/motion fit 25, stage and funding 20, signal age 15, budget signal 15, stack overlap 10, geography 10, warm path 5. Exclude on sight: competitors (agencies selling GTM/AI services), job boards, staffing firms, offshore-only relevant roles, companies with an established sales/RevOps team of 4+ (funding signal) or dedicated GTM engineering team of 2+ (hiring signal).
 
 Tiers: Excellent = full enrichment (org enrich + all selected people + posts digest + Opener/Blueprint composition). Good = partial (org enrich + 1-2 people). Fair = account record only, no people spend.
 
 ## Step 3: Account enrichment and creation
 
-Org-enrich Excellent and Good tiers (1 credit each; funding, sales_department_size, growth, technologies land in Apollo system fields automatically). Bulk-create net-new accounts (name + domain; NOTE: account creation does NOT dedupe, always check step 1's accounts array first). Hiring motion: write GTM Jobs w/ URL (role | URL | posted date lines) and Role Archetypes fields. Add all accounts to {ACCOUNT_LIST}. Verify membership on the record's label_ids, never trust list cached_count.
+Org-enrich Excellent and Good tiers (1 credit each; funding, sales_department_size, growth, technologies land in Apollo system fields automatically). Bulk-create net-new accounts (name + domain; NOTE: account creation does NOT dedupe, always check step 1's accounts array first). Hiring signal: write GTM Jobs w/ URL (role | URL | posted date lines) and Role Archetypes fields. Add all accounts to {ACCOUNT_LIST}. Verify membership on the record's label_ids, never trust list cached_count.
 
 ## Step 4: People selection (search free)
 
@@ -49,9 +49,9 @@ Company boundary rule: search people ONLY by organization_ids resolved from enri
 
 **Run the people search TWICE and read both together: once by title, once by seniority.** Neither is safe alone, and they fail in opposite directions. A title search MISSES `Founding <function>` staff entirely — on a live run it returned zero people at two companies that both have go-to-market staff, whose titles were "Founding Technical Account Executive", "Founding Growth" and "Founding Account Executive". A seniority search OVER-REPORTS the same people: querying one of those companies for c_suite/founder/owner returned five results and every one was an individual contributor, because the provider reads "Founding" as founder-level seniority. So treat `Founding <anything commercial>` as a GTM individual contributor, never as a founder, and never conclude a company has no GTM staff from a title search alone. This matters most at exactly the companies worth reaching: early-stage, no GTM leader yet, first commercial hires titled "Founding X". More broadly, **not found is not the same as absent** — vary the query shape before concluding a value does not exist, and only then escalate to another source.
 
-People search returns email_status and phone-availability flags without returning the address and without charging, so the whole candidate field can be ranked before a single credit is spent. Score each candidate as role-fit (step 4 priority order) x the reachability multiplier in the plugin root's references/apollo-credit-costs.md: verified+phone 1.0, verified 0.85, catch-all/guessed 0.6, unavailable/absent 0.3.
+People search returns email_status and phone-availability flags without returning the address and without charging, so the whole candidate field can be ranked before a single credit is spent. Score each candidate as role-fit (step 4 priority order) x the reachability multiplier in the plugin root's references/apollo-credit-costs.md. **Read the tier table there rather than a summary of it.** This sentence used to restate the four tiers and the restatement had lost two flags: `likely` (T3) and `unverified` (T4). Dropping `unverified` from T4 is the expensive one — it reads as spendable, so every `unverified` candidate bought a match credit to learn the address was never sendable, which is the exact spend this step exists to prevent.
 
-Then spend top-down against the step 4 sizing rule, and do NOT spend a match credit on T4 (unavailable) candidates at all: a match that returns no sendable address is a credit spent to learn the contact was never reachable. If a strong-fit person is T4, record them in the run report as a LinkedIn-only or referral path instead of enriching them. If ranking leaves an Excellent account with fewer reachable candidates than its size band calls for, take the shortfall rather than reaching down into T4 to fill the quota.
+Then spend top-down against the step 4 sizing rule, and do NOT spend a match credit on T4 candidates at all — T4 is `unavailable`, `unverified`, or the flag absent entirely, per the table: a match that returns no sendable address is a credit spent to learn the contact was never reachable. If a strong-fit person is T4, record them in the run report as a LinkedIn-only or referral path instead of enriching them. If ranking leaves an Excellent account with fewer reachable candidates than its size band calls for, take the shortfall rather than reaching down into T4 to fill the quota.
 
 ## Step 5: People enrichment and contact creation
 
@@ -78,4 +78,4 @@ CRM-sync health check: for records touched this run in a CRM instance with sync 
 
 Append findings to the local audit log; any defect found becomes a permanent gate in the next run.
 
-Also emit a machine-readable run artifact, run-shape-<date>.json, alongside the audit log entry: {motion, run_date, filters_used, counts: {searched, scored, excellent, good, fair, accounts_created, people_ranked, people_revealed, contacts_created, send_excluded}, credits: {planned, spent, by_category}, signals: [gate tags per account], defects: []}. Runs become diffable over time and the file doubles as client reporting data. Remind the user: enrollment is their gate, after preview review.
+Also emit a machine-readable run artifact, run-shape-<date>.json, alongside the audit log entry: {signal_type, run_date, filters_used, counts: {searched, scored, excellent, good, fair, accounts_created, people_ranked, people_revealed, contacts_created, send_excluded}, credits: {planned, spent, by_category}, signals: [gate tags per account], defects: []}. Runs become diffable over time and the file doubles as client reporting data. Remind the user: enrollment is their gate, after preview review.

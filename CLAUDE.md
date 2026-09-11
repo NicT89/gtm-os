@@ -185,6 +185,28 @@ Four structural conventions every skill in this repo follows:
    not mean not owned.** Most users already have the tool and have simply never shaped it
    for this engine, so probing beats asking and asking beats recommending a signup.
 
+## Two axes, and never one word for both
+
+**Signal type** (`hiring`/`funding`) is what sourced an account. **GTM motion** is the
+target's own go-to-market shape, one of the five in
+`skills/gtm-blueprint/references/motion-templates.md`. The opener anchors on the signal type;
+the plan and the closer come from the motion. `references/signals-doctrine.md` defines both,
+once.
+
+The word "motion" named both until 1.9.4, and the collision was not cosmetic: `outreach-audit`
+picked the closer from the signal type, named a closer string that exists in no template, and
+the example everything is copied from carried that string under a motion whose closer it was
+not — so the authoritative composition spec produced blueprints that failed the blueprint
+skill's own quality gate. **When one word names two axes, some document will eventually route
+on the wrong one.** Introducing a term that already means something else here is a defect, not
+a style question.
+
+The same rule covers copies. Nearly every finding in the 1.9.2 audit was a document restating
+something another document owns — a taxonomy, a tier table, a field format, a closer list —
+and then drifting from it. A restatement is not a convenience; it is a second thing to
+maintain and it always loses. **Point at the source and say you are not restating it**, so
+the next person does not helpfully summarize it back in.
+
 ## Shipping a change: the PR loop
 
 Every change lands through a PR. CodeRabbit reviews it as a second pair of eyes **when it
