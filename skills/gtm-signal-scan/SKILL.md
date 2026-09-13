@@ -31,9 +31,74 @@ Funding signal: latest_funding_date_range last 6 months, latest_funding_amount_r
 
 Dedupe rule: the response's "accounts" array = already in the CRM (route to update, never create); "organizations" array = net new.
 
+## Step 1.5: Motion assignment (free)
+
+**Assign the motion before scoring, because scoring depends on it and it costs nothing.**
+The motion is `M1`-`M5` per the plugin root's [references/motion-codes.md](../../references/motion-codes.md),
+and M1-M4 are the four quadrants of one 2x2:
+
+|                    | NOT hiring GTM | Hiring GTM |
+|---|---|---|
+| **Has GTM team**   | M1 | M4 |
+| **No GTM team**    | M2 | M3 |
+
+Both axes are FREE to resolve, which is the whole reason this is its own step:
+
+1. **Hiring GTM?** Already answered by Step 1's search filters. No extra call.
+2. **Has a GTM team?** One people search per account by `organization_ids` against the GTM and
+   RevOps titles. `apollo_mixed_people_api_search` costs nothing, and this is doctrine signal
+   6, the structural gate marked ALWAYS ON.
+
+Then apply **M5, which overrides M3 and M4**: if a GTM leader has been in seat 9 months or
+less, the motion is M5 regardless of hiring state, because a new leader's first ninety days is
+a different conversation from a team's expansion.
+
+**The same free call also enforces the exclusion.** A company with a dedicated GTM engineering
+or RevOps team of 2+ is excluded, and running this BEFORE enrichment is what makes the
+exclusion free. Observed on a live run 2026-09-10: this step disqualified two accounts that
+had 4 and 3 GTM staff respectively, saving both their enrichment credits and the people-match
+credits that would have followed. Run in the old order, those credits were already spent by
+the time anyone looked.
+
+Record the assigned motion with its date and the quadrant evidence. **Re-derive it every run
+rather than trusting the stored value** -- reqs get filled and leaders land, so motion is a
+property of current state, not a label.
+
+Route the account into that motion's list, and remember the naming rule: every Apollo object a
+motion touches carries the code at the front of its own name.
+
 ## Step 2: Score and tier
 
-Score 0-100: archetype/motion fit 25, stage and funding 20, signal age 15, budget signal 15, stack overlap 10, geography 10, warm path 5. Exclude on sight: competitors (agencies selling GTM/AI services), job boards, staffing firms, offshore-only relevant roles, companies with an established sales/RevOps team of 4+ (funding signal) or dedicated GTM engineering team of 2+ (hiring signal).
+**Scoring runs in two passes, because half its inputs do not exist yet at this point in the run.**
+Observed 2026-09-10: the Step 1 company-search response carries no employee count, no funding
+stage, no technologies and no location for a net-new organization, so a single-pass score was
+being computed against absent data and reading as a real number.
+
+**Pass 1, the FREE pre-score, decides who is worth enriching** (55 points available):
+
+| Dimension | Points | Source at this stage |
+|---|---|---|
+| Motion fit | 15 | Step 1.5's quadrant. Free. |
+| Signal age | 15 | Posting dates from Step 1's filters. Free. |
+| Budget signal | 15 | Headcount growth, revenue when present. Free, on the search response. |
+| Geography | 10 | Free when present; absent on net-new orgs, so score 0 and let Pass 2 fill it. |
+
+**Pass 2, after Step 3 enrichment, completes the score** (45 points):
+
+| Dimension | Points | Why it cannot be Pass 1 |
+|---|---|---|
+| Stage and funding | 20 | `latest_funding_stage` arrives from org enrichment only. |
+| Archetype fit | 10 | Depends on the JD, which needs the postings call. |
+| Stack overlap | 10 | Technologies are not on the search response. |
+| Warm path | 5 | Needs the contact set. |
+
+**`archetype/motion fit 25` was one dimension until 1.9.5 and is now two**, split 15/10, because
+the two halves resolve at different stages and for different reasons: the motion is a free
+structural fact about the company, and the archetype is a reading of a specific job description.
+Bundling them forced the free half to wait on the paid half.
+
+Tier on the Pass 1 score to choose who gets enriched; re-tier on the full score before any
+people spend. A Pass 1 score is never reported as a final score -- label it `pre-score`. Exclude on sight: competitors (agencies selling GTM/AI services), job boards, staffing firms, offshore-only relevant roles, companies with an established sales/RevOps team of 4+ (funding signal) or dedicated GTM engineering team of 2+ (hiring signal).
 
 Tiers: Excellent = full enrichment (org enrich + all selected people + posts digest + Opener/Blueprint composition). Good = partial (org enrich + 1-2 people). Fair = account record only, no people spend.
 

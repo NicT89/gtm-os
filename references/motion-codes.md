@@ -50,7 +50,9 @@ retired.
 **The quadrant is decidable for free.** Both axes come from calls that cost nothing: GTM
 persona presence is a people search by `organization_ids`, and hiring status is already a
 filter on the company search. So motion assignment does not need enrichment and should not
-wait for it. See `skills/gtm-signal-scan/SKILL.md`.
+wait for it -- it is `gtm-signal-scan` **Step 1.5**, before scoring, because motion fit is
+worth 15 of the pre-score's 55 points and cannot be scored against a value that has not been
+assigned.
 
 ## Not a client motion: the job-search tracks
 
@@ -73,6 +75,13 @@ parentheses:
 - **Lists** — `(M4) GTM Team Buyers`. Already the convention for M2, M3/M4, M4 and M5.
 - **Sequences** — `(M4) [Claude] GTM Team Expansion`. **Not yet done for any sequence**, which
   is the gap: the lists say which motion they serve and the sequences they feed do not.
+  **This one cannot be automated safely and is a UI action.** Apollo exposes no additive way
+  to label or rename a sequence: `apollo_labels_add_entity_ids_to_label_names` accepts only
+  `contacts` and `accounts` modality, and the only other route, `apollo_sequences_update`,
+  takes the FULL declarative step tree and DELETES every step and touch absent from the
+  payload. Reconstructing that payload requires each touch id and each template body, which
+  the search response does not return. Do it in the UI; do not attempt the API path to save
+  two minutes.
 - **Tasks** — `[JS-HM] Email <name> - <company> (<why this person>)`.
 - **Account and contact custom fields** that record a routing decision name the code in the
   value, with the date it was assigned.

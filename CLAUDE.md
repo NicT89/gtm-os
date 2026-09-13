@@ -185,6 +185,33 @@ Four structural conventions every skill in this repo follows:
    not mean not owned.** Most users already have the tool and have simply never shaped it
    for this engine, so probing beats asking and asking beats recommending a signup.
 
+## Apollo accepts fields it then discards: read the write back
+
+Three separate Apollo endpoints have now accepted a field, returned `success`, and silently
+dropped the value:
+
+- `apollo_accounts_create` took picklist OPTION ids where field ids belong, returned
+  `custom_field_errors: {}`, and stored nothing.
+- `apollo_tasks_bulk_create` took `standalone_outreach_task_message` with a subject and body,
+  created the tasks, and produced messages containing only the sender's signature — no subject
+  key at all in the response.
+- The same class is why `label_names` on contact create is documented as ignored.
+
+That is a vendor pattern, not three coincidences. **After any Apollo write, read the specific
+field back out of the response and confirm the value, not the status.** `success: true` and an
+empty error object are both compatible with having stored nothing. A run that trusts the
+status writes empty fields that every later stage treats as researched.
+
+What IS verified, by test rather than assumption (2026-09-13): `typed_custom_fields` on
+`apollo_contacts_update` MERGES — sending two new field ids left an existing third field
+intact. Do not resend a whole field set defensively on that endpoint. The same is not
+established for `apollo_accounts_update`; until someone tests it, send the full set there.
+
+Where a value cannot be written safely at all, say so and hand it to the operator. Apollo
+sequences are the worked example: there is no additive label call for them, and the update
+call deletes every step omitted from its payload. That is a UI action, and attempting the API
+path to save a manual step risks destroying live sequence steps irreversibly.
+
 ## Two axes, and never one word for both
 
 **Signal type** (`hiring`/`funding`) is what sourced an account. **GTM motion** is the

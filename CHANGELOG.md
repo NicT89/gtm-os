@@ -110,6 +110,32 @@ delete the copy and point at the source.
   do, sequences do not) and carves out the two job-search tracks as `JS-HM`/`JS-REC`, which
   are not motions and must never run at a company that is live in one.
 
+- **`gtm-signal-scan` Step 1.5: motion assignment, free, before scoring.** Motion fit is a
+  scored dimension whose input did not exist when the score ran — the motion was not assigned
+  until `gtm-blueprint` Step 3, several stages later. Both axes of the M1-M4 2x2 are free
+  (hiring state is already a Step 1 filter; GTM-team presence is a no-cost people search), so
+  the assignment moves to where the score needs it. The same free call enforces the 2+-GTM-staff
+  exclusion, which is why it belongs before enrichment rather than after: on a live run
+  2026-09-10 it disqualified two accounts carrying 4 and 3 GTM staff, and in the old order
+  their enrichment credits were already spent by the time anyone looked.
+- **Scoring is now two passes, and `archetype/motion fit 25` is two dimensions.** The Step 1
+  company-search response carries no employee count, funding stage, technologies or location
+  for a net-new organization, so a single-pass 0-100 score was being computed against absent
+  inputs and reported as a real number. Pass 1 is the free pre-score (55 points: motion fit 15,
+  signal age 15, budget signal 15, geography 10) and decides who is worth enriching; Pass 2
+  completes it after enrichment (45 points: stage and funding 20, archetype fit 10, stack
+  overlap 10, warm path 5). The old bundled dimension forced its free half to wait on its paid
+  half. `tests/test_score_passes.py` asserts the passes sum to 100 and that Step 1.5 precedes
+  Step 2 — falsified by changing any point value or moving the heading.
+- **`CLAUDE.md`: Apollo accepts fields it then discards, so read the write back.** Three
+  endpoints have now returned `success` while storing nothing —
+  `apollo_accounts_create` (picklist option ids as field ids), `apollo_tasks_bulk_create`
+  (`standalone_outreach_task_message` dropped entirely), and contact create's documented
+  `label_names`. Also records what was verified by test rather than assumed:
+  `typed_custom_fields` MERGES on `apollo_contacts_update`; and that Apollo sequences cannot be
+  labelled or renamed safely by API at all, because the only route deletes every step omitted
+  from its payload.
+
 ### Open, and NOT fixed here
 - **`gtm-signal-scan`'s scoring line still reads "archetype/motion fit 25".** At scan time
   the target's GTM motion has not been classified yet — that happens in `gtm-blueprint`
