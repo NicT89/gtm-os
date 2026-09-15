@@ -55,10 +55,13 @@ Both axes are FREE to resolve, which is the whole reason this is its own step:
    set from a fuzzy match marks a company as having GTM staff on a title nobody holds.**
    Strict for a search that decides a field; fuzzy only when prospecting, where a near-miss
    costs a glance and a false qualification costs the whole routing.
-   **And prove the filter can fail before reading anything into a zero.** Run the same query
-   once with a value nothing could match; an ignored filter and a real absence return the
-   identical empty response. This is the repo's own rule about checks that cannot fail,
-   applied to a query.
+   **And run the falsification query before reading anything into a zero.** See below.
+
+**"Hiring GTM" means hiring GTM ENGINEERING or REVOPS specifically.** A company hiring sellers
+— AE, SDR, AM — is not hiring the function this engine replaces, and those reqs are **moot for
+qualification**: they neither disqualify an account nor count toward the hiring axis. Only reqs
+for the systems function do. Read literally, "any GTM req" would disqualify most companies
+worth talking to, since almost everyone is always hiring a seller.
 
 Then apply **M5, which overrides M3 and M4**: if a GTM leader has been in seat 9 months or
 less, the motion is M5 regardless of hiring state, because a new leader's first ninety days is
@@ -77,6 +80,32 @@ property of current state, not a label.
 
 Route the account into that motion's list, and remember the naming rule: every Apollo object a
 motion touches carries the code at the front of its own name.
+
+### The falsification query (run it before believing any zero)
+
+**An ignored filter and a real absence return the identical empty response.** Nothing in the
+payload distinguishes them, so a zero is not evidence until the filter has been shown to
+constrain.
+
+**The step:** re-run the same query, changing only the filter value to something nothing could
+match — a title no company posts, a technology nobody uses. If that also returns zero, the
+filter works and the real zero is trustworthy. If it returns results, the filter is being
+ignored and the original zero meant nothing.
+
+It costs one free call. Run it:
+
+- whenever a zero decides a qualification field,
+- the first time a filter is used in a run,
+- and any time a zero is surprising — a company you expect to be hiring that appears not to be.
+
+**A zero that has not been falsified is not a finding.** Write it into the run report as
+"unverified zero" rather than as an absence.
+
+This is the repo's own rule about checks that cannot fail, applied to a query rather than to a
+test. And it generalises: `references/known-failure-modes.md` row 7 is the entry for this, and
+**every other row in that register is a defect that returned a well-formed answer that happened
+to be false.** Read it before trusting any single field that decides a route — the
+compensations listed there are all free.
 
 ### Trusting a field you did not watch change
 
