@@ -120,6 +120,29 @@ This matters most where a title decides something — seniority routing, the lea
 persona switch, and any tenure filter, which is the gate the new-leader motion rests on
 entirely. Where the two disagree and it changes the motion, resolve it before enrolling.
 
+**When a job change fires, read the ROLE, not the title.** A CRM that reports job-change events
+gives you the new employer and the new title and nothing else, and a title is a poor
+description of a seat. The blueprint gate now fails a record whose stored employment disagrees
+with a reported change, but failing it only says *stop* — it does not say what the person now
+does, and that is what decides whether they are still a buyer.
+
+**So pull the job description for the role they moved INTO.** A JD is far more descriptive than
+a title: it names the tools, the reporting line and what the first ninety days are for.
+
+Three sources, in order:
+
+1. **The live posting**, if the req is still open somewhere. Search the company's ATS.
+2. **A cached or syndicated copy** — aggregators often outlive the original listing.
+3. **A peer holding the same title at the same company.** When the posting is gone, someone
+   else in that seat usually describes it in their own profile. Observed: a contact's move was
+   ambiguous from the title alone, and a different person with the identical title at the same
+   employer described the work as building APIs, storefront apps and answer-engine tooling for
+   e-commerce brands — which settled it. The move was out of go-to-market, not within it.
+
+**Then re-route on what the role actually is.** A move to a new company inside the same function
+is a signal. A move OUT of the target function is a disqualification, and the two are
+indistinguishable from a title like "Senior Manager" or "Director".
+
 **But a disagreement in spelling is not a disagreement in fact.** The same seat arrives as
 "VP, Go-to-Market" and "VP, Go to Market", as "Co-Founder" and "Cofounder", as "Chief Revenue
 Officer" and "Chief Revenue Officer (CRO)", as "SVP Strategy & Commercial" and "SVP Strategy
