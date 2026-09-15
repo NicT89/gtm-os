@@ -48,6 +48,17 @@ Both axes are FREE to resolve, which is the whole reason this is its own step:
 2. **Has a GTM team?** One people search per account by `organization_ids` against the GTM and
    RevOps titles. `apollo_mixed_people_api_search` costs nothing, and this is doctrine signal
    6, the structural gate marked ALWAYS ON.
+   **Set `include_similar_titles: false` on this call.** It defaults to TRUE, and a fuzzy
+   title search decides this gate: asked for `Founding GTM` / `Founding Account Executive` /
+   `Founding Sales`, a live run returned Founding Engineer, Founding SWE and Founding
+   Software Engineer — none of them commercial, all of them counted. **A qualification field
+   set from a fuzzy match marks a company as having GTM staff on a title nobody holds.**
+   Strict for a search that decides a field; fuzzy only when prospecting, where a near-miss
+   costs a glance and a false qualification costs the whole routing.
+   **And prove the filter can fail before reading anything into a zero.** Run the same query
+   once with a value nothing could match; an ignored filter and a real absence return the
+   identical empty response. This is the repo's own rule about checks that cannot fail,
+   applied to a query.
 
 Then apply **M5, which overrides M3 and M4**: if a GTM leader has been in seat 9 months or
 less, the motion is M5 regardless of hiring state, because a new leader's first ninety days is
@@ -66,6 +77,36 @@ property of current state, not a label.
 
 Route the account into that motion's list, and remember the naming rule: every Apollo object a
 motion touches carries the code at the front of its own name.
+
+### Trusting a field you did not watch change
+
+**A provider's freshness timestamp records when it wrote the row, not when it verified it.**
+Observed: an index returned a contact as "SVP Strategy & Commercial" stamped the same day,
+six months after he had publicly announced becoming Chief Commercial Officer — and the saved
+CRM record held the newer title than the index it had been sourced from. The field that looks
+like a guarantee is the one that misled.
+
+So: **a title from search is a hypothesis; the person's own announcement is the evidence.**
+This matters most where a title decides something — seniority routing, the leader-versus-IC
+persona switch, and any tenure filter, which is the gate the new-leader motion rests on
+entirely. Where the two disagree and it changes the motion, resolve it before enrolling.
+
+**But a disagreement in spelling is not a disagreement in fact.** The same seat arrives as
+"VP, Go-to-Market" and "VP, Go to Market", as "Co-Founder" and "Cofounder", as "Chief Revenue
+Officer" and "Chief Revenue Officer (CRO)", as "SVP Strategy & Commercial" and "SVP Strategy
+and Commercial". **None of those are conflicts, and nothing in this run may fail, branch or
+re-source because of one.** Normalize before comparing: fold case, whitespace, punctuation,
+parentheticals and the common seniority abbreviations, then compare.
+
+`scripts/field_match.py` does exactly that and nothing more —
+`python3 field_match.py "<a>" "<b>"` exits 0 when they agree, 1 when they genuinely differ.
+It deliberately does **not** stem or guess synonyms, because the opposite failure is worse:
+a normalizer eager enough to fold "Head of Sales" into "Head of Marketing" qualifies a company
+on a seat nobody holds. Its tests pin both directions.
+
+The rule this leaves: **compare on the normalized value, report on the raw one.** Store what
+each source actually said, so a later reader can see which was stale, and never let the
+difference between them stop a run.
 
 ## Step 2: Score and tier
 
