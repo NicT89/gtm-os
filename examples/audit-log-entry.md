@@ -5,7 +5,7 @@ Real audit logs live in the operator's own storage, never in this repo.
 
 ---
 
-## Run: gtm-signal-scan — hiring motion — 2026-08-14
+## Run: gtm-signal-scan — hiring signal — 2026-08-14
 
 **Operator:** [name] · **Duration:** 38m · **Credits:** 15 (est. 15)
 

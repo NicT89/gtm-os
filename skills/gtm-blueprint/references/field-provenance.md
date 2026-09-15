@@ -36,13 +36,13 @@ on the record is populated, never by asking whether the job ran.
 
 | Field | Purpose (what it holds, what consumes it) | Config key | Populated by | Gate role |
 |---|---|---|---|---|
-| GTM Jobs w/ URL | Role title, posting URL, and posted date, pipe-separated. The posted date is the opener's "open N days" number and the URL is what a JD audit re-scrapes. Without the date the hiring opener has no hard number. | `{APOLLO_CF_ACCOUNT_GTM_JOBS_WITH_URL}` | AI field prompt | REQUIRED for hiring motion |
-| JD Summary | Condensed first-90-days scope of the open role: the named tools and the work the hire inherits. Source of the blueprint's real-tool requirement. Lossy by nature — audit the stored full JD for reporting line and seniority. | `{APOLLO_CF_ACCOUNT_JD_SUMMARY}` | AI field prompt | REQUIRED for hiring motion |
-| Role Archetypes | Normalized role classification, so different titles for the same job route the same way. Drives motion selection and which persona owns the req. | `{APOLLO_CF_ACCOUNT_ROLE_ARCHETYPES}` | Set during signal-scan runs | REQUIRED for hiring motion |
+| GTM Jobs w/ URL | Role title, posting URL, and posted date, pipe-separated. The posted date is the opener's "open N days" number and the URL is what a JD audit re-scrapes. Without the date the hiring opener has no hard number. | `{APOLLO_CF_ACCOUNT_GTM_JOBS_WITH_URL}` | AI field prompt (primary), OR `jd-intake` when the AI field has not populated it | REQUIRED for hiring signal |
+| JD Summary | Condensed first-90-days scope of the open role: the named tools and the work the hire inherits. Source of the blueprint's real-tool requirement. Lossy by nature — audit the stored full JD for reporting line and seniority. | `{APOLLO_CF_ACCOUNT_JD_SUMMARY}` | AI field prompt (primary), OR `jd-intake` when the AI field has not populated it | REQUIRED for hiring signal |
+| Role Archetypes | Normalized role classification, so different titles for the same job route the same way. Drives motion selection and which persona owns the req. | `{APOLLO_CF_ACCOUNT_ROLE_ARCHETYPES}` | Set during signal-scan runs | REQUIRED for hiring signal |
 | Available GTM Roles list | Every open GTM req at the account, not just the one being anchored on. Reveals multi-role patterns worth naming in copy. | `{APOLLO_CF_ACCOUNT_AVAILABLE_GTM_ROLES}` | Set during signal-scan runs | Optional |
 | LinkedIn Company Summary | The company's own positioning in its own words. The rung-2 voice source when a contact's posts are too thin to mirror. | `{APOLLO_CF_ACCOUNT_LINKEDIN_COMPANY_SUMMARY}` | Enrichment workflow | Optional |
 | Company LinkedIn Posts | Company-page post digest. Corporate voice and announcement timing; distinct from any individual's posts. | `{APOLLO_CF_ACCOUNT_COMPANY_LINKEDIN_POSTS}` | `scrape-linkedin-posts` skill | Optional |
-| CBI Mosaic Score | Third-party composite health score, 0-1000. Scoring input only; never quoted to a recipient. | `{APOLLO_CF_ACCOUNT_CBI_MOSAIC_SCORE}` | CB Insights, when connected | Optional (scoring input) |
+| CBI Mosaic Score | Third-party composite health score, 1-1000, with 0 reserved as the attempted-but-empty sentinel (see the CBI number-field rule below). This cell read 0-1000 until 1.9.4, which collided with that sentinel: it made a real score of 0 indistinguishable from a failed retrieval. Scoring input only; never quoted to a recipient. | `{APOLLO_CF_ACCOUNT_CBI_MOSAIC_SCORE}` | CB Insights, when connected | Optional (scoring input) |
 | CBI Commercial Maturity | 1-5 rating of how built-out the commercial function is. Calibrates blueprint ambition and hints at motion (2 suggests founder-led, 3 suggests a team in place). A hint, never the routing decision. | `{APOLLO_CF_ACCOUNT_CBI_COMMERCIAL_MATURITY}` | CB Insights, when connected | Optional (scoring + routing hint) |
 | Named Investors | Lead and participating investors on the latest round. Opener credibility context ONLY; never a claim of relationship. | `{APOLLO_CF_ACCOUNT_NAMED_INVESTORS}` | Manual or CBI | Optional (opener context only) |
 | Tech Stack Details (A11) | What THEY run to sell and operate, not what their product integrates with. Composition requires citing one real stack tool, so this is where a verified stack lives, and it is the canonical gap-ledger write target. NEVER write inferred technographics here: those are for filtering and are not quotable. | `{APOLLO_CF_ACCOUNT_TECH_STACK_DETAILS}` | The engine, from a primary source. Job descriptions first; source order in the plugin root's `references/scraping-playbook.md` | Optional |
@@ -61,6 +61,16 @@ Any field named "View professional posts" is permanently deprecated: never write
 it, never key a workflow on it. Zero-post scrape results are never trusted on first
 pass — retry once, then write `Scrape returned empty - verify manually (checked
 <date>)`; never assert a person does not post from one empty scrape.
+
+Two fields have TWO populators, and the precedence is not symmetric. `GTM Jobs w/ URL`
+and `JD Summary` are normally filled by the account's CRM-side AI field runs, triggered by
+list membership. `jd-intake` writes them only when those runs have NOT populated them, and
+when they have, it must **reconcile rather than overwrite**: any disagreement between its own
+extraction and the AI field output is flagged for a human. `skills/jd-intake/SKILL.md` Step
+carrying that rule is authoritative for it. This table listed "AI field prompt" as the sole
+populator of both until 1.9.4, so a reader auditing an empty field would have chased the
+wrong producer, and a second writer to a field the engine reads was invisible here -- which
+is precisely what `CLAUDE.md` says to audit separately.
 
 CBI number-field rule: CBI Mosaic Score and CBI Commercial Maturity default to 0 when
 retrieval was attempted and returned nothing (0 = attempted-but-empty, blank = never
@@ -149,7 +159,7 @@ empty; never overwrites).
 > Profile, Persona Intelligence, Has LinkedIn, Startup/SMB Fit. Blank: posts digest
 > (optional here because Research Company Profile is present), and several
 > other-motion fields that are not blueprint inputs. Account-side custom fields not
-> applicable for the funding motion.
+> applicable for the funding signal.
 
 Record your own verified gate results in your deployment's copy — a real PASS and a
 real FAIL are the fastest way to confirm the gate is reading the right fields.

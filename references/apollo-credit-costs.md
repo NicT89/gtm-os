@@ -68,7 +68,7 @@ total stated upfront (operating principle 3). The estimate for a signal scan is:
 ```
 1                        company search
 + (1 x accounts enriched)      org enrichment      [Excellent + Good tiers]
-+ (1 x accounts)               job postings        [hiring motion only]
++ (1 x accounts)               job postings        [hiring signal only]
 + (1 x people matched)         people enrichment   [after reachability ranking]
 ```
 

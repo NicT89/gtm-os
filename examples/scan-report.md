@@ -1,4 +1,4 @@
-# Signal scan — 2026-08-14 — hiring motion
+# Signal scan — 2026-08-14 — hiring signal
 
 SYNTHETIC EXAMPLE. Invented companies and people; `.example` domains. Format anchor
 for gtm-signal-scan step 7.

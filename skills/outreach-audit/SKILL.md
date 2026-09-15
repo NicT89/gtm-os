@@ -21,7 +21,9 @@ Contact custom fields merge as {{contact.Field Name}} with the object prefix; ac
 
 ## Composition spec (what goes in those fields)
 
-Opener: three to four sentences in four named beats (see below), at least one hard number or date, anchored to the recipient's strongest signal (hiring: role + posting age + JD detail; funding: raise + sales-team size + growth), their own words preferred when posts exist, no flattery, no adjectives about the company, no exclamation marks. Blueprint: 3-4 sentences structured Week 1 / Week 2 / Weeks 3-4, naming their ICP and at least one real tool or vertical, ending "documented for the hire" (hiring motion) or "proof before headcount" (funding motion).
+Opener: three to four sentences in four named beats (see below), at least one hard number or date, anchored to the recipient's strongest signal (hiring signal: role + posting age + JD detail; funding signal: raise + sales-team size + growth), their own words preferred when posts exist, no flattery, no adjectives about the company, no exclamation marks. Blueprint: 3-4 sentences structured Week 1 / Week 2 / Weeks 3-4, naming their ICP and at least one real tool or vertical, and **ending with the closer of the GTM motion the contact is recorded under** — the closers live in `gtm-blueprint`'s `references/motion-templates.md` and are not restated here.
+
+**The closer comes from the motion, never from the signal type**, and this line said otherwise until 1.9.4: it offered a choice between "documented for the hire" (a string that appears in no template) and "proof before headcount" (a real closer, but the PLG and founder-led one) keyed on hiring-vs-funding. `gtm-blueprint`'s quality gate checks each blueprint's closer against its recorded motion, so following this skill produced blueprints that failed that gate. The two axes are defined once, in the plugin root's `references/signals-doctrine.md`.
 
 **This section is the authoritative opener contract.** Length, structure, and the
 falsifiability tests are defined here and nowhere else. Other documents may point at the
