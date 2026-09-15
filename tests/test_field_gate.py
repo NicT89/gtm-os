@@ -281,5 +281,87 @@ class FactFloor(unittest.TestCase):
                          sorted(verdict["fact_bearing_sources"]))
 
 
+
+
+class TestStaleEmployment(unittest.TestCase):
+    """Check 4: a record that disagrees with a reported job change must FAIL.
+
+    The live near-miss: a contact stored as "Head of Revenue Operations" at one
+    company had been reported three days earlier as having moved to a different
+    employer in a different function. The record reached an enrollment list. The
+    provider had put the event on the contact payload the whole time.
+
+    Both directions are pinned. A record agreeing with its job-change event must
+    still pass, and — the case that actually bites — a re-spelling of the same
+    employer must NOT be read as a move, or the gate fails records for a hyphen.
+    """
+
+    def _record(self, **over):
+        rec = {
+            "name": "Test Person",
+            "organization_name": "Acme",
+            "title": "Head of Revenue Operations",
+            "typed_custom_fields": {},
+        }
+        rec.update(over)
+        return rec
+
+    def test_employer_drift_is_caught(self):
+        rec = self._record(contact_job_change_event={
+            "created_at": "2026-09-12T21:44:55Z",
+            "new_organization_name": "Passport",
+            "title": "Senior Product Manager",
+            "is_dismissed": False,
+        })
+        verdict = field_gate.run_gate(rec, field_gate.EXAMPLE_CONFIG, "hiring")
+        self.assertTrue(any("stale employment" in m for m in verdict["missing_required"]))
+        self.assertEqual(verdict["gate"], "FAIL")
+        self.assertEqual(verdict["job_change"]["new_organization"], "Passport")
+        self.assertEqual(len(verdict["job_change"]["drift"]), 2)
+
+    def test_matching_job_change_is_not_drift(self):
+        rec = self._record(
+            organization_name="Passport",
+            title="Senior Product Manager",
+            contact_job_change_event={
+                "created_at": "2026-09-12T21:44:55Z",
+                "new_organization_name": "Passport",
+                "title": "Senior Product Manager",
+                "is_dismissed": False,
+            })
+        verdict = field_gate.run_gate(rec, field_gate.EXAMPLE_CONFIG, "hiring")
+        self.assertFalse(any("stale employment" in m for m in verdict["missing_required"]))
+        self.assertEqual(verdict["job_change"]["drift"], [])
+
+    def test_respelling_is_not_a_job_change(self):
+        """The failure this check must not introduce."""
+        rec = self._record(
+            organization_name="Acme",
+            title="VP, Go to Market",
+            contact_job_change_event={
+                "created_at": "2026-09-12T21:44:55Z",
+                "new_organization_name": "Acme",
+                "title": "VP, Go-to-Market",
+                "is_dismissed": False,
+            })
+        verdict = field_gate.run_gate(rec, field_gate.EXAMPLE_CONFIG, "hiring")
+        self.assertFalse(any("stale employment" in m for m in verdict["missing_required"]))
+
+    def test_dismissed_event_is_ignored(self):
+        rec = self._record(contact_job_change_event={
+            "new_organization_name": "Passport",
+            "title": "Senior Product Manager",
+            "is_dismissed": True,
+        })
+        verdict = field_gate.run_gate(rec, field_gate.EXAMPLE_CONFIG, "hiring")
+        self.assertFalse(any("stale employment" in m for m in verdict["missing_required"]))
+        self.assertIsNone(verdict["job_change"])
+
+    def test_no_event_means_no_opinion(self):
+        verdict = field_gate.run_gate(self._record(), field_gate.EXAMPLE_CONFIG, "hiring")
+        self.assertFalse(any("stale employment" in m for m in verdict["missing_required"]))
+        self.assertIsNone(verdict["job_change"])
+
+
 if __name__ == "__main__":
     unittest.main()
