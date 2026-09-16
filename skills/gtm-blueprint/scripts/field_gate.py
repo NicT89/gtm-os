@@ -124,6 +124,26 @@ EXAMPLE_CONFIG = {
 }
 
 
+def _normalize(text):
+    """Fold cosmetic variation so a re-spelling is not read as a job change.
+
+    Providers disagree on punctuation constantly -- "VP, Go-to-Market" against
+    "VP, Go to Market" is one seat, not two. Comparing raw strings here would
+    fail a record for a hyphen, which is the opposite of the intended behaviour.
+    """
+    import re as _re
+    lowered = _re.sub(r"\([^)]*\)", " ", (text or "").lower()).replace("&", " and ")
+    return " ".join(_re.sub(r"[^a-z0-9 ]+", " ", lowered).split())
+
+
+def _differs(a, b):
+    """True only when two values disagree on something other than spelling."""
+    na, nb = _normalize(a), _normalize(b)
+    if not na or not nb:
+        return False          # an absence is not a contradiction
+    return na != nb
+
+
 def is_populated(value):
     """True when a field value carries real content.
 
@@ -158,13 +178,21 @@ def dig(record, path):
 def run_gate(record, config, signal_type):
     """Run the completeness gate over one record; return the verdict dict.
 
-    Three checks, and the second two did not exist until 1.9.4:
+    Four checks. The middle two did not exist until 1.9.4, and the fourth was added
+    after a live near-miss (below).
 
     1. Contact custom fields: `required` and `one_of:<group>` from the config.
     2. Account fields required by THIS signal type. `signal_type` used to be accepted and
        ignored, so a hiring record with no req, no JD and no archetype passed.
     3. The fact floor: populated fact-bearing sources against `min_hard_facts`. A count of
        sources is a necessary condition for that many hard facts, never a sufficient one.
+    4. **Stale employment.** A CRM that reports job-change events puts the event on the
+       contact payload. A contact whose stored employer no longer matches that event is
+       composed against the wrong company, and the address on file usually stopped working
+       when they left. Observed: a record still reading "Head of Revenue Operations" at one
+       company had been reported three days earlier as having moved to another employer in a
+       different function, and reached an enrollment list before a read-back caught it. The
+       provider knew; nothing was reading it.
 
     The verdict carries per-field status plus remediation for every failure, and is shaped
     to be logged to the audit trail verbatim.
@@ -230,6 +258,44 @@ def run_gate(record, config, signal_type):
             f"only {len(fact_sources)} fact-bearing source(s) populated; the floor is {min_facts}"
         )
 
+    # 4. Stale employment: the record disagrees with a reported job change.
+    job_change = record.get(config.get("job_change_key") or "contact_job_change_event")
+    job_change_status = None
+    if isinstance(job_change, dict) and not job_change.get("is_dismissed"):
+        new_org = (job_change.get("new_organization_name") or "").strip()
+        new_title = (job_change.get("title") or "").strip()
+        stored_org = (record.get("organization_name") or "").strip()
+        stored_title = (record.get("title") or "").strip()
+        drift = []
+        if new_org and _differs(stored_org, new_org):
+            drift.append("employer on record is " + repr(stored_org)
+                         + " but a job change reports " + repr(new_org))
+        if new_title and _differs(stored_title, new_title):
+            drift.append("title on record is " + repr(stored_title)
+                         + " but a job change reports " + repr(new_title))
+        job_change_status = {
+            "reported_at": job_change.get("created_at"),
+            "new_organization": new_org or None,
+            "new_title": new_title or None,
+            "drift": drift,
+        }
+        if drift:
+            missing_required.append(
+                "stale employment: " + "; ".join(drift)
+                + " -- update the record and re-qualify the account before composing"
+            )
+            results.append({
+                "field": "employment currency",
+                "field_id": None,
+                "scope": "contact",
+                "populator": "CRM job-change event",
+                "requirement": "record must agree with the latest reported job change",
+                "populated": False,
+                "remediation": "Update employer and title from the job-change event, "
+                               "re-verify the email, and re-route the motion: a move out of "
+                               "the target function is a disqualification, not a signal.",
+            })
+
     verdict = {
         "contact": record.get("name", "unknown"),
         "company": record.get("organization_name", "unknown"),
@@ -238,6 +304,7 @@ def run_gate(record, config, signal_type):
         "missing_required": missing_required,
         "fact_bearing_sources": sorted(fact_sources),
         "fact_floor": {"count": len(fact_sources), "minimum": min_facts},
+        "job_change": job_change_status,
         "fields": results,
         "note": ("Workflows are invisible to the API; this gate verifies OUTPUTS on the "
                  "record. Compose the blueprint only on PASS. The fact floor counts "

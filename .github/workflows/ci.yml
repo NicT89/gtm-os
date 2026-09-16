@@ -56,6 +56,12 @@ jobs:
         # typo cannot ship as a confusing runtime "missing ID" failure.
         run: python3 scripts/validate_instance_config.py
 
+      - name: Failure register has a detection method per row
+        # A register of known defects is only useful if every row says how to
+        # catch the defect yourself. A row without one is a complaint, and this
+        # rejects it rather than letting the register decay into a grievance list.
+        run: python3 scripts/check_failure_register.py
+
       - name: Version and manifest agree
         # release.yml no longer pushes a sync commit to main, so a PR that bumps
         # one and not the other would ship the mismatch. This is what lets `main`
