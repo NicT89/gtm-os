@@ -62,6 +62,12 @@ class Config(unittest.TestCase):
         bad["dimensions"]["signal_age"]["windows"]["hiring"]["full_points_within_days"] = 90
         self.assertTrue(score.validate_config(bad))
 
+    def test_a_non_object_rule_is_a_problem_not_a_crash(self):
+        """A list where an object belongs raised AttributeError before 1.10.0 shipped."""
+        bad = copy.deepcopy(DEMO)
+        bad["dimensions"]["motion_fit"] = ["not", "an", "object"]
+        self.assertTrue(any("motion_fit" in p for p in score.validate_config(bad)))
+
     def test_the_passes_sum_to_the_doctrine(self):
         self.assertEqual((score.PASS1_MAX, score.FULL_MAX), (55, 100))
 
@@ -142,6 +148,16 @@ class Cli(unittest.TestCase):
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
             json.dump(bad, f)
         self.assertEqual(self.run_cli("--check-config", f.name).returncode, 1)
+
+    def test_an_account_with_no_motion_is_held_not_tiered(self):
+        """A tier would read as enrichment-eligible for an account whose routing is unknown."""
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump([account(gtm_team_size=None)], f)
+        out = self.run_cli(f.name, "--config", str(ROOT / "examples/demo/scoring.demo.json"),
+                           "--as-of", "2026-09-01")
+        entry = json.loads(out.stdout)["results"][0]
+        self.assertIn("held", entry)
+        self.assertNotIn("score", entry)
 
     def test_the_clock_is_never_read(self):
         """No --as-of is a usage error, not a silent today()."""

@@ -136,9 +136,10 @@ python3 scripts/setup_status.py
 
 It groups every key by connector and marks it **set**, **default**, or **unset**, and
 says what each gap blocks. Note the `default` rows especially: a plain `cp` inherits
-three non-empty values from the example (`CRM_PROVIDER`, `APIFY_POSTS_ACTOR`,
-`SCRAPE_ROSTER_ARTIFACT`). They work, so nothing complains, which is exactly why they
-get left unexamined. Decide each one rather than inheriting it.
+four non-empty values from the example (`CRM_PROVIDER`, `APIFY_POSTS_ACTOR`,
+`SCRAPE_ROSTER_ARTIFACT`, `SCORING_CONFIG_FILE`). They work, so nothing complains, which is
+exactly why they get left unexamined. Decide each one rather than inheriting it. The last
+only names a file: the scoring decisions live inside that file, not in its name.
 
 Then fill it in:
 

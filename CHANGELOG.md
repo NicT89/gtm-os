@@ -54,7 +54,7 @@ setup before the first live run spends a credit.
 - **`gtm-signal-scan` Step 2 scores with `score.py`** when a scoring config exists, and
   otherwise scores by hand against the tables and labels every score `manual`. Step 4b
   ranks with `rank_people.py`.
-- **`provision-gtm-engine` Step 3 saves the rubric as the scoring config** and runs the
+- **`provision-gtm-engine` Phase 1 saves the rubric as the scoring config** and runs the
   demo in preview mode before the first live scan. `SETUP.md` gains a Step 0 (run the demo)
   and runs preview mode at Step 4; `environment-setup` runs it after validation.
 

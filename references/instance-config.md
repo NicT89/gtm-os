@@ -111,7 +111,7 @@ rubric is a structure, not a string.
 The shape is what `skills/gtm-signal-scan/scripts/score.py` validates (`--check-config`),
 and `examples/demo/scoring.demo.json` is a complete example whose every value is labeled
 illustrative. Nothing in this repo ships your real cutoffs: they are decided at
-provisioning (`provision-gtm-engine` Step 3), and a file still carrying
+provisioning (`provision-gtm-engine` Phase 1), and a file still carrying
 `"provenance": "illustrative"` is reported by the demo's `--config` mode as a decision
 nobody has made yet. Without the file, `gtm-signal-scan` scores by hand against its
 SKILL.md tables and labels every score `manual`.

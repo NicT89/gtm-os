@@ -340,7 +340,7 @@ def preview_config(instance_path):
         findings.append(("blocks", f"no scoring config at {scoring_path}; this preview scored with "
                          "the ILLUSTRATIVE demo parameters instead",
                          "Decide your motions, exclusions, scoring rules and tier cutoffs at "
-                         "provisioning (provision-gtm-engine Step 3) and save them in the "
+                         "provisioning (provision-gtm-engine Phase 1) and save them in the "
                          "score.py schema. examples/demo/scoring.demo.json shows the shape."))
         return None, findings
     try:

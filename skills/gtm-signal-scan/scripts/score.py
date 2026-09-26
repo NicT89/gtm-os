@@ -133,7 +133,8 @@ def validate_config(config):
             if not is_number(points) or points < 0 or points > cap:
                 problems.append(f"dimensions.{name}: {label} awards {points!r}; "
                                 f"the dimension's maximum is {cap}")
-    motion_points = dims.get("motion_fit", {}).get("points_by_motion", {})
+    motion_rule = dims.get("motion_fit")
+    motion_points = motion_rule.get("points_by_motion") if isinstance(motion_rule, dict) else None
     if isinstance(motion_points, dict):
         for mid in seen - set(motion_points):
             problems.append(f"dimensions.motion_fit.points_by_motion has no entry for "
@@ -414,7 +415,11 @@ def main():
         excluded = exclusion(account, config)
         assigned = assign_motion(account, config["motions"])
         entry = {"id": account.get("id"), "excluded": excluded, "motion": assigned}
-        if not excluded:
+        if not excluded and assigned["motion"] is None:
+            # A tier here would read as enrichment-eligible for an account whose routing
+            # is not known yet. Hold it with the reason instead of scoring it.
+            entry["held"] = f"no motion assigned ({assigned['reason']})"
+        elif not excluded:
             entry["score"] = score_account(account, config, as_of, args.which,
                                            assigned["motion"])
         results.append(entry)

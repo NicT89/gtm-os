@@ -1,5 +1,5 @@
 {
-  "_README": "ILLUSTRATIVE DEMO PARAMETERS. Every rule, threshold and cutoff in this file exists so the offline demo can run; none is a recommendation and none was tuned against real outcomes. Your deployment's scoring config is decided at provisioning (provision-gtm-engine Step 3) and named by SCORING_CONFIG_FILE in instance-config.json. Values traceable to the repo are listed under _sources; everything else is a demo parameter.",
+  "_README": "ILLUSTRATIVE DEMO PARAMETERS. Every rule, threshold and cutoff in this file exists so the offline demo can run; none is a recommendation and none was tuned against real outcomes. Your deployment's scoring config is decided at provisioning (provision-gtm-engine Phase 1) and named by SCORING_CONFIG_FILE in instance-config.json. Values traceable to the repo are listed under _sources; everything else is a demo parameter.",
   "_sources": {
     "exclusions.max_gtm_team": "gtm-signal-scan SKILL.md Step 2: exclude a GTM engineering team of 2+ (hiring) or a sales/RevOps team of 4+ (funding).",
     "dimensions.signal_age.windows.*.zero_points_after_days": "gtm-signal-scan Step 1 filters: postings within 60 days; funding within 6 months (183 days).",
