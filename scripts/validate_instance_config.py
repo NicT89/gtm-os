@@ -17,7 +17,7 @@ Usage:
 
 Exit code 0 = all checks pass, 1 = a check failed, 2 = usage error.
 
-Runtime placeholders like {MOTION} are NOT config keys — they are filled in during
+Runtime placeholders like {SIGNAL_TYPE} are NOT config keys — they are filled in during
 a run. They live in RUNTIME_PLACEHOLDERS below and are exempt from check 1. Adding
 a new one there is a deliberate act: prefer a config key when the value is fixed
 for a deployment.
@@ -34,7 +34,7 @@ SCHEMA_PATH = REPO_ROOT / "instance-config.example.json"
 # Tokens that look like config keys but are filled in at run time, or are prose
 # referring to the mechanism itself rather than to a specific key.
 RUNTIME_PLACEHOLDERS = {
-    "MOTION",
+    "SIGNAL_TYPE",
     "ACCOUNT_LIST",
     "CONTACT_LISTS",
     "SEQUENCE",
@@ -72,6 +72,15 @@ OPTIONAL_KEYS = {
     # Ships naming a default file; empty means the same default. The file itself is
     # optional too: without it gtm-signal-scan scores by hand and labels every score.
     "SCORING_CONFIG_FILE",
+    # Ships naming a default file, like the scoring config. Without the file the scan
+    # cannot assign plays and routes the operator to the play-builder skill.
+    "PLAYS_FILE",
+    # The standard routing fields every play writes. Optional so an existing deployment
+    # keeps validating on upgrade; play-builder creates them at onboarding.
+    "APOLLO_CF_ACCOUNT_PLAY",
+    "APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON",
+    "APOLLO_CF_CONTACT_PLAY",
+    "APOLLO_CF_CONTACT_PLAY_ASSIGNED_ON",
 }
 
 # Single-brace {TOKEN}, not part of a {{merge token}}.

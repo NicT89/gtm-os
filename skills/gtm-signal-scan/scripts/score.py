@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic motion assignment, two-pass scoring and tiering for gtm-signal-scan.
+"""Deterministic two-pass scoring and tiering for gtm-signal-scan.
 
 Until 1.10.0 the scan's rubric lived only as prose tables in SKILL.md Step 2, and the model
 did the arithmetic. Two runs over the same accounts could score them differently, and a
@@ -8,22 +8,27 @@ missing input scored as a low value rather than as a gap, because nothing distin
 
 **What is fixed here and what is per-deployment.** The DIMENSIONS below (names, which pass,
 maximum points) are engine doctrine and must equal the tables in SKILL.md Step 2; the test
-suite compares them. Everything that says HOW a dimension earns its points, the motion
-definitions, the exclusion thresholds and the tier cutoffs are per-deployment, and live in a
+suite compares them. Everything that says HOW a dimension earns its points, the exclusion
+thresholds and the tier cutoffs are per-deployment, and live in a
 scoring config file (`{SCORING_CONFIG_FILE}` in instance-config.json). This script ships
 no default rules: a score is only as honest as the rules someone decided on, and a
 plausible-looking default is how an invented threshold reaches a live run. The demo's
 config (examples/demo/scoring.demo.json) is labeled ILLUSTRATIVE for exactly that reason.
 
 **Unknown is not zero.** A dimension whose input is absent scores 0 AND carries an
-`unknown` flag, and a motion criterion whose input is absent is unmet rather than false.
-An account whose team state is unknown gets no motion, and is held with the free call that
-would resolve it named, instead of being routed on a guess.
+`unknown` flag, so a gap is visible instead of reading as a weak account.
+
+**Play assignment is not done here, on purpose.** Which play an account belongs to is judged
+by the model against each play's free-form entry criteria (references/plays.md): plays
+differ completely between organizations, so they are guided rather than enumerated, and a
+fixed criteria vocabulary here would force every company onto one company's axes. This
+script takes the assigned play as an input (`account["play"]`) and does the deterministic
+part only: `play_fit` points for it, and a hold for an account that has none.
 
 Usage:
     python3 score.py accounts.json --config scoring-config.json --as-of YYYY-MM-DD \
         [--pass 1|full]
-    python3 score.py --check-config scoring-config.json
+    python3 score.py --check-config scoring-config.json [--plays plays.json]
 
 `accounts.json` is a list of normalized account objects; see ACCOUNT_FIELDS. The clock is
 never read: `--as-of` is required, so a replay produces the same scores.
@@ -38,7 +43,7 @@ from datetime import date
 
 # Engine doctrine: must equal SKILL.md Step 2's two tables (tests/test_score_passes.py).
 DIMENSIONS = (
-    ("motion_fit", 1, 15),
+    ("play_fit", 1, 15),
     ("signal_age", 1, 15),
     ("budget_signal", 1, 15),
     ("geography", 1, 10),
@@ -59,11 +64,10 @@ ACCOUNT_FIELDS = {
     "id": "stable identifier",
     "name": "company name",
     "domain": "normalized company domain",
-    "signal_type": "hiring | funding (what sourced the account; NOT the motion)",
+    "signal_type": "hiring | funding (what sourced the account; NOT the play or GTM motion)",
+    "play": "the play id the model assigned from the plays file, or null if held",
     "signal_observed_on": "YYYY-MM-DD the signal happened, or null if unknown",
     "gtm_team_size": "int from the free people search, or null if not yet searched",
-    "hiring_gtm": "bool, or null; defaults to signal_type == 'hiring'",
-    "gtm_leader_tenure_months": "int, or null",
     "category": "null, or an exclusion category such as competitor / staffing_firm",
     "headcount_growth_pct": "number, or null",
     "hq_country": "ISO-ish country code, or null (absent on net-new search results)",
@@ -92,33 +96,18 @@ def is_number(value):
 # ---------------------------------------------------------------------------- config
 
 
-def validate_config(config):
+def validate_config(config, play_ids=None):
     """Return a list of problems with a scoring config. Empty means usable.
 
     Checks shape, that no rule can award more than its dimension's doctrinal maximum
     (which would silently turn a 0-100 score into something else), and that tier cutoffs
-    are descending and inside their pass's range.
+    are descending and inside their pass's range. With `play_ids` (from the plays file), it
+    also checks that every play earns an explicit play_fit value, so a new play cannot
+    silently score 0.
     """
     problems = []
     if not isinstance(config, dict):
         return ["the scoring config must be a JSON object"]
-
-    motions = config.get("motions")
-    if not isinstance(motions, list) or not motions:
-        problems.append("`motions` must be a non-empty list")
-        motions = []
-    seen = set()
-    for i, m in enumerate(motions):
-        if not isinstance(m, dict) or not m.get("id"):
-            problems.append(f"motions[{i}] needs an `id`")
-            continue
-        if m["id"] in seen:
-            problems.append(f"motion id {m['id']!r} is defined twice")
-        seen.add(m["id"])
-        if not isinstance(m.get("criteria"), dict) or not m["criteria"]:
-            problems.append(f"motion {m['id']!r} needs non-empty `criteria`")
-        if not is_number(m.get("priority")):
-            problems.append(f"motion {m['id']!r} needs a numeric `priority`")
 
     dims = config.get("dimensions")
     if not isinstance(dims, dict):
@@ -133,12 +122,11 @@ def validate_config(config):
             if not is_number(points) or points < 0 or points > cap:
                 problems.append(f"dimensions.{name}: {label} awards {points!r}; "
                                 f"the dimension's maximum is {cap}")
-    motion_rule = dims.get("motion_fit")
-    motion_points = motion_rule.get("points_by_motion") if isinstance(motion_rule, dict) else None
-    if isinstance(motion_points, dict):
-        for mid in seen - set(motion_points):
-            problems.append(f"dimensions.motion_fit.points_by_motion has no entry for "
-                            f"motion {mid!r}")
+    play_rule = dims.get("play_fit")
+    play_points = play_rule.get("points_by_play") if isinstance(play_rule, dict) else None
+    if isinstance(play_points, dict) and play_ids is not None:
+        for pid in sorted(set(play_ids) - set(play_points)):
+            problems.append(f"dimensions.play_fit.points_by_play has no entry for play {pid!r}")
 
     for key, ceiling in (("pre_tiers", PASS1_MAX), ("tiers", FULL_MAX)):
         cut = config.get(key)
@@ -159,8 +147,8 @@ def validate_config(config):
 
 def rule_point_values(name, rule):
     """Yield (label, points) for every point value a dimension rule can award."""
-    if name in ("motion_fit", "stage_and_funding", "archetype_fit"):
-        key = {"motion_fit": "points_by_motion", "stage_and_funding": "points_by_stage",
+    if name in ("play_fit", "stage_and_funding", "archetype_fit"):
+        key = {"play_fit": "points_by_play", "stage_and_funding": "points_by_stage",
                "archetype_fit": "points_by_archetype"}[name]
         table = rule.get(key)
         if not isinstance(table, dict):
@@ -198,57 +186,7 @@ def rule_point_values(name, rule):
 DIMENSIONS_BY_NAME = tuple((n, m) for n, _, m in DIMENSIONS)
 
 
-# ---------------------------------------------------------------------------- motion
-
-
-def axes(account):
-    """Resolve the motion axes from an account. None means unknown, never False."""
-    team = account.get("gtm_team_size")
-    hiring = account.get("hiring_gtm")
-    if hiring is None and account.get("signal_type") in ("hiring", "funding"):
-        hiring = account["signal_type"] == "hiring"
-    tenure = account.get("gtm_leader_tenure_months")
-    return {
-        "has_gtm_team": None if not is_number(team) else team >= 1,
-        "hiring_gtm": hiring if isinstance(hiring, bool) else None,
-        "gtm_leader_tenure_months": tenure if is_number(tenure) else None,
-    }
-
-
-def criterion_met(key, expected, ax):
-    """Return True, False, or None (input unknown) for one motion criterion."""
-    if key == "gtm_leader_tenure_months_max":
-        value = ax["gtm_leader_tenure_months"]
-        return None if value is None else value <= expected
-    value = ax.get(key)
-    if value is None:
-        return None
-    return value == expected
-
-
-def assign_motion(account, motions):
-    """Pick the highest-priority motion whose every criterion is met.
-
-    Returns {"motion": id or None, "axes": ..., "reason": ...}. An override (a recency
-    motion that outranks a quadrant, the way a new-leader motion outranks expansion) is
-    just a higher priority, so the 2x2-plus-override shape needs no special case.
-    """
-    ax = axes(account)
-    matched, blocked_on = [], set()
-    for m in motions:
-        results = {k: criterion_met(k, v, ax) for k, v in m["criteria"].items()}
-        if all(r is True for r in results.values()):
-            matched.append(m)
-        elif not any(r is False for r in results.values()):
-            blocked_on.update(k for k, r in results.items() if r is None)
-    if matched:
-        best = max(matched, key=lambda m: (m["priority"], m["id"]))
-        crit = ", ".join(f"{k}={v}" for k, v in sorted(best["criteria"].items()))
-        return {"motion": best["id"], "axes": ax, "reason": f"criteria met: {crit}"}
-    if blocked_on:
-        return {"motion": None, "axes": ax,
-                "reason": "unknown input: " + ", ".join(sorted(blocked_on))}
-    return {"motion": None, "axes": ax, "reason": "no motion's criteria match"}
+# ---------------------------------------------------------------------------- exclusion
 
 
 def exclusion(account, config):
@@ -268,7 +206,7 @@ def exclusion(account, config):
 # ---------------------------------------------------------------------------- score
 
 
-def score_dimension(name, rule, account, motion, as_of):
+def score_dimension(name, rule, account, play, as_of):
     """Return {"points", "max", "basis", "unknown"} for one dimension."""
     cap = dict(DIMENSIONS_BY_NAME)[name]
     out = {"dimension": name, "points": 0, "max": cap, "unknown": False, "basis": ""}
@@ -277,11 +215,11 @@ def score_dimension(name, rule, account, motion, as_of):
         out.update(unknown=True, basis=f"unknown: {what}")
         return out
 
-    if name == "motion_fit":
-        if motion is None:
-            return unknown("no motion assigned")
-        pts = rule["points_by_motion"].get(motion, 0)
-        out.update(points=pts, basis=f"motion {motion}")
+    if name == "play_fit":
+        if not play:
+            return unknown("no play assigned")
+        pts = rule["points_by_play"].get(play, 0)
+        out.update(points=pts, basis=f"play {play}")
     elif name == "signal_age":
         seen = parse_day(account.get("signal_observed_on"))
         window = (rule.get("windows") or {}).get(account.get("signal_type"))
@@ -344,16 +282,14 @@ def tier(points, cutoffs):
     return BELOW
 
 
-def score_account(account, config, as_of, which="full", motion=None):
+def score_account(account, config, as_of, which="full"):
     """Score one account. `which` is "1" (free pre-score) or "full" (all eight).
 
     A pass-1 result is labeled `pre-score` and tiered on `pre_tiers`; it is never a final
-    score. `motion` may be passed in when it was already assigned; otherwise it is assigned
-    here from the config's motion definitions.
+    score. The play comes from `account["play"]`, assigned before scoring.
     """
-    if motion is None:
-        motion = assign_motion(account, config["motions"])["motion"]
-    dims = [score_dimension(n, config["dimensions"][n], account, motion, as_of)
+    play = account.get("play")
+    dims = [score_dimension(n, config["dimensions"][n], account, play, as_of)
             for n, p, _ in DIMENSIONS if which == "full" or p == 1]
     total = sum(d["points"] for d in dims)
     cutoffs = config["pre_tiers"] if which == "1" else config["tiers"]
@@ -363,7 +299,7 @@ def score_account(account, config, as_of, which="full", motion=None):
         "points": total,
         "out_of": PASS1_MAX if which == "1" else FULL_MAX,
         "tier": tier(total, cutoffs),
-        "motion": motion,
+        "play": play,
         "dimensions": dims,
         "unknown": [d["dimension"] for d in dims if d["unknown"]],
     }
@@ -377,6 +313,7 @@ def main():
     p.add_argument("--as-of", dest="as_of")
     p.add_argument("--pass", dest="which", choices=["1", "full"], default="full")
     p.add_argument("--check-config", dest="check")
+    p.add_argument("--plays", help="The plays file; checks every play has play_fit points.")
     args = p.parse_args()
 
     path = args.check or args.config
@@ -389,7 +326,16 @@ def main():
     except (OSError, json.JSONDecodeError) as e:
         print(f"Cannot read scoring config {path}: {e}", file=sys.stderr)
         sys.exit(2)
-    problems = validate_config(config)
+    play_ids = None
+    if args.plays:
+        try:
+            with open(args.plays) as f:
+                play_ids = [pl.get("id") for pl in json.load(f).get("plays", [])
+                            if isinstance(pl, dict)]
+        except (OSError, json.JSONDecodeError, AttributeError) as e:
+            print(f"Cannot read plays file {args.plays}: {e}", file=sys.stderr)
+            sys.exit(2)
+    problems = validate_config(config, play_ids)
     if args.check or problems:
         print(json.dumps({"config": path, "valid": not problems, "problems": problems},
                          indent=2))
@@ -413,15 +359,13 @@ def main():
     results = []
     for account in accounts:
         excluded = exclusion(account, config)
-        assigned = assign_motion(account, config["motions"])
-        entry = {"id": account.get("id"), "excluded": excluded, "motion": assigned}
-        if not excluded and assigned["motion"] is None:
+        entry = {"id": account.get("id"), "excluded": excluded, "play": account.get("play")}
+        if not excluded and not account.get("play"):
             # A tier here would read as enrichment-eligible for an account whose routing
-            # is not known yet. Hold it with the reason instead of scoring it.
-            entry["held"] = f"no motion assigned ({assigned['reason']})"
+            # is not known yet. Hold it instead of scoring it.
+            entry["held"] = "no play assigned; assign one against the plays file first"
         elif not excluded:
-            entry["score"] = score_account(account, config, as_of, args.which,
-                                           assigned["motion"])
+            entry["score"] = score_account(account, config, as_of, args.which)
         results.append(entry)
     print(json.dumps({"as_of": args.as_of, "pass": args.which, "results": results},
                      indent=2))

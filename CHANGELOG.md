@@ -12,6 +12,58 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-09-26
+
+Plays: the routes that decide which list, sequence and persona an account gets, now defined
+by each deployment in its own words, with the Apollo objects each one owns. And one operator's
+routing no longer ships as if it were the engine's.
+
+### Added
+
+- **`play-builder` skill.** Interviews for each play against written guidance, writes the
+  deployment's plays file, links every play to scoring, and, with approval for each object,
+  creates the standard Apollo fields, the play's lists and an inactive sequence. Sequence
+  activation stays a human gate.
+- **Plays file (`PLAYS_FILE`, default `plays.json`).** A play's entry criteria, persona and
+  angle are free text, judged by the model against guidance in
+  `skills/play-builder/references/play-fields.md`, because plays differ completely between
+  organizations. `check_plays.py` checks the shape (codes, priority, the Apollo naming rule,
+  known fields, criteria written as a sentence), never the content.
+- **Standard Play fields** on accounts and contacts (`APOLLO_CF_*_PLAY`,
+  `APOLLO_CF_*_PLAY_ASSIGNED_ON`): which play, why, the evidence, and when. The standard vs
+  custom field split is in `skills/play-builder/references/standard-fields.md`.
+- **`references/plays.md`**: what a play is, how the scan assigns one, and the naming rule.
+- **A design rule in CLAUDE.md**: deterministic where it is universal, guided free text where
+  it differs by organization.
+
+### Changed
+
+- **"Motion" in the routing sense is now "play".** The word already meant the target's own GTM
+  motion, which decides the closer. Scoring's "Motion fit" is now "Play fit"; `gtm-signal-scan`
+  Step 1.5 is "Play assignment"; the runtime placeholder `{MOTION}` (which held the signal
+  type) is `{SIGNAL_TYPE}`.
+- **Play assignment moved from `score.py` to the model.** The scan gathers free evidence,
+  judges every play's criteria, holds the account when the evidence cannot decide, and records
+  the play, reasoning, evidence and date. `score.py` takes the assigned play as input and holds
+  any account without one. The demo shows assignment as a labeled FIXTURE.
+- **`provision-gtm-engine`** hands play definition to `play-builder`, builds one list pair and
+  one sequence per play, and no longer claims the API cannot create fields
+  (`apollo_fields_create` exists; it is used with approval per field and a read-back).
+
+### Removed
+
+- **`references/motion-codes.md`** and every M1-M5 reference: one operator's five routes, their
+  live sequence names and a personal job-search track, presented as engine doctrine. A test now
+  fails if they come back.
+
+### Upgrading
+
+Write your plays with `play-builder` (or convert your existing routes: describe them and it
+will draft the file), then add `"PLAYS_FILE": "plays.json"` and the four Play field keys to
+`instance-config.json`, rename `motion_fit`/`points_by_motion` to `play_fit`/`points_by_play`
+in your scoring config, and run `python3 scripts/demo.py --config instance-config.json`. Until
+a plays file exists, `gtm-signal-scan` stops at Step 1.5 and routes you to `play-builder`.
+
 ## [1.10.0] - 2026-09-26
 
 The offline demo, and the scoring arithmetic it runs on. You can now see the engine make

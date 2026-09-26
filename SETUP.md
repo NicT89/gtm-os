@@ -30,7 +30,8 @@ sent. It is how to see what the engine does before deciding to wire it up.
 
 Come back to it at Step 4: `python3 scripts/demo.py --config instance-config.json` runs
 the same accounts through your own instance and reports every gap as a finding (an unset
-key, a missing scoring config, a motion with no list, an unrecorded catch-all policy).
+key, a missing plays file or scoring config, a play with no list, an unrecorded catch-all
+policy).
 
 ## The variable rule (load-bearing)
 
@@ -136,10 +137,11 @@ python3 scripts/setup_status.py
 
 It groups every key by connector and marks it **set**, **default**, or **unset**, and
 says what each gap blocks. Note the `default` rows especially: a plain `cp` inherits
-four non-empty values from the example (`CRM_PROVIDER`, `APIFY_POSTS_ACTOR`,
-`SCRAPE_ROSTER_ARTIFACT`, `SCORING_CONFIG_FILE`). They work, so nothing complains, which is
-exactly why they get left unexamined. Decide each one rather than inheriting it. The last
-only names a file: the scoring decisions live inside that file, not in its name.
+five non-empty values from the example (`CRM_PROVIDER`, `APIFY_POSTS_ACTOR`,
+`SCRAPE_ROSTER_ARTIFACT`, `SCORING_CONFIG_FILE`, `PLAYS_FILE`). They work, so nothing
+complains, which is exactly why they get left unexamined. Decide each one rather than
+inheriting it. The last two only name files: the scoring decisions and the plays live inside
+those files, which `provision-gtm-engine` and `play-builder` write, not in their names.
 
 Then fill it in:
 
