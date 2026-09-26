@@ -1,5 +1,5 @@
 # Signals Doctrine
-### The canonical buying-signal taxonomy for the GTM Engine. Every signal maps to a source, cost, decay window, typical play, and action. Apollo's native buying-intent settings cap at 6 options; this document is the richer definition the engine actually runs on.
+### The canonical buying-signal taxonomy for the GTM Engine. Every signal maps to a source, cost, decay window, typical play, and action. Apollo's native buying-intent settings offer only a short fixed list; this document is the richer definition the engine actually runs on.
 
 ## Two axes, two words: signal type and GTM motion
 
@@ -46,7 +46,7 @@ Rule: a signal without an owner and an action is trivia. A signal is ACTIVE for 
 | 7 | Website visitor intent | Apollo tracking script (pages, recency, intent level) | Free (script installed) | 7-30 days | Any play, warmth boost | Feeds Engagement score; future visitor play |
 | 8 | Commercial-maturity transition | CB Insights level change (1-5) | Free | Quarterly | CM 2 hints no-team plays, 3 hints team plays | Scoring input + routing hint |
 | 9 | Headcount growth spike | Apollo/CBI growth 6-12mo | Free | Quarterly | Scoring input | Fit score dimension |
-| 10 | Social buying language | LinkedIn posts/comments (scrape-linkedin-posts skill, Apify), X (apidojo/tweet-scraper), Reddit (trudax/reddit-scraper-lite), Facebook groups | ~$0.002/post Apify | 30-90 days | Deepest-intent tier when present | Personalization fuel + intent gate (expansion) |
+| 10 | Social buying language | LinkedIn posts/comments (scrape-linkedin-posts skill, Apify), X (apidojo/tweet-scraper), Reddit (trudax/reddit-scraper-lite), Facebook groups | Per-result Apify actor pricing (plan-dependent; read the actor's pricing page) | 30-90 days | Deepest-intent tier when present | Personalization fuel + intent gate (expansion) |
 | 11 | Competitor review-site activity | G2/Capterra reviews of competitor products (scrape) | Scrape cost | 90 days | Switch-intent lane | Expansion gate |
 | 12 | Champion job change into ICP company | Apollo job-change on past engaged contacts | Free search | 90 days | Warm-path priority | Expansion gate |
 

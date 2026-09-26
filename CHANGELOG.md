@@ -50,6 +50,18 @@ routing no longer ships as if it were the engine's.
   one sequence per play, and no longer claims the API cannot create fields
   (`apollo_fields_create` exists; it is used with approval per field and a read-back).
 
+### Fixed
+
+- `score.py` holds an account whose assigned play is not in the scoring config (or, with
+  `--plays`, not in the plays file) instead of scoring that play 0 and still tiering it.
+- An account has one scoring play; its contacts may route to different plays by persona.
+  `references/plays.md` and `outreach-audit` said an account could carry several plays, which
+  `score.py`, reading one `account["play"]`, could not honor.
+- Two figures in `references/signals-doctrine.md` had no source (Apollo's buying-intent option
+  count and an Apify per-post price) and are now stated without numbers.
+- `setup_status.py` no longer says the scoring config holds motions; `gtm-os-demo` and
+  `play-builder` report an update only when the remote version is newer.
+
 ### Removed
 
 - **`references/motion-codes.md`** and every M1-M5 reference: one operator's five routes, their

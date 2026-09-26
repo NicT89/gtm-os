@@ -146,8 +146,9 @@ GROUPS = [
         "gtm-signal-scan Step 2 scoring by script. Without the file, the scan scores by "
         "hand against SKILL.md's tables and labels every score `manual`; the demo's "
         "--config mode reports it as a blocking finding.",
-        "Names a JSON file next to instance-config.json holding this deployment's motions, "
-        "exclusions, scoring rules and tier cutoffs, decided at provisioning. "
+        "Names a JSON file next to instance-config.json holding this deployment's "
+        "exclusions, scoring rules (including play_fit points per play) and tier cutoffs, "
+        "decided at provisioning. "
         "examples/demo/scoring.demo.json shows the shape; its values are illustrative. "
         "PLAYS_FILE names the plays file the play-builder skill writes; without it the scan "
         "cannot assign plays.",

@@ -218,8 +218,11 @@ def score_dimension(name, rule, account, play, as_of):
     if name == "play_fit":
         if not play:
             return unknown("no play assigned")
-        pts = rule["points_by_play"].get(play, 0)
-        out.update(points=pts, basis=f"play {play}")
+        if play not in rule["points_by_play"]:
+            # A play the scoring config has never heard of is a typo or a stale id, not a
+            # zero-fit route: scoring it 0 would still produce a tier.
+            return unknown(f"play {play!r} has no play_fit entry in the scoring config")
+        out.update(points=rule["points_by_play"][play], basis=f"play {play}")
     elif name == "signal_age":
         seen = parse_day(account.get("signal_observed_on"))
         window = (rule.get("windows") or {}).get(account.get("signal_type"))
@@ -359,11 +362,18 @@ def main():
     results = []
     for account in accounts:
         excluded = exclusion(account, config)
-        entry = {"id": account.get("id"), "excluded": excluded, "play": account.get("play")}
-        if not excluded and not account.get("play"):
+        play = account.get("play")
+        entry = {"id": account.get("id"), "excluded": excluded, "play": play}
+        known = config["dimensions"]["play_fit"]["points_by_play"]
+        if not excluded and not play:
             # A tier here would read as enrichment-eligible for an account whose routing
             # is not known yet. Hold it instead of scoring it.
             entry["held"] = "no play assigned; assign one against the plays file first"
+        elif not excluded and (play not in known or (play_ids is not None
+                                                      and play not in play_ids)):
+            # Same reason: an unrecognized id is unknown routing, not a route worth 0.
+            entry["held"] = (f"assigned play {play!r} is not in the plays file or has no "
+                             "play_fit entry; fix the assignment first")
         elif not excluded:
             entry["score"] = score_account(account, config, as_of, args.which)
         results.append(entry)

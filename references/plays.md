@@ -59,10 +59,14 @@ same everywhere is checked by code:
    date and reason rather than overwriting silently, as `references/gap-ledger.md` requires
    of every machine-written field.
 
-One contact is in one play. One account may carry more than one play when it holds more
-than one persona. A play may declare `exclusive_with`: plays whose relationship with the
-recipient is different in kind (a recruiting track and a sales track at the same company,
-for example) must never run against the same company at once.
+**An account has one scoring play; its contacts may route to different plays.** The
+account's play is the highest-priority play whose criteria it meets. It is the play
+`score.py` reads (`account["play"]`) for `play_fit`, and the one recorded in the account
+Play fields. Contacts are routed separately, by persona: a founder and a GTM lead at the same
+account may belong to two different plays, and each contact belongs to exactly one, recorded
+in the contact Play fields. A play may declare `exclusive_with`: plays whose relationship
+with the recipient is different in kind (a recruiting track and a sales track at the same
+company, for example) must never run against the same company at once.
 
 ## Naming: every Apollo object a play touches carries its code
 

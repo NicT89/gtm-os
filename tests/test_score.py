@@ -94,6 +94,10 @@ class PlayFit(unittest.TestCase):
         self.assertEqual(self.dim(r)["points"],
                          DEMO["dimensions"]["play_fit"]["points_by_play"]["team-expansion"])
 
+    def test_an_unrecognized_play_is_unknown_not_zero_fit(self):
+        r = score.score_account(account(play="no-such-play"), DEMO, AS_OF, "1")
+        self.assertEqual((self.dim(r)["points"], self.dim(r)["unknown"]), (0, True))
+
     def test_exclusion_uses_the_signal_types_own_ceiling(self):
         self.assertIsNotNone(score.exclusion(account(gtm_team_size=2), DEMO))
         self.assertIsNone(score.exclusion(account(signal_type="funding", gtm_team_size=2), DEMO))
@@ -167,6 +171,32 @@ class Cli(unittest.TestCase):
         entry = json.loads(out.stdout)["results"][0]
         self.assertIn("held", entry)
         self.assertNotIn("score", entry)
+
+    def test_an_account_with_an_unrecognized_play_is_held_not_tiered(self):
+        """A typo'd or stale play id must not tier as a zero-fit route."""
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump([account(play="no-such-play")], f)
+        out = self.run_cli(f.name, "--config", str(ROOT / "examples/demo/scoring.demo.json"),
+                           "--as-of", "2026-09-01")
+        entry = json.loads(out.stdout)["results"][0]
+        self.assertIn("held", entry)
+        self.assertNotIn("score", entry)
+
+    def test_a_play_missing_from_the_plays_file_is_held(self):
+        """With --plays, a play the config still scores but the plays file dropped is held."""
+        plays = {"plays": [{"id": "first-gtm-hire"}]}
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump([account(play="team-expansion")], f)
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as g:
+            json.dump(plays, g)
+        cfg = copy.deepcopy(DEMO)
+        cfg["dimensions"]["play_fit"]["points_by_play"] = {"first-gtm-hire": 15,
+                                                            "team-expansion": 8}
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as h:
+            json.dump(cfg, h)
+        out = self.run_cli(f.name, "--config", h.name, "--plays", g.name, "--as-of", "2026-09-01")
+        entry = json.loads(out.stdout)["results"][0]
+        self.assertIn("held", entry)
 
     def test_the_clock_is_never_read(self):
         """No --as-of is a usage error, not a silent today()."""
