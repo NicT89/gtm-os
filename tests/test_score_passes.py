@@ -61,6 +61,27 @@ class ScorePasses(unittest.TestCase):
             "motion is assigned after the score that depends on it",
         )
 
+    def test_score_py_dimensions_equal_the_skill_tables(self):
+        """score.py carries the doctrine as code; SKILL.md carries it as prose.
+
+        Two copies of a rubric is exactly the drift CLAUDE.md warns about, so this pins
+        them together: same names, same pass, same points. Break it by changing any value
+        in score.py's DIMENSIONS or in either SKILL.md table.
+        """
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "score", ROOT / "skills" / "gtm-signal-scan" / "scripts" / "score.py")
+        score = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(score)
+        pass1, pass2 = self.split_sections()
+
+        def rows(section, which):
+            found = re.findall(r"^\|\s*([A-Za-z][^|]*?)\s*\|\s*(\d+)\s*\|", section, re.M)
+            return [(re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_"), which, int(pts))
+                    for name, pts in found]
+
+        self.assertEqual(rows(pass1, 1) + rows(pass2, 2), list(score.DIMENSIONS))
+
     def test_the_step_points_at_the_legend_rather_than_restating_it(self):
         """Every other copy of a taxonomy in this repo drifted from its source."""
         step = self.scan[self.scan.index("## Step 1.5"):self.scan.index("## Step 2:")]

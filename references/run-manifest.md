@@ -49,3 +49,26 @@ The pre-spend statement to the human names each meter, the estimate, and the cap
 **Compute that, do not remember it.** `scripts/run_cost.py` takes the meters and caps and returns the tally, the Cost Summary line in the Vault's exact format, and a non-zero exit the moment any meter is over its cap. Before 1.10.0 nothing produced the number, so a rule that depends on comparing spend to cap depended on someone doing arithmetic in their head and writing it down afterwards. On the 2026-09-07 run the figure was tracked by hand in a chat window and would have been lost with the conversation.
 
 It also carries the write half, because since 1.9.0 runs fill fields as well as spend on them. A run that spent credits and filled nothing is a different event from one that spent the same and closed six gaps, and only one of those is worth repeating.
+
+## Run mode: every result says what kind of run produced it
+
+Since 1.10.0 the engine can produce results without touching a live system (the offline
+demo), so every report, run artifact and manifest carries a `run_mode`, and every row in a
+report carries a label. There are four, defined here and nowhere else:
+
+| Label | Input | Logic | Spend and writes |
+|---|---|---|---|
+| `SIMULATED` | Synthetic accounts and people | The engine's real decision code | None |
+| `FIXTURE` | A hand-written stand-in for an API or model response | Not applicable: the row IS the stand-in | None |
+| `PREVIEW` | Synthetic input through a real deployment's config | The engine's real decision code | None |
+| `LIVE` | Real calls against the operator's own tools | The engine's real decision code | Real, behind the human gates |
+
+The rule the labels exist to enforce: **a result that is not `LIVE` is never reported as
+evidence about a real account, and a `FIXTURE` is never reported as something the engine
+produced.** A demo opener is a fixture; quoting it to a prospect as "what the engine writes"
+is the same defect as quoting an unsourced number.
+
+`scripts/demo.py` emits `SIMULATED` (default) or `PREVIEW` (`--config`), and
+`tests/test_demo.py` fails if any report row lacks a label. Live skills write
+`"run_mode": "LIVE"` into their run artifacts; a run artifact with no `run_mode` predates
+this convention and should be read as live.

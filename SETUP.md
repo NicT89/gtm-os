@@ -21,6 +21,17 @@ exist, the base has the wrong schema, the MCP server was never added, or the IDs
 never recorded. Diagnose which of those it is before suggesting anyone sign up for
 anything.
 
+## Step 0: Run the offline demo (no setup needed)
+
+Before connecting anything, say `run the demo`. The `gtm-os-demo` skill runs the engine's
+real decision logic over synthetic accounts and writes a labeled report: every hold with
+its reason, the credit statement a live run would ask approval for, and nothing spent or
+sent. It is how to see what the engine does before deciding to wire it up.
+
+Come back to it at Step 4: `python3 scripts/demo.py --config instance-config.json` runs
+the same accounts through your own instance and reports every gap as a finding (an unset
+key, a missing scoring config, a motion with no list, an unrecorded catch-all policy).
+
 ## The variable rule (load-bearing)
 
 Skills in this repo reference deployment values as `{KEY}` tokens — CRM custom field IDs,
@@ -163,6 +174,9 @@ the schema's keys, and that the values look like the right kind of ID. It verifi
 *shape*, not existence — it cannot tell you an ID is real. That is what Step 4 is for.
 
 ## Step 4: Verify with a dry run
+
+First run the demo in preview mode, which spends nothing: `python3 scripts/demo.py
+--config instance-config.json`. Clear its blocking findings, then move to one live target.
 
 Run `scrape-linkedin-posts` against ONE target the user names. Confirm:
 

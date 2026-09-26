@@ -62,6 +62,9 @@ OPTIONAL_KEYS = {
     # Ships with a working default filename. Empty is supported and means the
     # skill falls back to that default, so an empty value must not fail.
     "SCRAPE_ROSTER_ARTIFACT",
+    # Ships naming a default file; empty means the same default. The file itself is
+    # optional too: without it gtm-signal-scan scores by hand and labels every score.
+    "SCORING_CONFIG_FILE",
 }
 
 # Ordered because setup has a dependency order and the report should read in it.
@@ -126,6 +129,16 @@ GROUPS = [
         "Nothing. It names the roster file every scrape run rebuilds.",
         "Ships as 'scrape-roster.md'. Change it only if that name collides with "
         "something in your artifact home.",
+    ),
+    (
+        "Scoring config",
+        lambda k: k == "SCORING_CONFIG_FILE",
+        "gtm-signal-scan Step 2 scoring by script. Without the file, the scan scores by "
+        "hand against SKILL.md's tables and labels every score `manual`; the demo's "
+        "--config mode reports it as a blocking finding.",
+        "Names a JSON file next to instance-config.json holding this deployment's motions, "
+        "exclusions, scoring rules and tier cutoffs, decided at provisioning. "
+        "examples/demo/scoring.demo.json shows the shape; its values are illustrative.",
     ),
 ]
 

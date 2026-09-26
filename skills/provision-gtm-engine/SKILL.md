@@ -18,7 +18,7 @@ Scrape the site (home, pricing, careers, docs, blog) per the plugin root's `refe
 
 ## Phase 1: Signal design
 
-Define what a buying signal is for THIS company: hiring in a function, funding events, tech stack changes, product launches, regulatory shifts. Rank 3-5 signal types by intent strength, map each to a collection method, and build the 0-100 scoring rubric with routing thresholds (Excellent / Good / Fair tiers per the gtm-signal-scan skill).
+Define what a buying signal is for THIS company: hiring in a function, funding events, tech stack changes, product launches, regulatory shifts. Rank 3-5 signal types by intent strength, map each to a collection method, and build the 0-100 scoring rubric with routing thresholds (Excellent / Good / Fair tiers per the gtm-signal-scan skill). Save it as the deployment's scoring config (`{SCORING_CONFIG_FILE}`) in the shape `gtm-signal-scan`'s `scripts/score.py --check-config` validates, with `"provenance": "deployment"`: motions, exclusions, the rule behind each dimension, both sets of tier cutoffs, people priorities, and the catch-all policy once the operator records it. `examples/demo/scoring.demo.json` shows the shape, and every value in it is illustrative; do not copy its numbers as if they were decisions. Then run the offline demo with `--config` to check the whole setup before the first live scan.
 
 ## Phase 2: Apollo build
 

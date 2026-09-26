@@ -12,6 +12,61 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-09-26
+
+The offline demo, and the scoring arithmetic it runs on. You can now see the engine make
+every decision it makes in a live scan without connecting a single tool, and check your own
+setup before the first live run spends a credit.
+
+### Added
+
+- **`gtm-os-demo` skill and `scripts/demo.py`.** Say `run the demo`. It runs the engine's
+  real decision logic over synthetic accounts on `.example` domains: dedupe, exclusions,
+  motion assignment, two-pass scoring, reachability ranking, the credit statement a live
+  run would ask approval for, the field gate, and the deterministic composition checks.
+  Every hold carries its reason. Nothing is called, spent, written or sent. The committed
+  output is `examples/demo-report.md`, and a test fails if it drifts from the generator.
+- **Preview mode: `python3 scripts/demo.py --config instance-config.json`.** The same
+  synthetic accounts through YOUR instance: your instance config is validated and your
+  scoring config drives the motions, exclusions, scores and tiers. Every gap comes back as
+  a finding: an unset key, a missing or illustrative scoring config, a motion with no list
+  or sequence, an unrecorded catch-all enrollment policy. Still no API calls: it checks the
+  shape of your setup, not connectivity.
+- **Run-mode labels.** Every report row is `SIMULATED`, `FIXTURE`, `PREVIEW` or `LIVE`,
+  defined once in `references/run-manifest.md`. A result that is not `LIVE` is never
+  evidence about a real account, and a `FIXTURE` is never something the engine produced.
+- **`skills/gtm-signal-scan/scripts/score.py`.** Motion assignment, both scoring passes and
+  tiering, computed instead of done in prose. An absent input scores 0 AND is flagged
+  `unknown`, and a motion is never assigned on an unknown input: the account is held with
+  the free call that would resolve it named. The dimensions (names, pass, maximum points)
+  stay in SKILL.md Step 2 and a test pins the script to those tables.
+- **`skills/gtm-signal-scan/scripts/rank_people.py`.** Step 4b's role-fit x reachability
+  ranking. It parses the reachability tiers out of `references/apollo-credit-costs.md` at
+  run time rather than carrying a copy, the copy being how `unverified` once went missing
+  from T4.
+- **`SCORING_CONFIG_FILE` instance key** (default `scoring-config.json`, optional). Names
+  the JSON file holding your deployment's motions, exclusion thresholds, per-dimension
+  rules, tier cutoffs, people priorities and catch-all policy.
+  `examples/demo/scoring.demo.json` shows the shape; every value in it is illustrative.
+
+### Changed
+
+- **`gtm-signal-scan` Step 2 scores with `score.py`** when a scoring config exists, and
+  otherwise scores by hand against the tables and labels every score `manual`. Step 4b
+  ranks with `rank_people.py`.
+- **`provision-gtm-engine` Step 3 saves the rubric as the scoring config** and runs the
+  demo in preview mode before the first live scan. `SETUP.md` gains a Step 0 (run the demo)
+  and runs preview mode at Step 4; `environment-setup` runs it after validation.
+
+### Upgrading
+
+Nothing breaks. To get deterministic scoring, write your scoring config at provisioning
+(or copy `examples/demo/scoring.demo.json` next to `instance-config.json`, REPLACE every
+value with your own decisions, and set `"provenance": "deployment"`), add
+`"SCORING_CONFIG_FILE": "scoring-config.json"` to your `instance-config.json`, then run
+`python3 scripts/demo.py --config instance-config.json` and clear its blocking findings.
+Until you do, the scan behaves as before and labels its scores `manual`.
+
 ## [1.9.4] - 2026-09-10
 
 The rest of the 1.9.2 contract audit, as one release. Every finding here is the same defect

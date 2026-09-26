@@ -24,6 +24,7 @@ audit-log*
 run-report*
 changelog.local*
 briefs/
+gtm-os-demo/
 
 # ...except examples/, which is curated synthetic content, not run artifacts.
 # Without this, examples/audit-log-entry.md is silently swallowed by the rule above.

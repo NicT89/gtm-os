@@ -79,5 +79,6 @@
   "AIRTABLE_FLD_CONTACTS_TRACKING": "",
   "AIRTABLE_FLD_COMPANY_TRACKING": "",
   "SCRAPE_ROSTER_ARTIFACT": "scrape-roster.md",
+  "SCORING_CONFIG_FILE": "scoring-config.json",
   "APIFY_POSTS_ACTOR": "harvestapi/linkedin-profile-posts"
 }

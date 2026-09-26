@@ -69,6 +69,9 @@ OPTIONAL_KEYS = {
     # Ships with a working default filename; empty means the skill falls back
     # to it. Documented as optional, so it must validate as optional.
     "SCRAPE_ROSTER_ARTIFACT",
+    # Ships naming a default file; empty means the same default. The file itself is
+    # optional too: without it gtm-signal-scan scores by hand and labels every score.
+    "SCORING_CONFIG_FILE",
 }
 
 # Single-brace {TOKEN}, not part of a {{merge token}}.

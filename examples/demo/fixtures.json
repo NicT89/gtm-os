@@ -1,0 +1,121 @@
+{
+  "_README": "SYNTHETIC DEMO FIXTURES. Invented companies and people on .example domains. These stand in for the responses a live run would receive from the CRM, enrichment and the composition step; the demo's logic runs on them for real. Each planted case is named in _planted so a test can assert its hold appears.",
+  "_planted": {
+    "cobalt.example": "duplicate source row with a second signal: merged, both signals kept",
+    "missing-domain row": "rejected at intake",
+    "northwind.example": "already in the CRM: routed to update, never create",
+    "foundry.example": "competitor: excluded",
+    "kestrel.example": "staffing firm: excluded",
+    "vantage.example": "GTM team of 3 on a hiring signal: excluded",
+    "lumen.example": "team state unknown: no motion assigned, held for the free people search",
+    "quarry.example": "stale funding signal: pre-score Fair, account record only, no enrichment spend",
+    "meridian.example": "enriched, then the full score drops it below Fair: no people spend",
+    "L. Chen": "T4 reachability: no match credit",
+    "S. Lindqvist": "catch-all address: held at the catch-all enrollment gate",
+    "E. Walsh": "T3 with weak role fit: held",
+    "P. Anand": "enrichment cascade never fired: field gate FAIL",
+    "R. Singh": "opener carries a number no source supports: composition hold"
+  },
+  "run": {"as_of_date": "2026-09-01", "run_id": "demo-2026-09-01"},
+  "search_response": {
+    "accounts": [
+      {"id": "acc-northwind", "name": "Northwind Analytics", "domain": "northwind.example", "signal_type": "hiring", "signal_observed_on": "2026-08-25", "gtm_team_size": 0, "gtm_leader_tenure_months": null, "headcount_growth_pct": 34, "hq_country": "US", "employees": 48}
+    ],
+    "organizations": [
+      {"id": "org-cobalt", "name": "Cobalt Systems", "domain": "cobalt.example", "signal_type": "hiring", "signal_observed_on": "2026-08-28", "gtm_team_size": 0, "headcount_growth_pct": 22, "hq_country": null, "employees": 22},
+      {"id": "org-cobalt-2", "name": "Cobalt Systems Inc.", "domain": "www.Cobalt.example", "signal_type": "funding", "signal_observed_on": "2026-06-30", "gtm_team_size": 0, "headcount_growth_pct": 22, "hq_country": null, "employees": 22},
+      {"id": "org-harbor", "name": "Harbor Labs", "domain": "harbor.example", "signal_type": "funding", "signal_observed_on": "2026-07-10", "gtm_team_size": 0, "headcount_growth_pct": 18, "hq_country": "US", "employees": 35},
+      {"id": "org-tidewater", "name": "Tidewater AI", "domain": "tidewater.example", "signal_type": "hiring", "signal_observed_on": "2026-08-20", "gtm_team_size": 1, "gtm_leader_tenure_months": 4, "headcount_growth_pct": 12, "hq_country": "US", "employees": 140},
+      {"id": "org-meridian", "name": "Meridian Retail", "domain": "meridian.example", "signal_type": "hiring", "signal_observed_on": "2026-07-12", "gtm_team_size": 1, "gtm_leader_tenure_months": 26, "headcount_growth_pct": 20, "hq_country": "US", "employees": 90},
+      {"id": "org-foundry", "name": "Foundry GTM Partners", "domain": "foundry.example", "signal_type": "hiring", "signal_observed_on": "2026-08-22", "gtm_team_size": 0, "category": "competitor", "headcount_growth_pct": 40, "hq_country": "US", "employees": 30},
+      {"id": "org-kestrel", "name": "Kestrel Staffing", "domain": "kestrel.example", "signal_type": "hiring", "signal_observed_on": "2026-08-18", "gtm_team_size": 0, "category": "staffing_firm", "headcount_growth_pct": 8, "hq_country": "US", "employees": 60},
+      {"id": "org-vantage", "name": "Vantage Global", "domain": "vantage.example", "signal_type": "hiring", "signal_observed_on": "2026-08-26", "gtm_team_size": 3, "gtm_leader_tenure_months": 30, "headcount_growth_pct": 25, "hq_country": "US", "employees": 180},
+      {"id": "org-lumen", "name": "Lumen Freight", "domain": "lumen.example", "signal_type": "hiring", "signal_observed_on": null, "gtm_team_size": null, "headcount_growth_pct": 15, "hq_country": "US", "employees": 70},
+      {"id": "org-quarry", "name": "Quarry Works", "domain": "quarry.example", "signal_type": "funding", "signal_observed_on": "2026-01-15", "gtm_team_size": 0, "headcount_growth_pct": 3, "hq_country": "US", "employees": 25},
+      {"id": "org-nodomain", "name": "Unnamed listing", "domain": "", "signal_type": "hiring", "signal_observed_on": "2026-08-27"}
+    ]
+  },
+  "enrichment": {
+    "northwind.example": {"latest_funding_stage": "Series A", "role_archetype": "build", "technologies": ["Apollo", "Segment", "Salesforce"], "warm_path": false},
+    "cobalt.example": {"hq_country": "US", "latest_funding_stage": "Seed", "role_archetype": "build", "technologies": ["Clay", "n8n", "HubSpot"], "warm_path": true},
+    "harbor.example": {"latest_funding_stage": "Series A", "role_archetype": null, "technologies": ["HubSpot"], "warm_path": false},
+    "tidewater.example": {"latest_funding_stage": "Series B", "role_archetype": "support", "technologies": ["Salesforce"], "warm_path": false},
+    "meridian.example": {"latest_funding_stage": "Series C", "role_archetype": "backfill", "technologies": [], "warm_path": false}
+  },
+  "people": {
+    "northwind.example": [
+      {"name": "A. Reyes", "title": "CEO & Co-founder", "email_status": "verified", "phone_available": false},
+      {"name": "J. Okafor", "title": "Head of Growth", "email_status": "verified", "phone_available": true},
+      {"name": "S. Lindqvist", "title": "Co-founder & COO", "email_status": "catch_all", "phone_available": false},
+      {"name": "R. Singh", "title": "Founding Account Executive", "email_status": "verified", "phone_available": false},
+      {"name": "D. Park", "title": "Board Member", "email_status": "verified", "phone_available": false}
+    ],
+    "cobalt.example": [
+      {"name": "M. Duarte", "title": "CEO", "email_status": "verified", "phone_available": true},
+      {"name": "P. Anand", "title": "VP Marketing", "email_status": "verified", "phone_available": false},
+      {"name": "L. Chen", "title": "Chief of Staff", "email_status": "unavailable", "phone_available": false},
+      {"name": "D. Moreau", "title": "CTO", "email_status": "verified", "phone_available": false}
+    ],
+    "tidewater.example": [
+      {"name": "T. Nakamura", "title": "CEO", "email_status": "verified", "phone_available": false},
+      {"name": "E. Walsh", "title": "Head of Marketing", "email_status": "guessed", "phone_available": false}
+    ],
+    "harbor.example": [
+      {"name": "K. Whitfield", "title": "Founder", "email_status": "verified", "phone_available": false}
+    ]
+  },
+  "gate_config": {
+    "custom_fields": {
+      "DEMO_CF_PROFILE_SUMMARY": {"label": "LinkedIn Profile Summary", "populator": "crm_workflow", "requirement": "required", "remediation": "Re-add the contact to the enrichment trigger list, wait, re-check."},
+      "DEMO_CF_RESEARCH_COMPANY_PROFILE": {"label": "Research Company Profile", "populator": "crm_workflow", "requirement": "one_of:company_context", "remediation": "Re-trigger the research play via list membership."},
+      "DEMO_CF_LINKEDIN_POSTS": {"label": "LinkedIn Posts", "populator": "scrape_linkedin_posts_skill", "requirement": "one_of:company_context", "remediation": "Run the scrape-linkedin-posts skill for this contact."}
+    },
+    "account_fields": {
+      "hiring": {
+        "DEMO_CF_GTM_JOBS": {"label": "GTM Jobs w/ URL", "populator": "ai_field_prompt", "remediation": "Re-run the scan's Step 3 for this account."},
+        "DEMO_CF_JD_SUMMARY": {"label": "JD Summary", "populator": "ai_field_prompt", "remediation": "Re-trigger the JD summary field prompt."},
+        "DEMO_CF_ROLE_ARCHETYPES": {"label": "Role Archetypes", "populator": "signal_scan", "remediation": "Classify the req during the scan's Step 3."}
+      },
+      "funding": {}
+    },
+    "account_path": ["organization", "typed_custom_fields"],
+    "system_enrichment_keys": ["estimated_num_employees", "latest_funding_stage", "technology_names"],
+    "min_hard_facts": 3
+  },
+  "account_records": {
+    "northwind.example": {
+      "system": {"estimated_num_employees": 48, "latest_funding_stage": "Series A", "technology_names": ["Apollo", "Segment"]},
+      "typed_custom_fields": {"DEMO_CF_GTM_JOBS": "RevOps Lead | https://northwind.example/careers/revops | 2026-08-25", "DEMO_CF_JD_SUMMARY": "First RevOps hire; owns CRM hygiene and pipeline reporting.", "DEMO_CF_ROLE_ARCHETYPES": "build"}
+    },
+    "cobalt.example": {
+      "system": {"estimated_num_employees": 22, "latest_funding_stage": "Seed", "technology_names": ["Clay", "n8n"]},
+      "typed_custom_fields": {"DEMO_CF_GTM_JOBS": "GTM Engineer | https://cobalt.example/jobs/gtm-engineer | 2026-08-28", "DEMO_CF_JD_SUMMARY": "Builds outbound automation in Clay and n8n.", "DEMO_CF_ROLE_ARCHETYPES": "build"}
+    }
+  },
+  "contact_fields": {
+    "A. Reyes": {"DEMO_CF_PROFILE_SUMMARY": "Co-founded Northwind in 2023 after running analytics consulting.", "DEMO_CF_RESEARCH_COMPANY_PROFILE": "Series A analytics platform, first RevOps req open."},
+    "J. Okafor": {"DEMO_CF_PROFILE_SUMMARY": "Joined Northwind in 2025 to build the growth function.", "DEMO_CF_LINKEDIN_POSTS": "Posts weekly about pipeline attribution."},
+    "S. Lindqvist": {"DEMO_CF_PROFILE_SUMMARY": "Co-founder, runs operations.", "DEMO_CF_RESEARCH_COMPANY_PROFILE": "Series A analytics platform."},
+    "R. Singh": {"DEMO_CF_PROFILE_SUMMARY": "First sales hire at Northwind.", "DEMO_CF_RESEARCH_COMPANY_PROFILE": "Series A analytics platform."},
+    "M. Duarte": {"DEMO_CF_PROFILE_SUMMARY": "Founded Cobalt in 2024.", "DEMO_CF_LINKEDIN_POSTS": "Wrote about replacing manual list building."},
+    "P. Anand": {"DEMO_CF_RESEARCH_COMPANY_PROFILE": "Seed-stage workflow company."}
+  },
+  "openers": {
+    "A. Reyes": {
+      "text": "You co-founded Northwind in 2023 after running analytics consulting, and now own the call on who builds revenue operations. Reading the RevOps Lead posting your team opened on 2026-08-25, the scope covers CRM hygiene and pipeline reporting in one seat. That reads as a build seat rather than a support seat. Who owns pipeline reporting until that hire lands?",
+      "facts": ["Co-founded Northwind in 2023 (profile summary)", "RevOps Lead posted 2026-08-25 (GTM Jobs field)", "Scope: CRM hygiene and pipeline reporting (JD Summary)"]
+    },
+    "J. Okafor": {
+      "text": "You joined Northwind in 2025 to build the growth function, and attribution has been yours since. Reading the RevOps Lead posting from 2026-08-25, reporting moves to a new seat. That splits attribution across two owners. How will the handoff work?",
+      "facts": ["Joined Northwind in 2025 (profile summary)", "RevOps Lead posted 2026-08-25 (GTM Jobs field)"]
+    },
+    "R. Singh": {
+      "text": "You were the first sales hire at Northwind and carry a team of 40 accounts alone. Reading the RevOps Lead posting from 2026-08-25, reporting is about to get an owner. That changes what you are measured on. What does your pipeline review look like today?",
+      "facts": ["First sales hire (profile summary)", "RevOps Lead posted 2026-08-25 (GTM Jobs field)"]
+    },
+    "M. Duarte": {
+      "text": "You founded Cobalt in 2024 and have written about replacing manual list building. Reading the GTM Engineer posting from 2026-08-28, the role builds that automation in Clay and n8n. That is the build you described, handed to one person. Who runs list building until they start?",
+      "facts": ["Founded Cobalt in 2024 (profile summary)", "GTM Engineer posted 2026-08-28 (GTM Jobs field)", "Clay and n8n named in the JD (JD Summary)"]
+    }
+  }
+}
