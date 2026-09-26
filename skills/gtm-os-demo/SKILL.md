@@ -1,6 +1,6 @@
 ---
 name: gtm-os-demo
-description: Run the GTM OS offline demo, with no connectors and no credits spent. Use when the user says "run the demo", "run gtm-os-demo", "show me how it works", "try GTM OS", "what would a scan do", "test my setup", "check my instance before a live run", or has just installed the plugin and has nothing connected yet. Runs the engine's real decision logic (dedupe, exclusions, motion assignment, two-pass scoring, reachability ranking, the credit statement, the field gate, composition checks) over synthetic accounts and writes a labeled report. With the user's instance-config.json it runs the same accounts through their own config and reports every setup gap as a finding.
+description: Run the GTM OS offline demo, with no connectors and no credits spent. Use when the user says "run the demo", "run gtm-os-demo", "show me how it works", "try GTM OS", "what would a scan do", "test my setup", "check my instance before a live run", or has just installed the plugin and has nothing connected yet. Runs the engine's real decision logic (dedupe, exclusions, play assignment as a labeled stand-in for the model's judgment, two-pass scoring, reachability ranking, the credit statement, the field gate, composition checks) over synthetic accounts and writes a labeled report. With the user's instance-config.json it runs the same accounts through their own config and reports every setup gap as a finding.
 ---
 
 # GTM OS offline demo
@@ -44,8 +44,8 @@ Lead with the headline counts, then the holds, because the holds are the engine'
 judgment: each one has a reason, and the reasons are what a live run protects them from
 (a duplicate record, a credit spent on an unreachable contact, an opener carrying a number
 nobody can source). In preview mode, lead with the findings table instead, blocking first,
-and route each fix to where it is made: instance keys to `environment-setup`, the scoring
-config to `provision-gtm-engine`, the catch-all policy to the operator as a named human
+and route each fix to where it is made: instance keys to `environment-setup`, the plays file to
+`play-builder`, the scoring config to `provision-gtm-engine`, the catch-all policy to the operator as a named human
 gate.
 
 ## The rules for talking about it

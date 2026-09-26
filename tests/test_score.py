@@ -1,8 +1,11 @@
 """Tests for skills/gtm-signal-scan/scripts/score.py.
 
 The properties worth pinning are the ones a prose rubric could not hold: unknown is never
-zero-in-disguise, a motion is never assigned on a guess, an override outranks a quadrant,
-and a config cannot award more than a dimension's doctrinal maximum.
+zero-in-disguise, an account with no play is held rather than tiered, every play earns an
+explicit play_fit value, and a config cannot award more than a dimension's doctrinal maximum.
+Play assignment itself is the model's judgment against free-form criteria
+(references/plays.md), so it is deliberately not tested here: there is nothing
+deterministic to test.
 
 Run: python3 -m unittest discover -s tests -v
 """
@@ -27,9 +30,13 @@ spec.loader.exec_module(score)
 AS_OF = date(2026, 9, 1)
 
 
+PLAY_IDS = [p["id"] for p in json.loads(
+    (ROOT / "examples" / "demo" / "plays.demo.json").read_text("utf-8"))["plays"]]
+
+
 def account(**kw):
     base = {"id": "a", "name": "A", "domain": "a.example", "signal_type": "hiring",
-            "signal_observed_on": "2026-08-30", "gtm_team_size": 0,
+            "signal_observed_on": "2026-08-30", "gtm_team_size": 0, "play": "first-gtm-hire",
             "headcount_growth_pct": 40, "hq_country": "US"}
     base.update(kw)
     return base
@@ -37,12 +44,12 @@ def account(**kw):
 
 class Config(unittest.TestCase):
     def test_the_demo_config_is_valid(self):
-        self.assertEqual(score.validate_config(DEMO), [])
+        self.assertEqual(score.validate_config(DEMO, PLAY_IDS), [])
 
     def test_a_rule_above_the_dimension_maximum_is_rejected(self):
         """Otherwise a 0-100 score silently stops being one."""
         bad = copy.deepcopy(DEMO)
-        bad["dimensions"]["motion_fit"]["points_by_motion"]["first-gtm-hire"] = 16
+        bad["dimensions"]["play_fit"]["points_by_play"]["first-gtm-hire"] = 16
         self.assertTrue(any("maximum is 15" in p for p in score.validate_config(bad)))
 
     def test_tier_cutoffs_must_descend_and_fit_the_pass(self):
@@ -52,10 +59,12 @@ class Config(unittest.TestCase):
         bad["pre_tiers"] = {"excellent": 60, "good": 30, "fair": 20}
         self.assertTrue(any("above the pass maximum" in p for p in score.validate_config(bad)))
 
-    def test_every_motion_needs_motion_fit_points(self):
+    def test_every_play_needs_play_fit_points(self):
+        """A new play must not silently score 0 because nobody gave it points."""
         bad = copy.deepcopy(DEMO)
-        del bad["dimensions"]["motion_fit"]["points_by_motion"]["new-leader"]
-        self.assertTrue(any("'new-leader'" in p for p in score.validate_config(bad)))
+        del bad["dimensions"]["play_fit"]["points_by_play"]["new-leader"]
+        self.assertTrue(any("'new-leader'" in p for p in score.validate_config(bad, PLAY_IDS)))
+        self.assertEqual(score.validate_config(bad), [], "coverage is only checked against a plays file")
 
     def test_a_bad_decay_window_is_rejected(self):
         bad = copy.deepcopy(DEMO)
@@ -65,36 +74,36 @@ class Config(unittest.TestCase):
     def test_a_non_object_rule_is_a_problem_not_a_crash(self):
         """A list where an object belongs raised AttributeError before 1.10.0 shipped."""
         bad = copy.deepcopy(DEMO)
-        bad["dimensions"]["motion_fit"] = ["not", "an", "object"]
-        self.assertTrue(any("motion_fit" in p for p in score.validate_config(bad)))
+        bad["dimensions"]["play_fit"] = ["not", "an", "object"]
+        self.assertTrue(any("play_fit" in p for p in score.validate_config(bad, PLAY_IDS)))
 
     def test_the_passes_sum_to_the_doctrine(self):
         self.assertEqual((score.PASS1_MAX, score.FULL_MAX), (55, 100))
 
 
-class Motion(unittest.TestCase):
-    def test_unknown_team_state_assigns_no_motion(self):
-        """Not found is not absent: the account is held, not routed on a guess."""
-        out = score.assign_motion(account(gtm_team_size=None), DEMO["motions"])
-        self.assertIsNone(out["motion"])
-        self.assertIn("has_gtm_team", out["reason"])
+class PlayFit(unittest.TestCase):
+    def dim(self, result):
+        return next(d for d in result["dimensions"] if d["dimension"] == "play_fit")
 
-    def test_a_recency_override_outranks_its_quadrant(self):
-        out = score.assign_motion(account(gtm_team_size=2, gtm_leader_tenure_months=3),
-                                  DEMO["motions"])
-        self.assertEqual(out["motion"], "new-leader")
-        out = score.assign_motion(account(gtm_team_size=2, gtm_leader_tenure_months=30),
-                                  DEMO["motions"])
-        self.assertEqual(out["motion"], "team-expansion")
+    def test_no_play_is_unknown_not_zero_fit(self):
+        r = score.score_account(account(play=None), DEMO, AS_OF, "1")
+        self.assertEqual((self.dim(r)["points"], self.dim(r)["unknown"]), (0, True))
 
-    def test_funding_signal_means_not_hiring_unless_stated(self):
-        out = score.assign_motion(account(signal_type="funding"), DEMO["motions"])
-        self.assertEqual(out["motion"], "founder-direct")
+    def test_the_assigned_play_earns_its_points(self):
+        r = score.score_account(account(play="team-expansion"), DEMO, AS_OF, "1")
+        self.assertEqual(self.dim(r)["points"],
+                         DEMO["dimensions"]["play_fit"]["points_by_play"]["team-expansion"])
 
     def test_exclusion_uses_the_signal_types_own_ceiling(self):
         self.assertIsNotNone(score.exclusion(account(gtm_team_size=2), DEMO))
         self.assertIsNone(score.exclusion(account(signal_type="funding", gtm_team_size=2), DEMO))
         self.assertIn("competitor", score.exclusion(account(category="competitor"), DEMO))
+
+    def test_score_py_does_not_assign_plays(self):
+        """Assignment is the model's job against free-form criteria; a helper here would
+        quietly reintroduce a fixed criteria vocabulary."""
+        self.assertFalse(hasattr(score, "assign_motion"))
+        self.assertFalse(hasattr(score, "assign_play"))
 
 
 class Scoring(unittest.TestCase):
@@ -149,10 +158,10 @@ class Cli(unittest.TestCase):
             json.dump(bad, f)
         self.assertEqual(self.run_cli("--check-config", f.name).returncode, 1)
 
-    def test_an_account_with_no_motion_is_held_not_tiered(self):
+    def test_an_account_with_no_play_is_held_not_tiered(self):
         """A tier would read as enrichment-eligible for an account whose routing is unknown."""
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
-            json.dump([account(gtm_team_size=None)], f)
+            json.dump([account(play=None)], f)
         out = self.run_cli(f.name, "--config", str(ROOT / "examples/demo/scoring.demo.json"),
                            "--as-of", "2026-09-01")
         entry = json.loads(out.stdout)["results"][0]

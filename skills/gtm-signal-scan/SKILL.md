@@ -13,10 +13,10 @@ Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION and compare t
 
 ## Instance variables (confirm on first run, then reuse)
 
-- {MOTION}: "hiring" (companies hiring GTM Engineer / RevOps / AI Ops roles) or "funding" (recently raised, no established sales function)
-- {ACCOUNT_LIST}: accounts list per SIGNAL TYPE, not per GTM motion (defaults: "Companies Hiring" / "Funding Signal - No GTM"). The two axes are defined in references/signals-doctrine.md.
-- {CONTACT_LISTS}: every new contact gets "LinkedIn Profile Enrichment" (when a LinkedIn URL exists) plus the contact list for this signal type
-- {SEQUENCE}: the sequence for this signal type; NEVER enroll anyone from this skill, enrollment is a human gate
+- {SIGNAL_TYPE}: "hiring" (companies hiring GTM Engineer / RevOps / AI Ops roles) or "funding" (recently raised, no established sales function)
+- {ACCOUNT_LIST}: the account list of the play each account is assigned in Step 1.5, as named in the deployment's plays file (`{PLAYS_FILE}`). Signal type, GTM motion and play are three different things: references/signals-doctrine.md and references/plays.md define them.
+- {CONTACT_LISTS}: every new contact gets "LinkedIn Profile Enrichment" (when a LinkedIn URL exists) plus its play's contact list
+- {SEQUENCE}: the assigned play's sequence; NEVER enroll anyone from this skill, enrollment is a human gate
 
 ## Credit rules (non-negotiable)
 
@@ -31,27 +31,25 @@ Funding signal: latest_funding_date_range last 6 months, latest_funding_amount_r
 
 Dedupe rule: the response's "accounts" array = already in the CRM (route to update, never create); "organizations" array = net new.
 
-## Step 1.5: Motion assignment (free)
+## Step 1.5: Play assignment (free)
 
-**Assign the motion before scoring, because scoring depends on it and it costs nothing.**
-The motion is `M1`-`M5` per the plugin root's [references/motion-codes.md](../../references/motion-codes.md),
-and M1-M4 are the four quadrants of one 2x2:
+**Assign the play before scoring, because scoring depends on it and the evidence costs
+nothing.** Plays belong to the deployment: read them from its plays file (`{PLAYS_FILE}`).
+If there is no plays file, stop here and route the operator to the `play-builder` skill; a
+scan with no plays has nowhere to send an account. The full procedure, and why a play's
+criteria are free text rather than a list of options, is the plugin root's
+[references/plays.md](../../references/plays.md); follow it rather than a summary of it. The
+steps that must not be skipped:
 
-|                    | NOT hiring GTM | Hiring GTM |
-|---|---|---|
-| **Has GTM team**   | M1 | M4 |
-| **No GTM team**    | M2 | M3 |
-
-Both axes are FREE to resolve, which is the whole reason this is its own step:
-
-1. **Hiring GTM?** Already answered by Step 1's search filters. No extra call.
-2. **Has a GTM team?** One people search per account by `organization_ids` against the GTM and
-   RevOps titles. `apollo_mixed_people_api_search` costs nothing, and this is doctrine signal
-   6, the structural gate marked ALWAYS ON.
-
-Then apply **M5, which overrides M3 and M4**: if a GTM leader has been in seat 9 months or
-less, the motion is M5 regardless of hiring state, because a new leader's first ninety days is
-a different conversation from a team's expansion.
+1. **Gather the evidence free.** One people search per account by `organization_ids` against
+   the GTM and RevOps titles (`apollo_mixed_people_api_search` costs nothing; this is doctrine
+   signal 6, the structural gate marked ALWAYS ON). Read it by title AND by seniority, per
+   Step 4b. Hiring status is already answered by Step 1's filters.
+2. **Judge every play's entry criteria against that evidence.** Where more than one fits,
+   the higher `priority` wins.
+3. **Hold the account when the evidence cannot decide**, naming the free call that would.
+4. **Record the play, one line of reasoning, the evidence and the date** in the standard
+   Play fields, and **re-assign every run** rather than trusting the stored value.
 
 **The same free call also enforces the exclusion.** A company with a dedicated GTM engineering
 or RevOps team of 2+ is excluded, and running this BEFORE enrichment is what makes the
@@ -60,12 +58,8 @@ had 4 and 3 GTM staff respectively, saving both their enrichment credits and the
 credits that would have followed. Run in the old order, those credits were already spent by
 the time anyone looked.
 
-Record the assigned motion with its date and the quadrant evidence. **Re-derive it every run
-rather than trusting the stored value** -- reqs get filled and leaders land, so motion is a
-property of current state, not a label.
-
-Route the account into that motion's list, and remember the naming rule: every Apollo object a
-motion touches carries the code at the front of its own name.
+Route the account into its play's lists, and remember the naming rule: every Apollo object a
+play touches carries the play's code at the front of its own name.
 
 ## Step 2: Score and tier
 
@@ -78,7 +72,7 @@ being computed against absent data and reading as a real number.
 
 | Dimension | Points | Source at this stage |
 |---|---|---|
-| Motion fit | 15 | Step 1.5's quadrant. Free. |
+| Play fit | 15 | Step 1.5's assigned play. Free. |
 | Signal age | 15 | Posting dates from Step 1's filters. Free. |
 | Budget signal | 15 | Headcount growth, revenue when present. Free, on the search response. |
 | Geography | 10 | Free when present; absent on net-new orgs, so score 0 and let Pass 2 fill it. |
@@ -92,9 +86,9 @@ being computed against absent data and reading as a real number.
 | Stack overlap | 10 | Technologies are not on the search response. |
 | Warm path | 5 | Needs the contact set. |
 
-**`archetype/motion fit 25` was one dimension until 1.9.5 and is now two**, split 15/10, because
-the two halves resolve at different stages and for different reasons: the motion is a free
-structural fact about the company, and the archetype is a reading of a specific job description.
+**`archetype/motion fit 25` was one dimension until 1.9.5 and is now two** (play fit and archetype fit since 1.11.0), split 15/10, because
+the two halves resolve at different stages and for different reasons: the play is decided from
+free evidence about the company, and the archetype is a reading of a specific job description.
 Bundling them forced the free half to wait on the paid half.
 
 Tier on the Pass 1 score to choose who gets enriched; re-tier on the full score before any
@@ -102,7 +96,7 @@ people spend. A Pass 1 score is never reported as a final score -- label it `pre
 
 Tiers: Excellent = full enrichment (org enrich + all selected people + posts digest + Opener/Blueprint composition). Good = partial (org enrich + 1-2 people). Fair = account record only, no people spend.
 
-**Compute the scores; do not do the arithmetic in prose.** Run `scripts/score.py` in this skill's folder against the deployment's scoring config (`{SCORING_CONFIG_FILE}`, next to instance-config.json), once with `--pass 1` for the pre-score and again after Step 3 for the full score, always with `--as-of` set to the run date. The tables above are the doctrine (which dimensions, which pass, how many points) and the script checks itself against them; HOW each dimension earns its points, the motion definitions, the exclusion thresholds and the tier cutoffs live in the config, because they are decisions made at provisioning, not engine facts. An input the script reports `unknown` scored 0 because it is not known yet, not because the account is weak: name it in the report. If the scoring config does not exist, say so, score by hand against the tables, and label every score `manual` so nobody reads it as the deterministic kind.
+**Compute the scores; do not do the arithmetic in prose.** Run `scripts/score.py` in this skill's folder against the deployment's scoring config (`{SCORING_CONFIG_FILE}`, next to instance-config.json), once with `--pass 1` for the pre-score and again after Step 3 for the full score, always with `--as-of` set to the run date. The tables above are the doctrine (which dimensions, which pass, how many points) and the script checks itself against them; HOW each dimension earns its points (including the `play_fit` points per play), the exclusion thresholds and the tier cutoffs live in the config, because they are decisions made at provisioning, not engine facts. An input the script reports `unknown` scored 0 because it is not known yet, not because the account is weak: name it in the report. If the scoring config does not exist, say so, score by hand against the tables, and label every score `manual` so nobody reads it as the deterministic kind.
 
 ## Step 3: Account enrichment and creation
 
@@ -131,7 +125,7 @@ Bulk-match the ranked candidates (1 credit per matched person, batches of 10, ne
 3. **Add to lists SEPARATELY.** `label_names` passed to bulk-create is ignored — every created contact came back with an empty label set. Use the list-add endpoint and **confirm the list count moved**; a queue that looks filled and is empty reports nothing downstream.
 4. **Trigger enrichment SEPARATELY.** Creating a contact does not enrich it. The AI cascade is an **Apollo-side workflow** fired by membership of the cascade list, so a contact created and never added to it has no Profile Summary, no Persona Intelligence and no Research Company Profile — and will fail the field gate at composition time, several stages later, with no indication of why. Four of six contacts in one live cohort failed exactly this way.
 
-Treat a created contact as **incomplete until its output fields are populated**, and see Step 6 for why that is a wait-and-verify rather than a synchronous call. Only create contacts with a non-null email. **Catch-all handling is an operator policy, not a fixed rule, and it must be decided before the first send rather than per contact.** The two defensible positions: EXCLUDE catch-all (T3) contacts from email sequences and route them to LinkedIn or referral, or ENROLL them like any other verified address. Exclusion is the conservative default, and the argument for it is that a catch-all domain accepts every address, so a wrong one never bounces and never announces itself, and bounce postmortems show catch-alls plus stale mailboxes driving rates that damage a sending domain shared by every other motion. The argument against it is volume: catch-all is common on small-company domains, so on a small-business ICP the exclusion can remove most of a sourced cohort, and providers publish per-address accuracy guarantees that already price this risk. **Whichever is chosen, record it as a decision with a date and a reason, and pair it with a monitored bounce threshold** -- most sequence tools support an auto-pause on bounce rate, and enrolling catch-alls without that guardrail armed is the combination that actually burns a domain. Note the two flags are independent: `email_status: verified` describes the address, `email_domain_catchall` describes whether the domain would accept any address at all, and reading only the first is how a catch-all reaches a send unnoticed. Email domains that mismatch the company domain are flagged send-risk and need human review before any enrollment.
+Treat a created contact as **incomplete until its output fields are populated**, and see Step 6 for why that is a wait-and-verify rather than a synchronous call. Only create contacts with a non-null email. **Catch-all handling is an operator policy, not a fixed rule, and it must be decided before the first send rather than per contact.** The two defensible positions: EXCLUDE catch-all (T3) contacts from email sequences and route them to LinkedIn or referral, or ENROLL them like any other verified address. Exclusion is the conservative default, and the argument for it is that a catch-all domain accepts every address, so a wrong one never bounces and never announces itself, and bounce postmortems show catch-alls plus stale mailboxes driving rates that damage a sending domain shared by every other play. The argument against it is volume: catch-all is common on small-company domains, so on a small-business ICP the exclusion can remove most of a sourced cohort, and providers publish per-address accuracy guarantees that already price this risk. **Whichever is chosen, record it as a decision with a date and a reason, and pair it with a monitored bounce threshold** -- most sequence tools support an auto-pause on bounce rate, and enrolling catch-alls without that guardrail armed is the combination that actually burns a domain. Note the two flags are independent: `email_status: verified` describes the address, `email_domain_catchall` describes whether the domain would accept any address at all, and reading only the first is how a catch-all reaches a send unnoticed. Email domains that mismatch the company domain are flagged send-risk and need human review before any enrollment.
 
 ## Step 6: Personalization prep
 

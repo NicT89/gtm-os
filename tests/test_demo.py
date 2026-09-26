@@ -26,14 +26,16 @@ spec.loader.exec_module(demo)
 
 FX = json.loads(demo.FIXTURES.read_text("utf-8"))
 SCORING = json.loads(demo.DEMO_SCORING.read_text("utf-8"))
+PLAYS = json.loads(demo.DEMO_PLAYS.read_text("utf-8"))
 COSTS_TEXT = demo.COSTS.read_text("utf-8")
 REPORT, SHAPE, _ = demo.build()
 
 
-def run(fx=None, scoring=None, costs_text=None, label="SIMULATED"):
+def run(fx=None, scoring=None, costs_text=None, label="SIMULATED", plays=None):
     """Run the pipeline in memory over (possibly mutated) inputs; return (result, markdown)."""
     text = costs_text or COSTS_TEXT
     result = demo.run_pipeline(copy.deepcopy(fx or FX), copy.deepcopy(scoring or SCORING),
+                               copy.deepcopy(plays or PLAYS),
                                demo.credit_costs(text), demo.rank_people.parse_reachability(text),
                                label)
     return result, demo.render(result)
@@ -55,7 +57,7 @@ def unlabeled_rows(markdown):
 
 def held_reason(markdown, name):
     """The status cell for a contact in the pre-send queue table."""
-    section = markdown[markdown.index("## 9. Pre-send review queue"):]
+    section = markdown[markdown.index("## 10. Pre-send review queue"):]
     for line in section.splitlines():
         if line.startswith(f"| {name} |"):
             return line
@@ -112,12 +114,20 @@ class PlantedHolds(unittest.TestCase):
             self.assertIn(text, REPORT)
 
     def test_unknown_team_state_is_held_not_routed(self):
-        self.assertRegex(REPORT, r"\| Lumen Freight \| unknown \|.*held: unknown input")
+        self.assertRegex(REPORT, r"\| Lumen Freight \| none \| held: team state unknown")
+
+    def test_play_assignment_is_labeled_as_the_models_judgment(self):
+        """Assignment is a model judgment against free-form criteria; the demo must never
+        present its stand-in as engine logic."""
+        section = REPORT[REPORT.index("## 3. Play assignment"):REPORT.index("## 4.")]
+        rows = [l for l in section.splitlines() if l.startswith("| ") and "---" not in l][1:]
+        self.assertTrue(rows)
+        self.assertTrue(all(r.rstrip().endswith("| FIXTURE |") for r in rows), rows)
 
     def test_score_floors(self):
         self.assertRegex(REPORT, r"\| Quarry Works \|.*account record only, no spend")
         self.assertRegex(REPORT, r"\| Meridian Retail \|.*\| Below Fair \|")
-        self.assertNotIn("| Meridian Retail | ", REPORT[REPORT.index("## 6."):REPORT.index("## 7.")])
+        self.assertNotIn("| Meridian Retail | ", REPORT[REPORT.index("## 7."):REPORT.index("## 8.")])
 
     def test_people_holds(self):
         self.assertRegex(REPORT, r"\| L\. Chen \|.*\| T4 \|.*hold: T4: no match credit")
@@ -174,6 +184,14 @@ class ChecksCanFail(unittest.TestCase):
         with self.assertRaises(ValueError):
             demo.credit_costs(broken)
 
+    def test_an_assigned_play_missing_from_the_plays_file_is_held(self):
+        """The one deterministic part of assignment: the chosen play must exist."""
+        plays = copy.deepcopy(PLAYS)
+        plays["plays"] = [p for p in plays["plays"] if p["id"] != "new-leader"]
+        result, md = run(plays=plays)
+        self.assertIn("Tidewater AI", [a["name"] for a in result["unassigned"]])
+        self.assertIn("'new-leader' is not in the plays file", md)
+
     def test_dedupe_is_what_merges_the_duplicate(self):
         fx = copy.deepcopy(FX)
         fx["search_response"]["organizations"][1]["domain"] = "cobalt-two.example"
@@ -182,7 +200,7 @@ class ChecksCanFail(unittest.TestCase):
 
 
 class PreviewMode(unittest.TestCase):
-    def instance(self, directory, scoring=None):
+    def instance(self, directory, scoring=None, plays=None):
         schema = json.loads((ROOT / "instance-config.example.json").read_text("utf-8"))
         config = {}
         for key, shipped in schema.items():
@@ -202,6 +220,8 @@ class PreviewMode(unittest.TestCase):
         path.write_text(json.dumps(config), "utf-8")
         if scoring is not None:
             (Path(directory) / config["SCORING_CONFIG_FILE"]).write_text(json.dumps(scoring), "utf-8")
+        if plays is not None:
+            (Path(directory) / config["PLAYS_FILE"]).write_text(json.dumps(plays), "utf-8")
         return path
 
     def test_missing_scoring_config_is_a_blocking_finding(self):
@@ -226,9 +246,24 @@ class PreviewMode(unittest.TestCase):
         decided["provenance"] = "deployment"
         decided["catch_all_policy"] = {"decision": "exclude", "decided_on": "2026-09-01",
                                        "reason": "small-company domains", "bounce_threshold": "2%"}
+        plays = copy.deepcopy(PLAYS)
+        plays["provenance"] = "deployment"
         with tempfile.TemporaryDirectory() as d:
-            _, _, findings = demo.build(self.instance(d, decided))
+            _, _, findings = demo.build(self.instance(d, decided, plays))
         self.assertFalse(any(s == "blocks" for s, _, _ in findings), findings)
+
+    def test_a_missing_plays_file_blocks(self):
+        with tempfile.TemporaryDirectory() as d:
+            _, _, findings = demo.build(self.instance(d, SCORING))
+        self.assertTrue(any(s == "blocks" and "no plays file" in t for s, t, _ in findings))
+
+    def test_a_play_without_play_fit_points_blocks(self):
+        """Your plays and your scoring config must agree, or a play scores 0 by accident."""
+        plays = copy.deepcopy(PLAYS)
+        plays["plays"][0]["id"] = "brand-new-play"
+        with tempfile.TemporaryDirectory() as d:
+            _, _, findings = demo.build(self.instance(d, SCORING, plays))
+        self.assertTrue(any("'brand-new-play'" in t for _, t, _ in findings), findings)
 
     def test_an_invalid_scoring_config_falls_back_and_says_so(self):
         bad = copy.deepcopy(SCORING)

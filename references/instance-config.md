@@ -103,10 +103,11 @@ written to the operator's own storage, never committed here.
 ### `SCORING_CONFIG_FILE`
 
 The file, next to `instance-config.json`, that holds this deployment's scoring decisions:
-its motion definitions, exclusion thresholds, the rule behind each scoring dimension, the
+its exclusion thresholds, the rule behind each scoring dimension (including the points each
+play earns), the
 tier cutoffs, the people-ranking priorities and the recorded catch-all enrollment policy.
-Defaults to `scoring-config.json`. It is JSON rather than flat keys because a motion or a
-rubric is a structure, not a string.
+Defaults to `scoring-config.json`. It is JSON rather than flat keys because a rubric is a
+structure, not a string. The plays themselves live in their own file (`PLAYS_FILE`).
 
 The shape is what `skills/gtm-signal-scan/scripts/score.py` validates (`--check-config`),
 and `examples/demo/scoring.demo.json` is a complete example whose every value is labeled
@@ -115,6 +116,22 @@ provisioning (`provision-gtm-engine` Phase 1), and a file still carrying
 `"provenance": "illustrative"` is reported by the demo's `--config` mode as a decision
 nobody has made yet. Without the file, `gtm-signal-scan` scores by hand against its
 SKILL.md tables and labels every score `manual`.
+
+### `PLAYS_FILE`
+
+The file, next to `instance-config.json`, holding this deployment's plays: the routes that
+decide which list, sequence and persona an account gets. Defaults to `plays.json`. The
+`play-builder` skill writes it, `skills/play-builder/scripts/check_plays.py` checks its shape,
+and `references/plays.md` explains why each play's criteria are free text judged by the model
+rather than options chosen from a list. Without the file, `gtm-signal-scan` stops at play
+assignment and routes to `play-builder`.
+
+### The Play fields
+
+`APOLLO_CF_ACCOUNT_PLAY`, `APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON`, `APOLLO_CF_CONTACT_PLAY` and
+`APOLLO_CF_CONTACT_PLAY_ASSIGNED_ON` record which play a record was assigned, why, and when.
+They are part of the standard field set in `play-builder`'s `references/standard-fields.md`,
+and optional in the schema only so an existing deployment keeps validating on upgrade.
 
 ### `APIFY_POSTS_ACTOR`
 
@@ -152,8 +169,9 @@ each gap block?" It classifies every key three ways rather than two:
   silently.
 - **unset** — empty.
 
-That middle state is the whole reason the script exists. Four keys ship non-empty
-(`CRM_PROVIDER`, `APIFY_POSTS_ACTOR`, `SCRAPE_ROSTER_ARTIFACT`, `SCORING_CONFIG_FILE`), and a deployment can
+That middle state is the whole reason the script exists. Five keys ship non-empty
+(`CRM_PROVIDER`, `APIFY_POSTS_ACTOR`, `SCRAPE_ROSTER_ARTIFACT`, `SCORING_CONFIG_FILE`,
+`PLAYS_FILE`), and a deployment can
 run for months on an inherited value nobody ever chose. Verdicts are `INCOMPLETE`
 (exit 1), `READY_WITH_DEFAULTS` (exit 0, runnable but inherited), and `READY`.
 
@@ -178,5 +196,5 @@ must be a real one — writing a made-up example in brace form fails CI, which i
 check doing its job.
 
 If a value changes per *run* rather than per deployment, it is not a config key —
-it is a runtime placeholder like `{MOTION}`, and belongs in the validator's
+it is a runtime placeholder like `{SIGNAL_TYPE}`, and belongs in the validator's
 `RUNTIME_PLACEHOLDERS` set instead.

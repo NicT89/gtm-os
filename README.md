@@ -87,6 +87,7 @@ deployment value to a `{KEY}` first so none of your resolved IDs ever leave your
 | `gap-closer` | Works the open-question list: persona-routed batches, drafts for human sending, answers written back as sourced facts |
 | `event-attribution` | Reconciles an event attendee list against the CRM and tags every match, so field spend stops being unattributable |
 | `environment-setup` | Diagnoses and wires the connectors, from whatever state you are already in |
+| `play-builder` | Defines your plays (which accounts go to which list, sequence and persona) in your own words, and builds the Apollo fields, lists and inactive sequences each one needs |
 | `gtm-os-demo` | The offline demo: the real decision logic over synthetic accounts, no connectors, no credits. Run it first, and again with your config before the first live scan |
 
 ## Who this is for

@@ -21,7 +21,7 @@ Every table row carries a label. The four labels are defined in the plugin root'
 | Rejected at intake | 1 | SIMULATED |
 | Unique accounts | 10 | SIMULATED |
 | Excluded before any spend | 3 | SIMULATED |
-| Held: motion could not be assigned | 1 | SIMULATED |
+| Held: no play fits yet | 1 | SIMULATED |
 | Pre-scored | 6 | SIMULATED |
 | Enriched (pre-score Excellent + Good) | 5 | SIMULATED |
 | People ranked | 12 | SIMULATED |
@@ -48,26 +48,40 @@ Every table row carries a label. The four labels are defined in the plugin root'
 
 *Live:* the company search costs one credit; its `accounts` array is what is already in the CRM and its `organizations` array is net new. Account creation does not dedupe, so this split is the only thing standing between a run and duplicate records.
 
-## 2. Exclusions and motion (free)
+## 2. Exclusions (free, deterministic)
 
-| Account | GTM team | Hiring GTM | Motion | Decision | Label |
-|---|---|---|---|---|---|
-| Foundry GTM Partners | 0 | yes | (not routed) | excluded: category: competitor | SIMULATED |
-| Kestrel Staffing | 0 | yes | (not routed) | excluded: category: staffing_firm | SIMULATED |
-| Vantage Global | 3 | yes | (not routed) | excluded: established GTM team of 3 (this signal type excludes above 1) | SIMULATED |
-| Lumen Freight | unknown | yes | none | held: unknown input: gtm_leader_tenure_months_max, has_gtm_team; run the free people search by organization id before routing (not found is not absent) | SIMULATED |
-| Northwind Analytics | 0 | yes | first-gtm-hire | criteria met: has_gtm_team=False, hiring_gtm=True | SIMULATED |
-| Cobalt Systems | 0 | yes | first-gtm-hire | criteria met: has_gtm_team=False, hiring_gtm=True | SIMULATED |
-| Harbor Labs | 0 | no | founder-direct | criteria met: has_gtm_team=False, hiring_gtm=False | SIMULATED |
-| Tidewater AI | 1 | yes | new-leader | criteria met: gtm_leader_tenure_months_max=9, has_gtm_team=True | SIMULATED |
-| Meridian Retail | 1 | yes | team-expansion | criteria met: has_gtm_team=True, hiring_gtm=True | SIMULATED |
-| Quarry Works | 0 | no | founder-direct | criteria met: has_gtm_team=False, hiring_gtm=False | SIMULATED |
+| Account | GTM team | Decision | Label |
+|---|---|---|---|
+| Foundry GTM Partners | 0 | excluded: category: competitor | SIMULATED |
+| Kestrel Staffing | 0 | excluded: category: staffing_firm | SIMULATED |
+| Vantage Global | 3 | excluded: established GTM team of 3 (this signal type excludes above 1) | SIMULATED |
+| Lumen Freight | unknown | not excluded | SIMULATED |
+| Northwind Analytics | 0 | not excluded | SIMULATED |
+| Cobalt Systems | 0 | not excluded | SIMULATED |
+| Harbor Labs | 0 | not excluded | SIMULATED |
+| Tidewater AI | 1 | not excluded | SIMULATED |
+| Meridian Retail | 1 | not excluded | SIMULATED |
+| Quarry Works | 0 | not excluded | SIMULATED |
 
-*Live:* one free people search per account answers both questions at once, which is why exclusion runs before enrichment and costs nothing.
+*Live:* one free people search per account answers the exclusion and gathers the evidence play assignment needs, which is why both run before enrichment.
 
-## 3. Pre-score, pass 1 (free, out of 55)
+## 3. Play assignment (the model's judgment)
 
-| Account | Motion | Pre-score | Pre-tier | Unknown inputs | Next | Label |
+Plays differ between organizations, so their entry criteria are free text and the model judges them against the evidence. In this demo that judgment is a FIXTURE; the check that the chosen play exists, and the hold when none fits, are real.
+
+| Account | Play | Reasoning | Evidence | Label |
+|---|---|---|---|---|
+| Northwind Analytics | first-gtm-hire (P1) | No one in a GTM role (people search found none by title or seniority) and the RevOps Lead posting is described as the first hire. | People search: 0 GTM staff. Posting: RevOps Lead, posted 2026-08-25. | FIXTURE |
+| Cobalt Systems | first-gtm-hire (P1) | No GTM staff found, and the GTM Engineer posting is the company's first GTM role. | People search: 0 GTM staff. Posting: GTM Engineer, posted 2026-08-28. | FIXTURE |
+| Harbor Labs | founder-direct (P2) | Raised recently, no GTM staff, and no open GTM postings: the founder still sells. | Funding round 2026-07-10. People search: 0 GTM staff. No GTM postings. | FIXTURE |
+| Tidewater AI | new-leader (P4) | A GTM leader joined four months ago, which takes precedence over the team-expansion play under the plays' priorities. | People search: 1 GTM leader, 4 months in seat. | FIXTURE |
+| Meridian Retail | team-expansion (P3) | One GTM person in seat for over two years, and the company is hiring more GTM roles. | People search: 1 GTM staff, 26 months in seat. Posting: RevOps, posted 2026-07-12. | FIXTURE |
+| Quarry Works | founder-direct (P2) | Raised, no GTM staff, no GTM postings. | Funding round 2026-01-15. People search: 0 GTM staff. | FIXTURE |
+| Lumen Freight | none | held: team state unknown, so no play's criteria can be judged; run the free people search by organization id first (not found is not absent) | People search not yet run. | FIXTURE |
+
+## 4. Pre-score, pass 1 (free, out of 55)
+
+| Account | Play | Pre-score | Pre-tier | Unknown inputs | Next | Label |
 |---|---|---|---|---|---|---|
 | Northwind Analytics | first-gtm-hire | 55 | Excellent | none | enrich | SIMULATED |
 | Cobalt Systems | first-gtm-hire | 40 | Excellent | geography | enrich | SIMULATED |
@@ -78,7 +92,7 @@ Every table row carries a label. The four labels are defined in the plugin root'
 
 A pre-score is never reported as a final score. An unknown input scores 0 and is named, so a gap is visible instead of reading as a weak account.
 
-## 4. Credit statement, made before any spend
+## 5. Credit statement, made before any spend
 
 | Line item | Units | Credits each | Subtotal | Label |
 |---|---|---|---|---|
@@ -94,11 +108,11 @@ Per-unit costs are read from the plugin root's `references/apollo-credit-costs.m
 
 *Live:* the run stops here and asks. Credit spend is a named human gate.
 
-## 5. Enrichment and the full score (out of 100)
+## 6. Enrichment and the full score (out of 100)
 
 Enrichment values are FIXTURES standing in for org enrichment and the job postings call; the scoring over them is real.
 
-| Account | motion_fit | signal_age | budget_signal | geography | stage_and_funding | archetype_fit | stack_overlap | warm_path | Score | Tier | Label |
+| Account | play_fit | signal_age | budget_signal | geography | stage_and_funding | archetype_fit | stack_overlap | warm_path | Score | Tier | Label |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | Northwind Analytics | 15 | 15 | 15 | 10 | 20 | 10 | 10 | 0 | 95 | Excellent | SIMULATED |
 | Cobalt Systems | 15 | 15 | 10 | 10 | 14 | 10 | 10 | 5 | 89 | Excellent | SIMULATED |
@@ -106,7 +120,7 @@ Enrichment values are FIXTURES standing in for org enrichment and the job postin
 | Tidewater AI | 15 | 15 | 5 | 10 | 16 | 6 | 0 | 0 | 67 | Good | SIMULATED |
 | Meridian Retail | 8 | 3 | 10 | 10 | 8 | 3 | 0 | 0 | 42 | Below Fair | SIMULATED |
 
-## 6. People: rank on reachability before spending
+## 7. People: rank on reachability before spending
 
 | Account | Person | Title | Email flag | Reach | Role | Decision | Label |
 |---|---|---|---|---|---|---|---|
@@ -133,7 +147,7 @@ Harbor Labs could draw 2 and yielded 1 reachable; the shortfall was taken.
 
 Tidewater AI could draw 2 and yielded 1 reachable; the shortfall was taken.
 
-## 7. Field gate (Excellent contacts)
+## 8. Field gate (Excellent contacts)
 
 | Contact | Gate | Fact-bearing sources | Missing | Label |
 |---|---|---|---|---|
@@ -146,7 +160,7 @@ Tidewater AI could draw 2 and yielded 1 reachable; the shortfall was taken.
 
 The contact and account records are FIXTURES; the gate is `field_gate.py`, unchanged. A FAIL names its remediation instead of composing around the gap.
 
-## 8. Composition checks
+## 9. Composition checks
 
 The opener text below is a FIXTURE. The demo does not call a model; it runs the deterministic checks a live opener must also pass: no bare merge tokens, and every number traceable to a named source.
 
@@ -173,7 +187,7 @@ The opener text below is a FIXTURE. The demo does not call a model; it runs the 
 | R. Singh | the number '40' appears in no named source | SIMULATED |
 | M. Duarte | pass | SIMULATED |
 
-## 9. Pre-send review queue
+## 10. Pre-send review queue
 
 | Contact | Account | Status | Label |
 |---|---|---|---|
@@ -196,5 +210,5 @@ Run the same accounts through your own setup. Nothing is spent:
 python3 scripts/demo.py --config instance-config.json
 ```
 
-Every gap it finds (an unset key, a missing scoring config, a motion with no list, an unrecorded catch-all policy) comes back as a finding.
+Every gap it finds (an unset key, a missing plays file or scoring config, a play with no list, an unrecorded catch-all policy) comes back as a finding.
 

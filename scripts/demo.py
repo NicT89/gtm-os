@@ -2,8 +2,8 @@
 """The offline demo: the engine's real decision logic over synthetic accounts.
 
 No connector is called, no credit is spent, nothing is written anywhere but the output
-folder, and nothing is sent. What runs is the same code a live scan runs: motion
-assignment and two-pass scoring (score.py), reachability ranking (rank_people.py, which
+folder, and nothing is sent. What runs is the same code a live scan runs: exclusions and
+two-pass scoring (score.py), reachability ranking (rank_people.py, which
 reads the tiers out of references/apollo-credit-costs.md), the credit arithmetic from that
 same file, the field completeness gate (field_gate.py) and the run-cost tally
 (run_cost.py). The inputs a live run would get from Apollo, enrichment and composition are
@@ -15,7 +15,8 @@ Two modes:
                    labeled SIMULATED or FIXTURE. This is the "see it think" run.
   --config PATH    The same synthetic accounts through YOUR instance: your
                    instance-config.json is validated, your scoring config (named by its
-                   SCORING_CONFIG_FILE key) drives motions, exclusions, scoring and tiers,
+                   SCORING_CONFIG_FILE key) drives exclusions, scoring and tiers, your
+                   plays file (PLAYS_FILE) is shape-checked,
                    and every gap found becomes a finding. Rows are labeled PREVIEW. Still
                    no API calls: this checks the shape of your setup, not connectivity.
 
@@ -38,9 +39,11 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-for sub in ("scripts", "skills/gtm-signal-scan/scripts", "skills/gtm-blueprint/scripts"):
+for sub in ("scripts", "skills/gtm-signal-scan/scripts", "skills/gtm-blueprint/scripts",
+            "skills/play-builder/scripts"):
     sys.path.insert(0, str(ROOT / sub))
 
+import check_plays  # noqa: E402
 import field_gate  # noqa: E402
 import rank_people  # noqa: E402
 import run_cost  # noqa: E402
@@ -50,6 +53,7 @@ import validate_instance_config  # noqa: E402
 
 FIXTURES = ROOT / "examples" / "demo" / "fixtures.json"
 DEMO_SCORING = ROOT / "examples" / "demo" / "scoring.demo.json"
+DEMO_PLAYS = ROOT / "examples" / "demo" / "plays.demo.json"
 COSTS = ROOT / "references" / "apollo-credit-costs.md"
 LABELS = ("SIMULATED", "FIXTURE", "PREVIEW", "LIVE")
 
@@ -163,28 +167,33 @@ def composition_checks(opener):
     return failures
 
 
-def run_pipeline(fx, config, costs, reach_tiers, row_label):
+def run_pipeline(fx, config, plays, costs, reach_tiers, row_label):
     """Run every stage over the fixtures. Pure: returns a result dict, writes nothing."""
     as_of = date.fromisoformat(fx["run"]["as_of_date"])
     accounts, rejected, source_count = intake(fx["search_response"])
-    motions = {m["id"]: m for m in config["motions"]}
+    play_index = {pl["id"]: pl for pl in plays["plays"]}
 
-    # Stage 2: exclusions and motion, both off the same free people search.
+    # Stage 2a: exclusions, deterministic, off the free people search.
+    # Stage 2b: play assignment. In a live run the model judges each play's free-form entry
+    # criteria against the evidence (references/plays.md); here that judgment is a FIXTURE.
+    # What stays deterministic is checked: the play must exist, and none means a hold.
     routed, excluded, unassigned = [], [], []
     for a in accounts:
         reason = score.exclusion(a, config)
-        assigned = score.assign_motion(a, config["motions"])
-        a["_motion"] = assigned
         if reason:
             excluded.append((a, reason))
-        elif assigned["motion"] is None:
-            unassigned.append(a)
-        else:
-            routed.append(a)
+            continue
+        assigned = dict(fx["play_assignments"].get(a["domain"]) or
+                        {"play": None, "reasoning": "no assignment recorded", "evidence": ""})
+        if assigned.get("play") and assigned["play"] not in play_index:
+            assigned.update(reasoning=f"assigned play {assigned['play']!r} is not in the plays file",
+                            play=None)
+        a["_assign"], a["play"] = assigned, assigned.get("play")
+        (routed if a["play"] else unassigned).append(a)
 
     # Stage 3: the free pre-score decides who is worth enriching.
     for a in routed:
-        a["_pre"] = score.score_account(a, config, as_of, "1", a["_motion"]["motion"])
+        a["_pre"] = score.score_account(a, config, as_of, "1")
     to_enrich = [a for a in routed if a["_pre"]["tier"] in ("Excellent", "Good")]
     record_only = [a for a in routed if a["_pre"]["tier"] == "Fair"]
     below = [a for a in routed if a["_pre"]["tier"] == score.BELOW]
@@ -205,7 +214,7 @@ def run_pipeline(fx, config, costs, reach_tiers, row_label):
     # Stage 5: enrichment (FIXTURE values) and the full score.
     for a in to_enrich:
         a.update({k: v for k, v in fx["enrichment"].get(a["domain"], {}).items()})
-        a["_full"] = score.score_account(a, config, as_of, "full", a["_motion"]["motion"])
+        a["_full"] = score.score_account(a, config, as_of, "full")
 
     # Stage 6: people ranking at accounts whose FULL tier warrants people spend.
     policy = (config.get("catch_all_policy") or {}).get("decision", "unset")
@@ -287,7 +296,7 @@ def run_pipeline(fx, config, costs, reach_tiers, row_label):
         "estimate": estimate, "planned": planned, "would_spend": would_spend,
         "people_rows": people_rows, "matched": matched, "gate_rows": gate_rows,
         "comp_rows": comp_rows, "queue": queue, "held": held, "policy": policy,
-        "motions": motions, "tally": tally if not tally_problems else None,
+        "plays": play_index, "tally": tally if not tally_problems else None,
         "pre_max": score.PASS1_MAX, "full_max": score.FULL_MAX,
     }
 
@@ -296,7 +305,7 @@ def run_pipeline(fx, config, costs, reach_tiers, row_label):
 
 
 def preview_config(instance_path):
-    """Validate an instance and load its scoring config. Returns (scoring, findings).
+    """Validate an instance, its plays file and its scoring config. Returns (scoring, findings).
 
     `scoring` is None when the instance has no usable scoring config, in which case the
     demo falls back to the ILLUSTRATIVE parameters and says so. Findings are
@@ -334,12 +343,14 @@ def preview_config(instance_path):
         except (OSError, json.JSONDecodeError):
             instance = {}
 
+    user_play_ids = check_plays_file(instance, path, findings)
+
     name = (instance.get("SCORING_CONFIG_FILE") or "").strip() or "scoring-config.json"
     scoring_path = (path.parent / name) if path.exists() else Path(name)
     if not scoring_path.exists():
         findings.append(("blocks", f"no scoring config at {scoring_path}; this preview scored with "
                          "the ILLUSTRATIVE demo parameters instead",
-                         "Decide your motions, exclusions, scoring rules and tier cutoffs at "
+                         "Decide your exclusions, scoring rules, play points and tier cutoffs at "
                          "provisioning (provision-gtm-engine Phase 1) and save them in the "
                          "score.py schema. examples/demo/scoring.demo.json shows the shape."))
         return None, findings
@@ -348,7 +359,7 @@ def preview_config(instance_path):
     except (OSError, json.JSONDecodeError) as e:
         findings.append(("blocks", f"cannot read {scoring_path}: {e}", "Fix the file's JSON."))
         return None, findings
-    problems = score.validate_config(scoring)
+    problems = score.validate_config(scoring, user_play_ids)
     if problems:
         for problem in problems:
             findings.append(("blocks", f"scoring config: {problem}",
@@ -360,11 +371,6 @@ def preview_config(instance_path):
                          f"{scoring.get('provenance')!r}, not 'deployment'",
                          "Set provenance to 'deployment' once the rules are decisions rather "
                          "than placeholders."))
-    for m in scoring["motions"]:
-        for part in ("list", "sequence"):
-            if not str(m.get(part) or "").strip():
-                findings.append(("review", f"motion {m['id']!r} has no {part}",
-                                 "Every motion routes to a list and a sequence; name both."))
     if not isinstance(scoring.get("people"), dict):
         findings.append(("blocks", "scoring config has no `people` section",
                          "Add role priority, size bands and the T3 threshold."))
@@ -374,6 +380,36 @@ def preview_config(instance_path):
                          "This is a named human gate: choose exclude or enroll, with a date, a "
                          "reason and a bounce threshold, before the first send."))
     return scoring, findings
+
+
+def check_plays_file(instance, instance_path, findings):
+    """Shape-check the instance's plays file, appending findings. Returns its play ids or None.
+
+    Only the shape is checked (check_plays.py). Whether each play's free-form criteria are
+    GOOD is the model's job against the guidance, and the operator's at review.
+    """
+    name = (instance.get("PLAYS_FILE") or "").strip() or "plays.json"
+    plays_path = (instance_path.parent / name) if instance_path.exists() else Path(name)
+    if not plays_path.exists():
+        findings.append(("blocks", f"no plays file at {plays_path}; the scan cannot assign plays",
+                         "Define your plays with the play-builder skill. "
+                         "examples/demo/plays.demo.json shows the shape."))
+        return None
+    try:
+        doc = load(plays_path)
+    except (OSError, json.JSONDecodeError) as e:
+        findings.append(("blocks", f"cannot read {plays_path}: {e}", "Fix the file's JSON."))
+        return None
+    problems, warnings = check_plays.check(doc, check_plays.apollo_field_keys())
+    for problem in problems:
+        findings.append(("blocks", f"plays: {problem}",
+                         "Fix it; `python3 skills/play-builder/scripts/check_plays.py <file>` re-checks."))
+    for warning in warnings:
+        findings.append(("review", f"plays: {warning}",
+                         "Name it, or build it with the play-builder skill."))
+    if problems:
+        return None
+    return [pl["id"] for pl in doc["plays"]]
 
 
 # ---------------------------------------------------------------------------- render
@@ -427,7 +463,7 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
             ["Rejected at intake", len(r["rejected"])],
             ["Unique accounts", len(r["accounts"])],
             ["Excluded before any spend", len(r["excluded"])],
-            ["Held: motion could not be assigned", len(r["unassigned"])],
+            ["Held: no play fits yet", len(r["unassigned"])],
             ["Pre-scored", len(r["routed"])],
             ["Enriched (pre-score Excellent + Good)", len(r["to_enrich"])],
             ["People ranked", len(r["people_rows"])],
@@ -451,28 +487,32 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
               "dedupe, so this split is the only thing standing between a run and duplicate records.",
               ""]
 
-    def yes_no(value):
-        return "unknown" if value is None else ("yes" if value else "no")
-
-    lines += ["## 2. Exclusions and motion (free)", "",
-              table(["Account", "GTM team", "Hiring GTM", "Motion", "Decision"], [
+    lines += ["## 2. Exclusions (free, deterministic)", "",
+              table(["Account", "GTM team", "Decision"], [
                   [a["name"], a.get("gtm_team_size") if a.get("gtm_team_size") is not None else "unknown",
-                   yes_no(a["_motion"]["axes"]["hiring_gtm"]), "(not routed)",
                    f"excluded: {reason}"] for a, reason in r["excluded"]] + [
                   [a["name"], "unknown" if a.get("gtm_team_size") is None else a["gtm_team_size"],
-                   yes_no(a["_motion"]["axes"]["hiring_gtm"]), "none",
-                   f"held: {a['_motion']['reason']}; run the free people search by organization id "
-                   "before routing (not found is not absent)"] for a in r["unassigned"]] + [
-                  [a["name"], a["gtm_team_size"], yes_no(a["_motion"]["axes"]["hiring_gtm"]),
-                   a["_motion"]["motion"], a["_motion"]["reason"]] for a in r["routed"]], L),
+                   "not excluded"] for a in r["unassigned"] + r["routed"]], L),
               "",
-              "*Live:* one free people search per account answers both questions at once, which "
-              "is why exclusion runs before enrichment and costs nothing.",
+              "*Live:* one free people search per account answers the exclusion and gathers the "
+              "evidence play assignment needs, which is why both run before enrichment.",
+              "",
+              "## 3. Play assignment (the model's judgment)", "",
+              "Plays differ between organizations, so their entry criteria are free text and the "
+              "model judges them against the evidence. In this demo that judgment is a FIXTURE; the "
+              "check that the chosen play exists, and the hold when none fits, are real.",
+              "",
+              table(["Account", "Play", "Reasoning", "Evidence"], [
+                  [a["name"], f"{a['play']} ({r['plays'][a['play']]['code']})",
+                   a["_assign"]["reasoning"], a["_assign"].get("evidence") or "", "FIXTURE"]
+                  for a in r["routed"]] + [
+                  [a["name"], "none", f"held: {a['_assign']['reasoning']}",
+                   a["_assign"].get("evidence") or "", "FIXTURE"] for a in r["unassigned"]], L),
               ""]
 
-    lines += [f"## 3. Pre-score, pass 1 (free, out of {r['pre_max']})", "",
-              table(["Account", "Motion", "Pre-score", "Pre-tier", "Unknown inputs", "Next"], [
-                  [a["name"], a["_pre"]["motion"], a["_pre"]["points"], a["_pre"]["tier"],
+    lines += [f"## 4. Pre-score, pass 1 (free, out of {r['pre_max']})", "",
+              table(["Account", "Play", "Pre-score", "Pre-tier", "Unknown inputs", "Next"], [
+                  [a["name"], a["_pre"]["play"], a["_pre"]["points"], a["_pre"]["tier"],
                    ", ".join(a["_pre"]["unknown"]) or "none",
                    {"Excellent": "enrich", "Good": "enrich", "Fair": "account record only, no spend"}
                    .get(a["_pre"]["tier"], "held: below the pre-score floor, no spend")]
@@ -482,7 +522,7 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
               "named, so a gap is visible instead of reading as a weak account.",
               ""]
 
-    lines += ["## 4. Credit statement, made before any spend", "",
+    lines += ["## 5. Credit statement, made before any spend", "",
               table(["Line item", "Units", "Credits each", "Subtotal"],
                     [[name, n, c, n * c] for name, n, c in r["estimate"]] +
                     [["**Cap stated to the operator**", "", "", f"**{r['planned']}**"],
@@ -497,7 +537,7 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
               ""]
 
     dims = [n for n, _, _ in score.DIMENSIONS]
-    lines += [f"## 5. Enrichment and the full score (out of {r['full_max']})", "",
+    lines += [f"## 6. Enrichment and the full score (out of {r['full_max']})", "",
               "Enrichment values are FIXTURES standing in for org enrichment and the job postings "
               "call; the scoring over them is real.",
               "",
@@ -507,7 +547,7 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
                   [a["_full"]["points"], a["_full"]["tier"]] for a in r["to_enrich"]], L),
               ""]
 
-    lines += ["## 6. People: rank on reachability before spending", "",
+    lines += ["## 7. People: rank on reachability before spending", "",
               table(["Account", "Person", "Title", "Email flag", "Reach", "Role", "Decision"], [
                   [p["account"], p["name"], p["title"], p["email_status"] or "absent", p["tier"],
                    p["role_basis"], ("skip" if p["decision"] == "skip"
@@ -525,7 +565,7 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
         lines += [f"{name} could draw {ranked['quota']} and yielded {ranked['selected']} reachable; "
                   "the shortfall was taken.", ""]
 
-    lines += ["## 7. Field gate (Excellent contacts)", "",
+    lines += ["## 8. Field gate (Excellent contacts)", "",
               table(["Contact", "Gate", "Fact-bearing sources", "Missing"], [
                   [p["name"], p["gate"]["gate"], p["gate"]["fact_floor"]["count"],
                    "; ".join(p["gate"]["missing_required"]) or "none"] for p in r["gate_rows"]], L),
@@ -534,7 +574,7 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
               "A FAIL names its remediation instead of composing around the gap.",
               ""]
 
-    lines += ["## 8. Composition checks", "",
+    lines += ["## 9. Composition checks", "",
               "The opener text below is a FIXTURE. The demo does not call a model; it runs the "
               "deterministic checks a live opener must also pass: no bare merge tokens, and every "
               "number traceable to a named source.", ""]
@@ -546,7 +586,7 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
         [p["name"], "pass" if not p["composition"] else "; ".join(p["composition"])]
         for p in r["comp_rows"]], L), ""]
 
-    lines += ["## 9. Pre-send review queue", "",
+    lines += ["## 10. Pre-send review queue", "",
               table(["Contact", "Account", "Status"],
                     [[p["name"], p["account"], why] for p, why in r["queue"]] +
                     [[p["name"], p["account"], why] for p, why in r["held"]], L),
@@ -570,8 +610,8 @@ def render(r, findings=None, scoring_source="ILLUSTRATIVE demo parameters"):
                   "python3 scripts/demo.py --config instance-config.json",
                   "```",
                   "",
-                  "Every gap it finds (an unset key, a missing scoring config, a motion with no "
-                  "list, an unrecorded catch-all policy) comes back as a finding.",
+                  "Every gap it finds (an unset key, a missing plays file or scoring config, a "
+                  "play with no list, an unrecorded catch-all policy) comes back as a finding.",
                   ""]
     return "\n".join(lines)
 
@@ -599,15 +639,22 @@ def build(config_path=None):
     costs_text = COSTS.read_text("utf-8")
     costs = credit_costs(costs_text)
     tiers = rank_people.parse_reachability(costs_text)
+    demo_scoring, plays = load(DEMO_SCORING), load(DEMO_PLAYS)
     findings, scoring, source = None, None, "ILLUSTRATIVE demo parameters"
     if config_path is not None:
         scoring, findings = preview_config(config_path)
         if scoring is not None:
-            source = f"your scoring config (provenance: {scoring.get('provenance')})"
+            # The synthetic accounts' play assignments are fixtures against the DEMO plays, so
+            # play_fit is scored on the demo's points; every other rule is yours. Your own
+            # plays file is shape-checked separately and reported as findings.
+            scoring = json.loads(json.dumps(scoring))
+            scoring["dimensions"]["play_fit"] = demo_scoring["dimensions"]["play_fit"]
+            source = (f"your scoring config (provenance: {scoring.get('provenance')}), with "
+                      "play_fit from the demo plays")
     if scoring is None:
-        scoring = load(DEMO_SCORING)
+        scoring = demo_scoring
     label = "PREVIEW" if config_path is not None else "SIMULATED"
-    result = run_pipeline(fx, scoring, costs, tiers, label)
+    result = run_pipeline(fx, scoring, plays, costs, tiers, label)
     return render(result, findings, source), run_shape(result, label, source), findings
 
 
