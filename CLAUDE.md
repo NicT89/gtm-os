@@ -185,6 +185,27 @@ Four structural conventions every skill in this repo follows:
    not mean not owned.** Most users already have the tool and have simply never shaped it
    for this engine, so probing beats asking and asking beats recommending a signup.
 
+## Deterministic where it is universal, guided where it is theirs
+
+Decide, for every field or rule you add, whether it is the same for every organization that
+installs this plugin or whether it differs between them. The answer decides how it is built.
+
+- **Universal → deterministic.** Scoring arithmetic, reachability tiers, credit math, field
+  completeness, the shape of a config file, naming rules. Write code, with tests that prove
+  the check can fail.
+- **Organization-specific → free text with guidance.** A play's entry criteria, a persona, an
+  angle: anything that is wildly different from one company to the next. Do NOT turn these
+  into a list of options to choose from; an enumerated vocabulary forces every company onto
+  the axes of whichever company it was written for. Instead write guidance for the field (what
+  it is for, the bar it has to clear, a weak and a strong example, a test) and let the model
+  apply it. `skills/play-builder/references/play-fields.md` is the model to copy.
+
+The two meet at the boundary: a guided field still gets a deterministic SHAPE check (present,
+non-empty, a sentence rather than a keyword), never a content check. `check_plays.py` is the
+pattern. A field that was made deterministic when it should have been guided shows up as
+operators forcing their situation into the nearest option; one that was left free when it is
+universal shows up as two runs disagreeing about arithmetic.
+
 ## Apollo accepts fields it then discards: read the write back
 
 Three separate Apollo endpoints have now accepted a field, returned `success`, and silently
@@ -219,6 +240,12 @@ target's own go-to-market shape, one of the five in
 `skills/gtm-blueprint/references/motion-templates.md`. The opener anchors on the signal type;
 the plan and the closer come from the motion. `references/signals-doctrine.md` defines both,
 once.
+
+A third term, **play**, is our own route to an account: its list, sequence, persona and
+`play_fit` points. Plays belong to each deployment and are defined in its plays file;
+`references/plays.md` says how. Until 1.11.0 plays were called "motions" and one operator's
+five of them (M1-M5) shipped as if they were the engine's, which was the same collision a
+third time.
 
 The word "motion" named both until 1.9.4, and the collision was not cosmetic: `outreach-audit`
 picked the closer from the signal type, named a closer string that exists in no template, and

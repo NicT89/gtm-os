@@ -67,11 +67,13 @@ class ReferenceCheck(unittest.TestCase):
         self.assertEqual(validator.check_references(SCHEMA_KEYS), [])
 
     def test_runtime_placeholders_are_exempt(self):
-        """{MOTION} is filled in per run, not per deployment, so it is not a config key."""
-        # {MOTION} is filled in per run, not per deployment, so it must not be
-        # reported even though it is not a config key.
-        self.assertIn("MOTION", validator.RUNTIME_PLACEHOLDERS)
-        self.assertNotIn("MOTION", SCHEMA_KEYS)
+        """{SIGNAL_TYPE} is filled in per run, not per deployment, so it is not a config key."""
+        # {SIGNAL_TYPE} is filled in per run, not per deployment, so it must not be
+        # reported even though it is not a config key. It was {MOTION} until 1.11.0; that
+        # word now belongs only to the target's GTM motion.
+        self.assertIn("SIGNAL_TYPE", validator.RUNTIME_PLACEHOLDERS)
+        self.assertNotIn("SIGNAL_TYPE", SCHEMA_KEYS)
+        self.assertNotIn("MOTION", validator.RUNTIME_PLACEHOLDERS)
 
 
 class ConfigCheck(unittest.TestCase):

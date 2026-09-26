@@ -62,6 +62,18 @@ OPTIONAL_KEYS = {
     # Ships with a working default filename. Empty is supported and means the
     # skill falls back to that default, so an empty value must not fail.
     "SCRAPE_ROSTER_ARTIFACT",
+    # Ships naming a default file; empty means the same default. The file itself is
+    # optional too: without it gtm-signal-scan scores by hand and labels every score.
+    "SCORING_CONFIG_FILE",
+    # Ships naming a default file, like the scoring config. Without the file the scan
+    # cannot assign plays and routes the operator to the play-builder skill.
+    "PLAYS_FILE",
+    # The standard routing fields every play writes. Optional so an existing deployment
+    # keeps validating on upgrade; play-builder creates them at onboarding.
+    "APOLLO_CF_ACCOUNT_PLAY",
+    "APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON",
+    "APOLLO_CF_CONTACT_PLAY",
+    "APOLLO_CF_CONTACT_PLAY_ASSIGNED_ON",
 }
 
 # Ordered because setup has a dependency order and the report should read in it.
@@ -87,8 +99,9 @@ GROUPS = [
         lambda k: k.startswith("APOLLO_CF_"),
         "gtm-blueprint, gtm-signal-scan, outreach-audit, company-deep-research "
         "writeback, scrape-linkedin-posts push-back.",
-        "The human creates the field definitions in the Apollo UI (the API cannot), "
-        "then read the 24-hex IDs out of a record's typed_custom_fields.",
+        "Create the definitions with the play-builder skill (apollo_fields_create, each "
+        "field approved first and read back after) or in the Apollo UI, then read the "
+        "24-hex IDs out of a record's typed_custom_fields.",
     ),
     (
         "Apollo lists",
@@ -126,6 +139,19 @@ GROUPS = [
         "Nothing. It names the roster file every scrape run rebuilds.",
         "Ships as 'scrape-roster.md'. Change it only if that name collides with "
         "something in your artifact home.",
+    ),
+    (
+        "Scoring config and plays",
+        lambda k: k in ("SCORING_CONFIG_FILE", "PLAYS_FILE"),
+        "gtm-signal-scan Step 2 scoring by script. Without the file, the scan scores by "
+        "hand against SKILL.md's tables and labels every score `manual`; the demo's "
+        "--config mode reports it as a blocking finding.",
+        "Names a JSON file next to instance-config.json holding this deployment's "
+        "exclusions, scoring rules (including play_fit points per play) and tier cutoffs, "
+        "decided at provisioning. "
+        "examples/demo/scoring.demo.json shows the shape; its values are illustrative. "
+        "PLAYS_FILE names the plays file the play-builder skill writes; without it the scan "
+        "cannot assign plays.",
     ),
 ]
 

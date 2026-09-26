@@ -12,6 +12,125 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-09-26
+
+Plays: the routes that decide which list, sequence and persona an account gets, now defined
+by each deployment in its own words, with the Apollo objects each one owns. And one operator's
+routing no longer ships as if it were the engine's.
+
+### Added
+
+- **`play-builder` skill.** Interviews for each play against written guidance, writes the
+  deployment's plays file, links every play to scoring, and, with approval for each object,
+  creates the standard Apollo fields, the play's lists and an inactive sequence. Sequence
+  activation stays a human gate.
+- **Plays file (`PLAYS_FILE`, default `plays.json`).** A play's entry criteria, persona and
+  angle are free text, judged by the model against guidance in
+  `skills/play-builder/references/play-fields.md`, because plays differ completely between
+  organizations. `check_plays.py` checks the shape (codes, priority, the Apollo naming rule,
+  known fields, criteria written as a sentence), never the content.
+- **Standard Play fields** on accounts and contacts (`APOLLO_CF_*_PLAY`,
+  `APOLLO_CF_*_PLAY_ASSIGNED_ON`): which play, why, the evidence, and when. The standard vs
+  custom field split is in `skills/play-builder/references/standard-fields.md`.
+- **`references/plays.md`**: what a play is, how the scan assigns one, and the naming rule.
+- **A design rule in CLAUDE.md**: deterministic where it is universal, guided free text where
+  it differs by organization.
+
+### Changed
+
+- **"Motion" in the routing sense is now "play".** The word already meant the target's own GTM
+  motion, which decides the closer. Scoring's "Motion fit" is now "Play fit"; `gtm-signal-scan`
+  Step 1.5 is "Play assignment"; the runtime placeholder `{MOTION}` (which held the signal
+  type) is `{SIGNAL_TYPE}`.
+- **Play assignment moved from `score.py` to the model.** The scan gathers free evidence,
+  judges every play's criteria, holds the account when the evidence cannot decide, and records
+  the play, reasoning, evidence and date. `score.py` takes the assigned play as input and holds
+  any account without one. The demo shows assignment as a labeled FIXTURE.
+- **`provision-gtm-engine`** hands play definition to `play-builder`, builds one list pair and
+  one sequence per play, and no longer claims the API cannot create fields
+  (`apollo_fields_create` exists; it is used with approval per field and a read-back).
+
+### Fixed
+
+- `score.py` holds an account whose assigned play is not in the scoring config (or, with
+  `--plays`, not in the plays file) instead of scoring that play 0 and still tiering it.
+- An account has one scoring play; its contacts may route to different plays by persona.
+  `references/plays.md` and `outreach-audit` said an account could carry several plays, which
+  `score.py`, reading one `account["play"]`, could not honor.
+- Two figures in `references/signals-doctrine.md` had no source (Apollo's buying-intent option
+  count and an Apify per-post price) and are now stated without numbers.
+- `setup_status.py` no longer says the scoring config holds motions; `gtm-os-demo` and
+  `play-builder` report an update only when the remote version is newer.
+
+### Removed
+
+- **`references/motion-codes.md`** and every M1-M5 reference: one operator's five routes, their
+  live sequence names and a personal job-search track, presented as engine doctrine. A test now
+  fails if they come back.
+
+### Upgrading
+
+Write your plays with `play-builder` (or convert your existing routes: describe them and it
+will draft the file), then add `"PLAYS_FILE": "plays.json"` and the four Play field keys to
+`instance-config.json`, rename `motion_fit`/`points_by_motion` to `play_fit`/`points_by_play`
+in your scoring config, and run `python3 scripts/demo.py --config instance-config.json`. Until
+a plays file exists, `gtm-signal-scan` stops at Step 1.5 and routes you to `play-builder`.
+
+## [1.10.0] - 2026-09-26
+
+The offline demo, and the scoring arithmetic it runs on. You can now see the engine make
+every decision it makes in a live scan without connecting a single tool, and check your own
+setup before the first live run spends a credit.
+
+### Added
+
+- **`gtm-os-demo` skill and `scripts/demo.py`.** Say `run the demo`. It runs the engine's
+  real decision logic over synthetic accounts on `.example` domains: dedupe, exclusions,
+  motion assignment, two-pass scoring, reachability ranking, the credit statement a live
+  run would ask approval for, the field gate, and the deterministic composition checks.
+  Every hold carries its reason. Nothing is called, spent, written or sent. The committed
+  output is `examples/demo-report.md`, and a test fails if it drifts from the generator.
+- **Preview mode: `python3 scripts/demo.py --config instance-config.json`.** The same
+  synthetic accounts through YOUR instance: your instance config is validated and your
+  scoring config drives the motions, exclusions, scores and tiers. Every gap comes back as
+  a finding: an unset key, a missing or illustrative scoring config, a motion with no list
+  or sequence, an unrecorded catch-all enrollment policy. Still no API calls: it checks the
+  shape of your setup, not connectivity.
+- **Run-mode labels.** Every report row is `SIMULATED`, `FIXTURE`, `PREVIEW` or `LIVE`,
+  defined once in `references/run-manifest.md`. A result that is not `LIVE` is never
+  evidence about a real account, and a `FIXTURE` is never something the engine produced.
+- **`skills/gtm-signal-scan/scripts/score.py`.** Motion assignment, both scoring passes and
+  tiering, computed instead of done in prose. An absent input scores 0 AND is flagged
+  `unknown`, and a motion is never assigned on an unknown input: the account is held with
+  the free call that would resolve it named. The dimensions (names, pass, maximum points)
+  stay in SKILL.md Step 2 and a test pins the script to those tables.
+- **`skills/gtm-signal-scan/scripts/rank_people.py`.** Step 4b's role-fit x reachability
+  ranking. It parses the reachability tiers out of `references/apollo-credit-costs.md` at
+  run time rather than carrying a copy, the copy being how `unverified` once went missing
+  from T4.
+- **`SCORING_CONFIG_FILE` instance key** (default `scoring-config.json`, optional). Names
+  the JSON file holding your deployment's motions, exclusion thresholds, per-dimension
+  rules, tier cutoffs, people priorities and catch-all policy.
+  `examples/demo/scoring.demo.json` shows the shape; every value in it is illustrative.
+
+### Changed
+
+- **`gtm-signal-scan` Step 2 scores with `score.py`** when a scoring config exists, and
+  otherwise scores by hand against the tables and labels every score `manual`. Step 4b
+  ranks with `rank_people.py`.
+- **`provision-gtm-engine` Phase 1 saves the rubric as the scoring config** and runs the
+  demo in preview mode before the first live scan. `SETUP.md` gains a Step 0 (run the demo)
+  and runs preview mode at Step 4; `environment-setup` runs it after validation.
+
+### Upgrading
+
+Nothing breaks. To get deterministic scoring, write your scoring config at provisioning
+(or copy `examples/demo/scoring.demo.json` next to `instance-config.json`, REPLACE every
+value with your own decisions, and set `"provenance": "deployment"`), add
+`"SCORING_CONFIG_FILE": "scoring-config.json"` to your `instance-config.json`, then run
+`python3 scripts/demo.py --config instance-config.json` and clear its blocking findings.
+Until you do, the scan behaves as before and labels its scores `manual`.
+
 ## [1.9.4] - 2026-09-10
 
 The rest of the 1.9.2 contract audit, as one release. Every finding here is the same defect
