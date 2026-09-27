@@ -65,11 +65,22 @@ class Rows(unittest.TestCase):
                                 "Person Post"),
             "not an integer": (dict(POST, Likes="12"), "Person Post"),
             "http(s) URL": (dict(POST, **{"Post URL": "linkedin.com/x"}), "Person Post"),
+            "must be text": (dict(POST, **{"Post ID": []}), "Person Post"),
         }
         for text, (row, table) in cases.items():
             with self.subTest(text):
                 problems = problems_for(row, table)
                 self.assertTrue(any(text in p for p in problems), problems)
+
+
+class Batches(unittest.TestCase):
+    def test_a_batch_without_rows_is_a_problem_not_a_pass(self):
+        problems = cs.check({"deliveries": [{"table": "Person Post"}]}, SCHEMA)
+        self.assertTrue(any("`rows` must be a list" in p for p in problems), problems)
+
+    def test_a_non_string_table_is_a_problem_not_a_crash(self):
+        problems = cs.check({"deliveries": [{"table": ["Person Post"], "rows": []}]}, SCHEMA)
+        self.assertTrue(any("is not a posts-base table" in p for p in problems), problems)
 
 
 class Cli(unittest.TestCase):
@@ -86,6 +97,16 @@ class Cli(unittest.TestCase):
         self.assertEqual(run(bad), 1)
         self.assertEqual(subprocess.run([sys.executable, str(SCRIPT)],
                                         capture_output=True).returncode, 2)
+
+    def test_prose_by_default_json_on_request(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump({"deliveries": [{"table": "Person Post", "rows": [POST]}]}, f)
+        prose = subprocess.run([sys.executable, str(SCRIPT), f.name], capture_output=True,
+                               text=True)
+        self.assertTrue(prose.stdout.startswith("VALID:"), prose.stdout)
+        out = subprocess.run([sys.executable, str(SCRIPT), f.name, "--json"],
+                             capture_output=True, text=True)
+        self.assertTrue(json.loads(out.stdout)["valid"])
 
 
 if __name__ == "__main__":

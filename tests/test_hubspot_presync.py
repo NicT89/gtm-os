@@ -105,6 +105,22 @@ class EachRuleFires(unittest.TestCase):
         self.assertProblem("needs its `options`", mutate_portal=lambda m: m["objects"][
             "contacts"]["properties"]["gtm_play"].pop("options"))
 
+    def test_every_property_needs_an_owner(self):
+        """No owner could be a human-managed property written by mistake."""
+        self.assertProblem("`owner` must be engine or human", mutate_portal=lambda m: m[
+            "objects"]["contacts"]["properties"]["gtm_opener"].pop("owner"))
+
+    def test_options_must_be_a_list_not_a_string(self):
+        """A string would turn membership into substring matching: 'P' in 'P1,P2'."""
+        def stringly(m):
+            m["objects"]["contacts"]["properties"]["gtm_play"]["options"] = "P1,P2"
+        self.assertProblem("non-empty list of strings", mutate_portal=stringly)
+
+    def test_a_create_may_set_a_human_owned_property_and_an_update_may_not(self):
+        problems, _ = run()  # writes[1] creates a company, setting human-owned domain + name
+        self.assertEqual(problems, [])
+        self.assertProblem("human-managed", mutate_plan=lambda p: p["writes"][1].update(id=77))
+
     def test_batch_limit_is_a_warning(self):
         def many(p):
             p["writes"] = [copy.deepcopy(p["writes"][0]) for _ in range(hp.BATCH_LIMIT + 1)]
@@ -130,6 +146,14 @@ class Cli(unittest.TestCase):
         self.assertEqual(out.returncode, 1)
         self.assertEqual(subprocess.run([sys.executable, str(SCRIPT)],
                                         capture_output=True).returncode, 2)
+
+    def test_prose_by_default_json_on_request(self):
+        args = [sys.executable, str(SCRIPT), str(ROOT / "examples/hubspot/portal-map.example.json"),
+                str(ROOT / "examples/hubspot/planned-writes.example.json")]
+        prose = subprocess.run(args, capture_output=True, text=True)
+        self.assertTrue(prose.stdout.startswith("PASS:"), prose.stdout)
+        self.assertTrue(json.loads(subprocess.run(args + ["--json"], capture_output=True,
+                                                  text=True).stdout)["pass"])
 
 
 if __name__ == "__main__":

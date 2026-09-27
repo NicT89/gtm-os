@@ -49,7 +49,7 @@ still matches the repo.
 
 | Platform | Role | What is and is not there |
 |---|---|---|
-| **HubSpot** | CRM | Native schema discovery: `references/hubspot-adapter.md` maps a portal's objects (custom objects included), properties, types and options into a portal map, and `scripts/hubspot_presync.py` checks every planned write against it before sending. Still Generic: no deployment has run the full motion on it, so its failure modes are undocumented. |
+| **HubSpot** | CRM | Native schema discovery: `references/hubspot-adapter.md` maps a portal's objects (custom objects included), properties, types and options into a portal map, and `scripts/hubspot_presync.py` checks every planned write against it before sending. Both are checks on a plan and call nothing in HubSpot. Still Generic, because the platform path is incomplete rather than absent: no deployment has run the full motion on it end to end, so its failure modes are undocumented. |
 | **Clay** | Enrichment / CRM-adjacent | `gtm-blueprint` names the write target (add-data-points column). Same gaps as HubSpot. |
 | **CB Insights** | Funding, investors, commercial maturity | Optional. Field semantics documented; absent behavior defined — the keys stay empty and funding comes from primary sources. |
 | **Brand Kit OS** | Seller-side voice and positioning | Recommended: GTM OS composes noticeably better with a brand kit in place. Once GTM MCP is live it reads your brand kit server-side (`references/gtm-mcp.md`). Without one, `gtm-blueprint` falls back to the CRM context center or a document you name. |

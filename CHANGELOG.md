@@ -16,8 +16,9 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 GTM OS is now designed as two parts: this open plugin, and **GTM MCP**, a hosted service
 that will run scraping, scoring, persona scores, the learning loop's analysis and the Brand
-Kit OS link. GTM MCP is not live yet. **Nothing about how your install runs changes in this
-release**: it adds the contracts, checkers and HubSpot support the next steps build on.
+Kit OS link. GTM MCP is not live yet, and **this release adds no GTM MCP behavior**: it adds
+the contracts, checkers and HubSpot support the next steps build on. The one workflow that
+changes is a HubSpot write, which now runs a pre-sync check first.
 
 ### Added
 

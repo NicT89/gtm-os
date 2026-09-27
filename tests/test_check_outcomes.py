@@ -58,6 +58,9 @@ class Records(unittest.TestCase):
             "silent null": dict(unknown=[]),
             "a number or null": dict(account_score="64"),
             "is missing": dict(variant=KeyError),
+            "has a value but is listed": dict(unknown=["persona_score", "account_score"]),
+            "not a snapshot field": dict(unknown=["persona_score", "play"]),
+            "line break": dict(variant="A\naccount_score: 99"),
         }
         for text, change in cases.items():
             with self.subTest(text):
@@ -73,6 +76,17 @@ class NoteFormat(unittest.TestCase):
         for key in co.NOTE_FIELDS:
             self.assertEqual(back[key], RECORD[key], key)
         self.assertEqual(back["unknown"], ["persona_score"])
+
+    def test_scientific_notation_survives_the_round_trip(self):
+        rec = dict(RECORD, account_score=1e-05)
+        back = co.parse_note(co.render_note(rec), "hubspot", "1001")
+        self.assertEqual(back["account_score"], 1e-05)
+        self.assertEqual(co.check_records([back]), [])
+
+    def test_a_line_break_cannot_be_written_into_a_note(self):
+        """One line per field is the format; an embedded newline would forge a field."""
+        with self.assertRaises(ValueError):
+            co.render_note(dict(RECORD, variant="A\naccount_score: 99"))
 
     def test_a_note_without_the_header_is_not_an_outcome(self):
         self.assertIsNone(co.parse_note("event: reply", "hubspot"))
@@ -99,8 +113,10 @@ class Proposals(unittest.TestCase):
         self.assertTrue(any("human decision" in p for p in proposal_problems(status="applied")))
 
     def test_evidence_is_counts(self):
-        self.assertTrue(any("must be a count" in p
-                            for p in proposal_problems(evidence={"rate": 0.15})))
+        for bad in ({"rate": 0.15}, {"replies": -2}, {"replies": True}):
+            with self.subTest(bad):
+                self.assertTrue(any("must be a count" in p
+                                    for p in proposal_problems(evidence=bad)))
 
 
 class Cli(unittest.TestCase):
@@ -119,6 +135,13 @@ class Cli(unittest.TestCase):
         self.assertEqual(self.run_cli("--proposals", self.dump({"proposals": [PROPOSAL]}),
                                       "--scoring", self.dump(SCORING)).returncode, 0)
         self.assertEqual(self.run_cli().returncode, 2)
+
+    def test_prose_by_default_json_on_request(self):
+        path = self.dump([dict(RECORD, play="")])
+        prose = self.run_cli(path)
+        self.assertTrue(prose.stdout.startswith("INVALID:"), prose.stdout)
+        data = json.loads(self.run_cli(path, "--json").stdout)
+        self.assertFalse(data["valid"])
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@
     "gtm_mcp_key": {
       "type": "string",
       "title": "GTM MCP key",
-      "description": "The key from your GTM OS onboarding. Claude Code stores it in your system keychain, not in any file.",
+      "description": "The key from your GTM OS onboarding. Claude Code keeps it in its secure credential store, not in settings.json.",
       "sensitive": true,
       "required": true
     }

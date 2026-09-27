@@ -17,7 +17,8 @@ operator; this script only checks that a write fits the shape the portal declare
 Checks, per write:
   1. the object type is in the map and the map says the connected user can write it;
   2. every property exists on that object in the map;
-  3. no property the map marks `owner: human` is written (human-managed, never edited);
+  3. no property the map marks `owner: human` is changed on an existing record (a create
+     may set one, since it is the record's first value: the dedupe key, usually);
   4. values are strings, as manage_crm_objects takes them;
   5. the value fits the property's type: number, bool, date (YYYY-MM-DD), datetime (ISO
      8601), enumeration (a declared option; multi-select values separated by ";");
@@ -32,10 +33,10 @@ It does not replace the read-back. After the write, read the property out of Hub
 compare the value, per CLAUDE.md: a write that returns success can still store nothing.
 
 Usage:
-    python3 hubspot_presync.py portal-map.json planned-writes.json
+    python3 hubspot_presync.py portal-map.json planned-writes.json [--json]
 
 Exit code 0 = every write passes (warnings allowed), 1 = problems, 2 = usage error.
-JSON on stdout.
+Prose by default; --json for machines.
 """
 import json
 import re
@@ -45,6 +46,7 @@ from pathlib import Path
 
 BATCH_LIMIT = 10  # manage_crm_objects: "a MAXIMUM of 10 objects per request"
 TYPES = ("string", "number", "bool", "date", "datetime", "enumeration")
+OWNERS = ("engine", "human")
 
 
 def number_ok(value):
@@ -106,12 +108,19 @@ def check_map(portal):
             problems.append(f"objects.{obj} needs a `properties` object")
             continue
         for prop, pspec in spec["properties"].items():
+            where = f"objects.{obj}.properties.{prop}"
             if not isinstance(pspec, dict) or pspec.get("type") not in TYPES:
-                problems.append(f"objects.{obj}.properties.{prop}: `type` must be one of "
-                                f"{', '.join(TYPES)}")
-            elif pspec["type"] == "enumeration" and not pspec.get("options"):
-                problems.append(f"objects.{obj}.properties.{prop}: an enumeration needs "
-                                "its `options`")
+                problems.append(f"{where}: `type` must be one of {', '.join(TYPES)}")
+                continue
+            if pspec.get("owner") not in OWNERS:
+                problems.append(f"{where}: `owner` must be engine or human; a property with "
+                                "no owner could be a human-managed one written by mistake")
+            options = pspec.get("options")
+            if pspec["type"] == "enumeration" and not (
+                    isinstance(options, list) and options
+                    and all(isinstance(o, str) for o in options)):
+                problems.append(f"{where}: an enumeration needs its `options` as a "
+                                "non-empty list of strings")
     return problems
 
 
@@ -147,7 +156,7 @@ def check(portal, plan):
             if pspec is None:
                 problems.append(f"{where}: {prop} is not a property of {obj} in this portal")
                 continue
-            if pspec.get("owner") == "human":
+            if pspec["owner"] == "human" and write.get("id") not in (None, ""):
                 problems.append(f"{where}: {prop} is human-managed; the engine never edits it")
                 continue
             problems.extend(check_value(where, prop, pspec, value))
@@ -175,19 +184,29 @@ def check(portal, plan):
 
 def main():
     """CLI entry point."""
-    if len(sys.argv) != 3:
-        print("usage: hubspot_presync.py portal-map.json planned-writes.json", file=sys.stderr)
+    args = [a for a in sys.argv[1:] if a != "--json"]
+    as_json = "--json" in sys.argv[1:]
+    if len(args) != 2:
+        print("usage: hubspot_presync.py portal-map.json planned-writes.json [--json]",
+              file=sys.stderr)
         sys.exit(2)
     docs = []
-    for path in sys.argv[1:]:
+    for path in args:
         try:
             docs.append(json.loads(Path(path).read_text("utf-8")))
         except (OSError, json.JSONDecodeError) as e:
             print(f"Cannot read {path}: {e}", file=sys.stderr)
             sys.exit(2)
     problems, warnings = check(*docs)
-    print(json.dumps({"portal_map": sys.argv[1], "writes": sys.argv[2], "pass": not problems,
-                      "problems": problems, "warnings": warnings}, indent=2))
+    if as_json:
+        print(json.dumps({"portal_map": args[0], "writes": args[1], "pass": not problems,
+                          "problems": problems, "warnings": warnings}, indent=2))
+    else:
+        print(f"{'PASS' if not problems else 'BLOCKED'}: {args[1]} against {args[0]}")
+        for problem in problems:
+            print(f"  - {problem}")
+        for warning in warnings:
+            print(f"  warning: {warning}")
     sys.exit(1 if problems else 0)
 
 

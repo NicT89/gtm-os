@@ -9,8 +9,8 @@
       "dedupe_key": "email",
       "required": ["email"],
       "properties": {
-        "email": {"type": "string", "label": "Email"},
-        "firstname": {"type": "string", "label": "First Name"},
+        "email": {"type": "string", "label": "Email", "owner": "human"},
+        "firstname": {"type": "string", "label": "First Name", "owner": "human"},
         "jobtitle": {"type": "string", "label": "Job Title", "owner": "human"},
         "lifecyclestage": {"type": "enumeration", "label": "Lifecycle Stage", "owner": "human",
                             "options": ["subscriber", "lead", "marketingqualifiedlead", "salesqualifiedlead", "opportunity", "customer"]},
@@ -26,8 +26,8 @@
       "dedupe_key": "domain",
       "required": ["domain"],
       "properties": {
-        "domain": {"type": "string", "label": "Company Domain Name"},
-        "name": {"type": "string", "label": "Company Name"},
+        "domain": {"type": "string", "label": "Company Domain Name", "owner": "human"},
+        "name": {"type": "string", "label": "Company Name", "owner": "human"},
         "gtm_account_score": {"type": "number", "label": "GTM Account Score", "owner": "engine"},
         "gtm_signals": {"type": "enumeration", "label": "GTM Signals", "owner": "engine", "multiple": true,
                         "options": ["hiring", "funding"]}

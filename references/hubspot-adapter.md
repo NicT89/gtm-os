@@ -32,7 +32,7 @@ with a synthetic example in `examples/hubspot/portal-map.example.json`:
 | `properties.<name>.type` | `string`, `number`, `bool`, `date`, `datetime` or `enumeration` |
 | `properties.<name>.options` | For an enumeration, the allowed values (internal values, not labels) |
 | `properties.<name>.multiple` | True for a multi-select; values are separated by `;` |
-| `properties.<name>.owner` | `engine` or `human`. **Human-managed properties are never written** |
+| `properties.<name>.owner` | `engine` or `human`, required on every property. **A human-managed property is never changed on an existing record**; a create may set it, since that is the record's first value |
 | `properties.<name>.max_length` | Optional, when the portal enforces one |
 
 **The `owner` column is the operator's decision, not discovery's.** Discovery says a property
@@ -55,8 +55,9 @@ Build the planned writes in the shape `manage_crm_objects` takes, then:
 python3 scripts/hubspot_presync.py <portal map> planned-writes.json
 ```
 
-It checks, without calling anything: the object is writable; every property exists; no
-human-managed property is written; values are strings; each value fits its type and options;
+It checks, without calling anything: the map itself is well-formed (every property has a
+type and an owner); the object is writable; every property exists; no human-managed
+property is changed on an existing record; values are strings; each value fits its type and options;
 a create carries its dedupe key and required properties; association targets exist. Batches
 over `manage_crm_objects`' limit of 10 objects are flagged to split. Exit 1 blocks the sync.
 

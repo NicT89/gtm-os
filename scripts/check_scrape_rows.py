@@ -20,11 +20,12 @@ Checks, per row:
      integers; URLs are http(s).
 
 Usage:
-    python3 check_scrape_rows.py delivery.json
+    python3 check_scrape_rows.py delivery.json [--json]
 
 delivery.json: {"deliveries": [{"table": "Person Post", "rows": [{...}, ...]}, ...]}
 
-Exit code 0 = every row matches, 1 = problems, 2 = usage error. JSON on stdout.
+Exit code 0 = every row matches, 1 = problems, 2 = usage error. Prose by default; --json
+for machines.
 """
 import json
 import re
@@ -64,14 +65,20 @@ def check(delivery, schema):
         return ["the delivery must be an object with a `deliveries` list"]
     problems = []
     for b, batch in enumerate(batches):
-        table = batch.get("table") if isinstance(batch, dict) else None
-        fields = schema.get(table)
+        if not isinstance(batch, dict):
+            problems.append(f"deliveries[{b}] is not an object")
+            continue
+        table, rows = batch.get("table"), batch.get("rows")
+        fields = schema.get(table) if isinstance(table, str) else None
         if fields is None:
             problems.append(f"deliveries[{b}]: {table!r} is not a posts-base table "
                             f"({', '.join(schema)})")
             continue
+        if not isinstance(rows, list):
+            problems.append(f"deliveries[{b}]: `rows` must be a list")
+            continue
         dedupe = [f for f, spec in fields.items() if spec["dedupe"]]
-        for r, row in enumerate(batch.get("rows") or []):
+        for r, row in enumerate(rows):
             where = f"{table} row {r}"
             if not isinstance(row, dict):
                 problems.append(f"{where} is not an object")
@@ -99,6 +106,10 @@ def check(delivery, schema):
                 elif kind.startswith("Number (integer)") and (
                         not isinstance(value, int) or isinstance(value, bool)):
                     problems.append(f"{where}: {field}={value!r} is not an integer")
+                elif kind.startswith(("Single line text", "Long text")) \
+                        and not isinstance(value, str):
+                    problems.append(f"{where}: {field} must be text, not "
+                                    f"{type(value).__name__}")
                 elif kind == "URL" and not str(value).startswith(("http://", "https://")):
                     problems.append(f"{where}: {field}={value!r} is not an http(s) URL")
     return problems
@@ -114,18 +125,25 @@ def bare_date(value):
 
 def main():
     """CLI entry point."""
-    if len(sys.argv) != 2:
-        print("usage: check_scrape_rows.py delivery.json", file=sys.stderr)
+    args = [a for a in sys.argv[1:] if a != "--json"]
+    as_json = "--json" in sys.argv[1:]
+    if len(args) != 1:
+        print("usage: check_scrape_rows.py delivery.json [--json]", file=sys.stderr)
         sys.exit(2)
     try:
-        delivery = json.loads(Path(sys.argv[1]).read_text("utf-8"))
+        delivery = json.loads(Path(args[0]).read_text("utf-8"))
         schema = load_schema()
     except (OSError, json.JSONDecodeError, IndexError) as e:
         print(f"Cannot read input: {e}", file=sys.stderr)
         sys.exit(2)
     problems = check(delivery, schema)
-    print(json.dumps({"file": sys.argv[1], "valid": not problems, "problems": problems},
-                     indent=2))
+    if as_json:
+        print(json.dumps({"file": args[0], "valid": not problems, "problems": problems},
+                         indent=2))
+    else:
+        print(f"{'VALID' if not problems else 'INVALID'}: {args[0]}")
+        for problem in problems:
+            print(f"  - {problem}")
     sys.exit(1 if problems else 0)
 
 

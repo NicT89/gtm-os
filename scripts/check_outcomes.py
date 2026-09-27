@@ -21,10 +21,10 @@ so the loop can read them back later from the system of record. `render_note` an
 `parse_note` are that format; they round-trip.
 
 Usage:
-    python3 check_outcomes.py records.json
-    python3 check_outcomes.py --proposals proposals.json --scoring scoring-config.json
+    python3 check_outcomes.py records.json [--json]
+    python3 check_outcomes.py --proposals proposals.json --scoring scoring-config.json [--json]
 
-Exit code 0 = valid, 1 = problems, 2 = usage error. JSON on stdout.
+Exit code 0 = valid, 1 = problems, 2 = usage error. Prose by default; --json for machines.
 """
 import argparse
 import json
@@ -82,6 +82,15 @@ def check_record(i, rec):
     if not isinstance(unknown, list):
         problems.append(f"{where}: `unknown` must be a list")
         unknown = []
+    for key in unknown:
+        if key not in SNAPSHOT:
+            problems.append(f"{where}: `unknown` names {key!r}, which is not a snapshot field")
+        elif rec.get(key) is not None:
+            problems.append(f"{where}: {key} has a value but is listed in `unknown`")
+    for key in ("play", "variant"):
+        if isinstance(rec.get(key), str) and "\n" in rec[key]:
+            problems.append(f"{where}: {key} contains a line break, which would corrupt "
+                            "the note format")
     for key in SNAPSHOT:
         if key not in rec:
             problems.append(f"{where}: `{key}` is missing; write null and list it in `unknown`")
@@ -144,17 +153,26 @@ def check_proposals(doc, scoring):
         evidence = prop.get("evidence")
         if not isinstance(evidence, dict) or not evidence:
             problems.append(f"{where}: `evidence` must name the counts it rests on")
-        elif not all(isinstance(v, int) and not isinstance(v, bool) for v in evidence.values()):
-            problems.append(f"{where}: every evidence value must be a count")
+        elif not all(isinstance(v, int) and not isinstance(v, bool) and v >= 0
+                     for v in evidence.values()):
+            problems.append(f"{where}: every evidence value must be a count (a whole "
+                            "number, zero or more)")
     return problems
 
 
 def render_note(rec):
-    """The fixed block an outcome takes when written to a CRM note."""
+    """The fixed block an outcome takes when written to a CRM note.
+
+    Raises ValueError on a value containing a line break: one line per field is the whole
+    format, and an embedded newline would add or overwrite a field on read-back.
+    """
     lines = [NOTE_HEADER]
     for key in NOTE_FIELDS:
         value = rec.get(key)
-        lines.append(f"{key}: {'unknown' if value is None else value}")
+        text = "unknown" if value is None else str(value)
+        if "\n" in text or "\r" in text:
+            raise ValueError(f"{key} contains a line break; it cannot be written as a note")
+        lines.append(f"{key}: {text}")
     return "\n".join(lines)
 
 
@@ -174,9 +192,12 @@ def parse_note(text, crm, contact_id=None, account_id=None):
                 rec["unknown"].append(key)
         elif key in ("account_score", "persona_score"):
             try:
-                rec[key] = float(raw) if "." in raw else int(raw)
+                rec[key] = int(raw)
             except ValueError:
-                rec[key] = raw  # left as text so check_record reports it
+                try:
+                    rec[key] = float(raw)  # covers "64.5" and "1e-05" alike
+                except ValueError:
+                    rec[key] = raw  # left as text so check_record reports it
         else:
             rec[key] = raw
     return rec
@@ -188,6 +209,7 @@ def main():
     p.add_argument("records", nargs="?")
     p.add_argument("--proposals")
     p.add_argument("--scoring")
+    p.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     args = p.parse_args()
     if bool(args.records) == bool(args.proposals) or (args.proposals and not args.scoring):
         print("usage: check_outcomes.py records.json | --proposals FILE --scoring FILE",
@@ -202,9 +224,19 @@ def main():
             print(f"Cannot read {path}: {e}", file=sys.stderr)
             sys.exit(2)
     problems = check_records(docs[0]) if args.records else check_proposals(*docs)
-    print(json.dumps({"file": paths[0], "valid": not problems, "problems": problems},
-                     indent=2))
+    report(paths[0], problems, args.json)
     sys.exit(1 if problems else 0)
+
+
+def report(path, problems, as_json):
+    """Prose for a person by default; the same facts as JSON for a machine."""
+    if as_json:
+        print(json.dumps({"file": path, "valid": not problems, "problems": problems},
+                         indent=2))
+        return
+    print(f"{'VALID' if not problems else 'INVALID'}: {path}")
+    for problem in problems:
+        print(f"  - {problem}")
 
 
 if __name__ == "__main__":

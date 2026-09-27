@@ -146,7 +146,7 @@ account, and the brand kit the service reads for you. Your agent uses them to kn
 records are yours. **They are references, not credentials**: the service works out who you
 are from your key and never acts on an id sent in a request, so editing these changes what
 your agent believes, not what you can reach. Empty until GTM MCP is live and you onboard.
-The key itself is never here; Claude Code keeps it in your system keychain. See
+The key itself is never here; Claude Code keeps it in its secure credential store. See
 [gtm-mcp.md](gtm-mcp.md).
 
 ### `HUBSPOT_PORTAL_MAP_FILE`

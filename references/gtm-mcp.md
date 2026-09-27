@@ -32,9 +32,11 @@ launches, a release adds the connector to the plugin manifest and says so in the
 Access is by a key issued during GTM OS onboarding. It is yours alone and identifies your
 organization to the service.
 
-- **In Claude Code**, the plugin asks for the key once, when it is enabled, and stores it in
-  your system keychain. It is sent as an `Authorization` header on every call and never
-  written to a file. The exact connector block is in `examples/gtm-mcp/plugin-connector.json`.
+- **In Claude Code**, the plugin asks for the key once, when it is enabled, and keeps it in
+  Claude Code's secure credential store: the macOS Keychain, or on Linux and Windows a file
+  readable only by you (`~/.claude/.credentials.json`). It is never in `settings.json` or
+  `instance-config.json`, and it is sent as an `Authorization` header on every call. The
+  exact connector block is in `examples/gtm-mcp/plugin-connector.json`.
 - **Never put the key in a URL.** URLs end up in logs, and the MCP specification forbids
   tokens in the query string.
 - **claude.ai web, the Desktop chat app and Cowork** accept a static header on a custom
