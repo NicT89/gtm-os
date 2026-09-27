@@ -49,10 +49,10 @@ still matches the repo.
 
 | Platform | Role | What is and is not there |
 |---|---|---|
-| **HubSpot** | CRM | `gtm-blueprint` names the write target (a multi-line contact property). No field provenance map, no verified-persistence path, no credit model. |
+| **HubSpot** | CRM | Native schema discovery: `references/hubspot-adapter.md` maps a portal's objects (custom objects included), properties, types and options into a portal map, and `scripts/hubspot_presync.py` checks every planned write against it before sending. Still Generic: no deployment has run the full motion on it, so its failure modes are undocumented. |
 | **Clay** | Enrichment / CRM-adjacent | `gtm-blueprint` names the write target (add-data-points column). Same gaps as HubSpot. |
 | **CB Insights** | Funding, investors, commercial maturity | Optional. Field semantics documented; absent behavior defined — the keys stay empty and funding comes from primary sources. |
-| **Brand Kit OS** | Seller-side voice and positioning | Optional. `gtm-blueprint` falls back to the CRM context center or a document you name. |
+| **Brand Kit OS** | Seller-side voice and positioning | Recommended: GTM OS composes noticeably better with a brand kit in place. Once GTM MCP is live it reads your brand kit server-side (`references/gtm-mcp.md`). Without one, `gtm-blueprint` falls back to the CRM context center or a document you name. |
 | **Google Drive / Box / OneDrive** | Artifact home | Optional, and a local folder is exactly equivalent. |
 | **Supabase / BigQuery** | Warehouse spine | Optional. `gtm-architecture-composer` designs against it; absent, it names the gap instead. |
 

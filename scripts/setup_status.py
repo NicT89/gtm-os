@@ -43,6 +43,18 @@ SCHEMA_PATH = REPO_ROOT / "instance-config.example.json"
 # Keys that may stay empty. Kept in sync with validate_instance_config.py's
 # OPTIONAL_KEYS by the test suite, so the two files cannot silently disagree.
 OPTIONAL_KEYS = {
+    # Identity references (1.12.0). Copies of what the GTM MCP holds, so the customer's
+    # agent knows which org, GTM MCP account and brand kit are theirs. Never the
+    # authority: the server derives the org from the key. Empty until GTM MCP onboarding.
+    "GTM_ORG_ID",
+    "GTM_MCP_CUSTOMER_ID",
+    "BRAND_KIT_OS_ID",
+    # Empty means HubSpot is not in use. With HubSpot, it names the portal map that
+    # references/hubspot-adapter.md builds and scripts/hubspot_presync.py reads.
+    "HUBSPOT_PORTAL_MAP_FILE",
+    # Empty means outcomes are written to the CRM only (references/outcomes.md);
+    # "airtable" or "sqlite" names the fallback for writes the CRM cannot take.
+    "OUTCOME_FALLBACK",
     "APOLLO_CF_ACCOUNT_CBI_MOSAIC_SCORE",
     "APOLLO_CF_ACCOUNT_CBI_COMMERCIAL_MATURITY",
     "APOLLO_CF_ACCOUNT_NAMED_INVESTORS",
@@ -152,6 +164,22 @@ GROUPS = [
         "examples/demo/scoring.demo.json shows the shape; its values are illustrative. "
         "PLAYS_FILE names the plays file the play-builder skill writes; without it the scan "
         "cannot assign plays.",
+    ),
+    (
+        "GTM MCP identity",
+        lambda k: k in ("GTM_ORG_ID", "GTM_MCP_CUSTOMER_ID", "BRAND_KIT_OS_ID"),
+        "Nothing today. Once GTM MCP is live, these tell your agent which org, GTM MCP "
+        "account and brand kit are yours; the server never takes them on trust.",
+        "Copied from your GTM MCP onboarding. See references/gtm-mcp.md.",
+    ),
+    (
+        "HubSpot and outcomes",
+        lambda k: k in ("HUBSPOT_PORTAL_MAP_FILE", "OUTCOME_FALLBACK"),
+        "HubSpot writes (the pre-sync check needs the portal map) and outcome records the "
+        "CRM cannot hold.",
+        "Build the portal map per references/hubspot-adapter.md. Set OUTCOME_FALLBACK to "
+        "airtable or sqlite only if your CRM cannot take outcome writes "
+        "(references/outcomes.md).",
     ),
 ]
 

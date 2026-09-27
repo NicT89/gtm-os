@@ -150,6 +150,15 @@ below is the reference stack.
   name.
 - **Google Drive / Box / OneDrive** (optional) — file home for briefs and audit logs.
   A local folder works too.
+- **HubSpot** (generic CRM) — supported with native schema discovery: the engine maps your
+  portal's properties and custom objects, then checks every write against that map before
+  sending it ([`references/hubspot-adapter.md`](references/hubspot-adapter.md)).
+- **GTM MCP** (hosted by Launch99, not live yet) — the service GTM OS will run on for
+  scraping, scoring, persona scores, the learning loop's analysis and your brand kit link.
+  It holds none of your credentials; your own connectors do every write. It keeps your
+  account, a log of your calls, and a copy of the data it scrapes for you. What it does and
+  keeps is stated in full in [`references/gtm-mcp.md`](references/gtm-mcp.md). Until it
+  launches, everything runs as it does today.
 
 ## What output looks like
 

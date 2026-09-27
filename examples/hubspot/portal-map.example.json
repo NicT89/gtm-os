@@ -1,0 +1,51 @@
+{
+  "_README": "ILLUSTRATIVE portal map for a synthetic HubSpot portal. Build your own per references/hubspot-adapter.md; property names, options and owners differ in every portal. The custom object p0000_pilot_programs stands in for whatever custom objects your portal has.",
+  "schema_version": 1,
+  "captured_on": "2026-09-27",
+  "source": "discover_hubspot_schema GET_OBJECT_TYPES + search_properties + get_properties",
+  "objects": {
+    "contacts": {
+      "write_access": true,
+      "dedupe_key": "email",
+      "required": ["email"],
+      "properties": {
+        "email": {"type": "string", "label": "Email"},
+        "firstname": {"type": "string", "label": "First Name"},
+        "jobtitle": {"type": "string", "label": "Job Title", "owner": "human"},
+        "lifecyclestage": {"type": "enumeration", "label": "Lifecycle Stage", "owner": "human",
+                            "options": ["subscriber", "lead", "marketingqualifiedlead", "salesqualifiedlead", "opportunity", "customer"]},
+        "gtm_opener": {"type": "string", "label": "GTM Opener", "owner": "engine", "max_length": 2000},
+        "gtm_play": {"type": "enumeration", "label": "GTM Play", "owner": "engine",
+                     "options": ["P1", "P2", "P3", "P4"]},
+        "gtm_play_assigned_on": {"type": "date", "label": "GTM Play Assigned On", "owner": "engine"},
+        "gtm_persona_score": {"type": "number", "label": "GTM Persona Score", "owner": "engine"}
+      }
+    },
+    "companies": {
+      "write_access": true,
+      "dedupe_key": "domain",
+      "required": ["domain"],
+      "properties": {
+        "domain": {"type": "string", "label": "Company Domain Name"},
+        "name": {"type": "string", "label": "Company Name"},
+        "gtm_account_score": {"type": "number", "label": "GTM Account Score", "owner": "engine"},
+        "gtm_signals": {"type": "enumeration", "label": "GTM Signals", "owner": "engine", "multiple": true,
+                        "options": ["hiring", "funding"]}
+      }
+    },
+    "notes": {
+      "write_access": true,
+      "append_only": true,
+      "properties": {
+        "hs_note_body": {"type": "string", "label": "Note Body", "owner": "engine"},
+        "hs_timestamp": {"type": "datetime", "label": "Activity Date", "owner": "engine"}
+      }
+    },
+    "p0000_pilot_programs": {
+      "write_access": false,
+      "properties": {
+        "program_name": {"type": "string", "label": "Program Name", "owner": "human"}
+      }
+    }
+  }
+}

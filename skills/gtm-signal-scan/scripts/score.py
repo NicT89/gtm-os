@@ -128,6 +128,14 @@ def validate_config(config, play_ids=None):
         for pid in sorted(set(play_ids) - set(play_points)):
             problems.append(f"dimensions.play_fit.points_by_play has no entry for play {pid!r}")
 
+    # Optional. The learning loop's minimum sample (references/outcomes.md). No default is
+    # shipped, so when present it must be a real decision: a positive whole number.
+    if "learning" in config:
+        learning = config["learning"]
+        size = learning.get("min_sample") if isinstance(learning, dict) else None
+        if not isinstance(size, int) or isinstance(size, bool) or size < 1:
+            problems.append("learning.min_sample must be a positive whole number")
+
     for key, ceiling in (("pre_tiers", PASS1_MAX), ("tiers", FULL_MAX)):
         cut = config.get(key)
         if not isinstance(cut, dict):

@@ -1,0 +1,21 @@
+{
+  "_README": "The GTM MCP connector, ready to merge into .claude-plugin/plugin.json the day GTM MCP launches, with the real URL in place of GTM_MCP_URL_ASSIGNED_AT_LAUNCH. It is NOT in plugin.json yet: shipping it before the server exists would have every installed copy prompt for a key it cannot use and fail to connect on every start. See references/gtm-mcp.md. tests/test_gtm_mcp_connector.py checks this block against the plugin manifest rules.",
+  "mcpServers": {
+    "gtm-mcp": {
+      "type": "http",
+      "url": "https://GTM_MCP_URL_ASSIGNED_AT_LAUNCH/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${user_config.gtm_mcp_key}"
+      }
+    }
+  },
+  "userConfig": {
+    "gtm_mcp_key": {
+      "type": "string",
+      "title": "GTM MCP key",
+      "description": "The key from your GTM OS onboarding. Claude Code stores it in your system keychain, not in any file.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

@@ -12,6 +12,9 @@ describe in prose, so a run has something concrete to match.
 | `demo/fixtures.json` | The demo's synthetic accounts, people and stand-in responses, with each planted hold named |
 | `demo/plays.demo.json` | A complete plays file in the shape `check_plays.py` validates. The plays are ILLUSTRATIVE, not anyone's live routing |
 | `demo/scoring.demo.json` | A complete scoring config in the shape `score.py` validates. Every value is ILLUSTRATIVE |
+| `hubspot/portal-map.example.json` | A portal map for a synthetic HubSpot portal, in the shape `scripts/hubspot_presync.py` reads (references/hubspot-adapter.md) |
+| `hubspot/planned-writes.example.json` | Planned writes against that map, in the shape `manage_crm_objects` takes |
+| `gtm-mcp/plugin-connector.json` | The GTM MCP connector block, merged into the plugin manifest when GTM MCP launches (references/gtm-mcp.md) |
 
 ## These are synthetic
 

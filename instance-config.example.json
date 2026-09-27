@@ -85,5 +85,10 @@
   "SCRAPE_ROSTER_ARTIFACT": "scrape-roster.md",
   "SCORING_CONFIG_FILE": "scoring-config.json",
   "PLAYS_FILE": "plays.json",
-  "APIFY_POSTS_ACTOR": "harvestapi/linkedin-profile-posts"
+  "APIFY_POSTS_ACTOR": "harvestapi/linkedin-profile-posts",
+  "GTM_ORG_ID": "",
+  "GTM_MCP_CUSTOMER_ID": "",
+  "BRAND_KIT_OS_ID": "",
+  "HUBSPOT_PORTAL_MAP_FILE": "",
+  "OUTCOME_FALLBACK": ""
 }
