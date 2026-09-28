@@ -12,6 +12,53 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-09-27
+
+GTM OS is now designed as two parts: this open plugin, and **GTM MCP**, a hosted service
+that will run scraping, scoring, persona scores, the learning loop's analysis and the Brand
+Kit OS link. GTM MCP is not live yet, and **this release adds no GTM MCP behavior**: it adds
+the contracts, checkers and HubSpot support the next steps build on. The one workflow that
+changes is a HubSpot write, which now runs a pre-sync check first.
+
+### Added
+
+- **HubSpot portal discovery and a pre-sync check.** `references/hubspot-adapter.md` maps a
+  portal's objects (custom objects included), properties, types and options into a portal
+  map, using the HubSpot MCP's read-only tools. `scripts/hubspot_presync.py` checks every
+  planned write against it before sending: writable object, known property, never a
+  human-managed property, value fits its type and options, dedupe key and required fields on
+  creates. HubSpot stays in the Generic tier until a deployment has run it end to end.
+- **Outcome records and the learning-loop contract** (`references/outcomes.md`,
+  `scripts/check_outcomes.py`). Outcomes go to your CRM first, as native activity or a fixed,
+  parseable note; Airtable or SQLite is a fallback only. Every record carries the play and
+  scores as they were at enrollment, and every unknown is marked. Learning proposals are
+  checked against a minimum sample you set; nothing is ever applied automatically.
+- **Scrape delivery contract** (`references/scrape-delivery.md`,
+  `scripts/check_scrape_rows.py`). Scraped rows must match the posts base 1:1, read from
+  `references/airtable-posts-base.md` at run time, and your own Airtable connector writes
+  them.
+- **Persona scores contract** (`references/persona-scores.md`): what goes in, what comes out
+  per contact and per company, and what stays yours to define.
+- **`references/gtm-mcp.md`**: what the hosted service does, how you connect (a key Claude
+  Code keeps in your keychain), what it keeps, and what works without it. The connector
+  block waits in `examples/gtm-mcp/plugin-connector.json` until launch.
+- **Config keys**, all optional: `GTM_ORG_ID`, `GTM_MCP_CUSTOMER_ID` and `BRAND_KIT_OS_ID`
+  (identity references, never credentials), `HUBSPOT_PORTAL_MAP_FILE`, and
+  `OUTCOME_FALLBACK` (`airtable` or `sqlite` only). `learning.min_sample` is a new optional
+  scoring-config key.
+
+### Changed
+
+- Brand Kit OS is now described as recommended rather than optional: composition is
+  noticeably better with a brand kit in place. The fallback without one is unchanged.
+- `gtm-blueprint`'s HubSpot write path runs the pre-sync check first.
+
+### Upgrading
+
+Add the five new keys to your `instance-config.json`; empty is valid for all of them.
+Nothing else is required. If your CRM is HubSpot, build the portal map before the next
+write.
+
 ## [1.11.0] - 2026-09-26
 
 Plays: the routes that decide which list, sequence and persona an account gets, now defined

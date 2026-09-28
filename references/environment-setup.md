@@ -185,7 +185,9 @@ None of these block a run. Each skill states the degradation when one is absent.
 | Connector | What it adds | Absent behavior |
 |---|---|---|
 | **CB Insights** | Funding stage, named investors, commercial maturity | Those three `APOLLO_CF_ACCOUNT_CBI_*` / `NAMED_INVESTORS` keys stay empty; the validator permits it. Funding comes from primary sources instead. |
-| **Brand Kit OS** | Structured seller-side brand voice, positioning, audience | `gtm-blueprint` falls back to the CRM context center or a document you name. |
+| **Brand Kit OS** | Structured seller-side brand voice, positioning, audience. Recommended: composition is noticeably better with it | `gtm-blueprint` falls back to the CRM context center or a document you name. |
+| **HubSpot** (as the CRM) | The engine writes to your portal instead of Apollo | Not optional once chosen: run the portal discovery in [hubspot-adapter.md](hubspot-adapter.md) and set `{HUBSPOT_PORTAL_MAP_FILE}` before the first write. Probe with `discover_hubspot_schema`, which is read-only. |
+| **GTM MCP** (hosted by Launch99, not live yet) | Scraping, scoring, persona scores, learning-loop analysis, the brand kit link | Until launch, nothing changes. After launch, the key comes from onboarding and Claude Code stores it; see [gtm-mcp.md](gtm-mcp.md). Copy the three identity references into `{GTM_ORG_ID}`, `{GTM_MCP_CUSTOMER_ID}` and `{BRAND_KIT_OS_ID}`. |
 | **Google Drive / Box / OneDrive** | File home for briefs, reports, audit logs | A local folder works identically. Choose one and say which. |
 | **A warehouse (BigQuery, Supabase)** | The data spine layer in `gtm-architecture-composer` | The architecture proposal names the gap instead of designing around it. |
 

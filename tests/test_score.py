@@ -150,6 +150,20 @@ class Scoring(unittest.TestCase):
         self.assertEqual(r["points"], 100)
 
 
+class LearningThreshold(unittest.TestCase):
+    """learning.min_sample is optional, but when present it must be a real decision."""
+
+    def test_absent_is_fine_and_a_positive_whole_number_is_fine(self):
+        self.assertEqual(score.validate_config(DEMO), [])
+        self.assertEqual(score.validate_config(dict(DEMO, learning={"min_sample": 25})), [])
+
+    def test_anything_else_is_a_problem(self):
+        for bad in ({"min_sample": 0}, {"min_sample": 2.5}, {"min_sample": True}, {}, []):
+            with self.subTest(bad):
+                self.assertTrue(any("learning.min_sample" in p for p in
+                                    score.validate_config(dict(DEMO, learning=bad))))
+
+
 class Cli(unittest.TestCase):
     def run_cli(self, *args):
         return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True)

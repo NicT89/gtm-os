@@ -206,6 +206,25 @@ pattern. A field that was made deterministic when it should have been guided sho
 operators forcing their situation into the nearest option; one that was left free when it is
 universal shows up as two runs disagreeing about arithmetic.
 
+## The plugin is the open part; GTM MCP is the closed part
+
+From 1.12.0 GTM OS is designed as two parts. This repo is public and ships the skills, the
+human gates, connector setup, structure checks, and the **contracts** a customer's systems
+must match. The hosted **GTM MCP** (`references/gtm-mcp.md`) will hold scraping, the scoring
+and ranking engine, persona scores, the learning loop's analysis, and the Brand Kit OS link.
+
+- **Write the contract here, never the engine.** A new capability that belongs to GTM MCP
+  gets its inputs, outputs and gates documented in `references/`, plus a checker for the
+  shape, and nothing about how the service computes the answer.
+- **The customer's connectors do every write.** GTM MCP returns data; nothing in this repo
+  may assume the service holds a customer's credentials.
+- **Never trust an id from the client.** Identity comes from the key, server-side. The
+  identity keys in instance-config.json are references for the customer's agent.
+- **Nothing changes for an install until GTM MCP is live.** `score.py` and `rank_people.py`
+  stay here until the service replaces them, and the offline demo must always run without a
+  key. The connector block waits in `examples/gtm-mcp/plugin-connector.json`, and
+  `tests/test_gtm_mcp_connector.py` fails if it reaches the manifest early.
+
 ## Apollo accepts fields it then discards: read the write back
 
 Three separate Apollo endpoints have now accepted a field, returned `success`, and silently
@@ -420,7 +439,9 @@ went unchecked in the first place. For behavior, review against the harness refe
 Apollo, Airtable, Apify and Firecrawl are each required, conditionally: Airtable for the
 posts base, Apify for post scraping, Firecrawl as the default web extractor. Google Drive,
 CB Insights, Brand Kit OS and a warehouse are optional, and each skill degrades explicitly
-when one is missing rather than guessing. The authoritative per-connector list is
+when one is missing rather than guessing. HubSpot, as the CRM, is generic with native schema
+discovery (`references/hubspot-adapter.md`), and GTM MCP is the hosted dependency described
+above, not live yet. The authoritative per-connector list is
 [references/environment-setup.md](references/environment-setup.md); this paragraph called
 Airtable and Apify optional and omitted Firecrawl entirely until 1.9.2. The Research
 Vault base is optional in the same way: with its keys empty, the research skills produce

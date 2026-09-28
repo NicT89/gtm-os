@@ -139,6 +139,28 @@ Defaults to `harvestapi/linkedin-profile-posts`. Change it only if you have
 substituted a different scraping actor, in which case the parsing in
 `scrape-linkedin-posts` Step 4 will need to match its output shape.
 
+### GTM MCP identity: `GTM_ORG_ID`, `GTM_MCP_CUSTOMER_ID`, `BRAND_KIT_OS_ID`
+
+Copies of the identifiers GTM MCP onboarding gives you: your organization, your GTM MCP
+account, and the brand kit the service reads for you. Your agent uses them to know which
+records are yours. **They are references, not credentials**: the service works out who you
+are from your key and never acts on an id sent in a request, so editing these changes what
+your agent believes, not what you can reach. Empty until GTM MCP is live and you onboard.
+The key itself is never here; Claude Code keeps it in its secure credential store. See
+[gtm-mcp.md](gtm-mcp.md).
+
+### `HUBSPOT_PORTAL_MAP_FILE`
+
+Empty unless your CRM is HubSpot. Then it names the portal map, a JSON file next to this
+one, built by the discovery steps in [hubspot-adapter.md](hubspot-adapter.md) and read by
+`scripts/hubspot_presync.py` before every write.
+
+### `OUTCOME_FALLBACK`
+
+Empty means outcome records go to your CRM only, which is the default and the goal
+([outcomes.md](outcomes.md)). Set it to `airtable` or `sqlite` only if your CRM cannot take
+outcome writes; those two values are the only ones the validator accepts.
+
 ## Validation
 
 `scripts/validate_instance_config.py` runs two checks:

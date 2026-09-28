@@ -214,6 +214,8 @@ class PreviewMode(unittest.TestCase):
                 config[key] = "fld" + "a" * 14
             elif key.startswith("APOLLO_CF_"):
                 config[key] = "0" * 24
+            elif key == "OUTCOME_FALLBACK":
+                config[key] = "sqlite"
             else:
                 config[key] = shipped or "chosen"
         path = Path(directory) / "instance-config.json"
