@@ -79,7 +79,7 @@ Full process: MAINTAINING.md.
 
 ## Review findings
 
-- Reviews run: <!-- e.g. "CodeRabbit on abc1234: 12 findings" / "rate-limited on def5678" / "self-review only" -->
+- Reviews run: <!-- e.g. "CodeRabbit on <sha>: <count> findings" / "rate-limited on <sha>" / "self-review only" -->
 - Commits no reviewer has seen: <!-- list the SHAs, or "none" -->
 
 | # | Source | File | Finding | Outcome |

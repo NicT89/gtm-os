@@ -51,7 +51,10 @@ def unguarded(text):
 
 
 class WorkflowsArePublicOnly(unittest.TestCase):
+    """Each workflow job must skip on private repositories."""
+
     def test_every_job_is_guarded(self):
+        """Every job in every workflow file carries the public-only guard."""
         files = sorted(WORKFLOWS.glob("*.yml")) + sorted(WORKFLOWS.glob("*.yaml"))
         self.assertTrue(files, "no workflow files found")
         for path in files:
@@ -60,12 +63,14 @@ class WorkflowsArePublicOnly(unittest.TestCase):
             self.assertEqual(unguarded(text), [], f"{path.name}: jobs without the guard")
 
     def test_an_unguarded_job_is_caught(self):
+        """Removing the guard from one real job makes that job, and only it, fail."""
         text = (WORKFLOWS / "ci.yml").read_text(encoding="utf-8")
         stripped = text.replace("    if: ${{ !github.event.repository.private }}\n", "", 1)
         self.assertNotEqual(stripped, text, "guard not found to remove")
         self.assertEqual(len(unguarded(stripped)), 1)
 
     def test_a_guard_on_a_step_does_not_count(self):
+        """A guard on a step still bills the job, so only a job-level guard counts."""
         text = (
             "jobs:\n"
             "  build:\n"
