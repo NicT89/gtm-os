@@ -327,6 +327,11 @@ finding at face value, and do not dismiss one because it is inconvenient.
 changed and in which commit. A finding you decline still gets a reply with the
 reason.
 
+**Log every finding in the PR's "Review findings" table** as well, with its outcome, and
+name any commit no reviewer has seen. Threads collapse once resolved; the table is the
+record of what was raised and what became of it, including when the hosted review was
+rate-limited and a later commit went unreviewed.
+
 **When a finding is right about the syntax and wrong about the file, change the
 context, not the code.** Never exclude a file from review to silence a false
 positive: the first attempt at this excluded `fanout_workflow.js`, which would

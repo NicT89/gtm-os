@@ -77,6 +77,27 @@ Full process: MAINTAINING.md.
      reviewed. Excluding fanout_workflow.js would have hidden a prompt-injection
      finding to save one predictable parser complaint. -->
 
+## Review findings
+
+- Reviews run: <!-- e.g. "CodeRabbit on abc1234: 12 findings" / "rate-limited on def5678" / "self-review only" -->
+- Commits no reviewer has seen: <!-- list the SHAs, or "none" -->
+
+| # | Source | File | Finding | Outcome |
+|---|---|---|---|---|
+| 1 | | | | |
+
+<!-- One row per finding, from any reviewer: CodeRabbit (hosted or CLI), a human, or
+     your own self-review. Keep this table current as the review goes on; it is the
+     record that outlives the threads, which collapse once resolved.
+
+     Source: CodeRabbit, CLI, a reviewer's handle, or self.
+     Finding: one line, in your words, not pasted from the bot.
+     Outcome: "fixed in <sha>" (with the test that covers it, when there is one),
+     "declined: <reason>", or "open". Nothing merges with a row still "open".
+
+     Replace the table with "No findings" only when a review actually completed.
+     A rate-limited run is not zero findings; say it in "Reviews run". -->
+
 ## Skill changes
 
 <!-- Delete this section if no SKILL.md changed. -->

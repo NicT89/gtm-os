@@ -15,6 +15,12 @@ name: Release on version change
 #
 # See https://semver.org and
 # https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
+#
+# Public repositories only. Every job carries `if: ${{ !github.event.repository.private }}`,
+# so a copy of this workflow in a private repository skips instead of spending billed
+# Actions minutes: standard GitHub-hosted runners are free on public repositories,
+# while private ones draw on the account's metered minutes.
+# tests/test_workflows_public_only.py fails if a job loses the guard. See MAINTAINING.md.
 
 on:
   push:
@@ -28,6 +34,7 @@ permissions:
 
 jobs:
   release:
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
