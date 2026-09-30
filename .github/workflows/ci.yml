@@ -10,9 +10,10 @@ name: ci
 #
 # VERSION and plugin.json's version must agree. Since 1.7.1 a release PR bumps
 # both in the same commit, and the skills job's "Version and manifest agree" step
-# (scripts/check_version_sync.py) fails the PR if they differ. release.yml no
-# longer pushes a sync commit to main; its sync step stays as a safety net that
-# exits early when the two already match. See MAINTAINING.md.
+# (scripts/check_version_sync.py) fails the PR if they differ. release.yml's sync
+# step stays as a safety net: it exits early when the two already match, and pushes
+# a sync commit to main only if they differ, which this check keeps from happening.
+# See MAINTAINING.md.
 #
 # Public repositories only. Every job carries `if: ${{ !github.event.repository.private }}`,
 # so a copy of this workflow in a private repository skips instead of spending billed
