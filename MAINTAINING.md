@@ -154,6 +154,11 @@ CLI. Neither is required to open a PR: the GitHub review runs regardless.
    collapse out of sight; the table is what shows, at merge time, that nothing was
    left open. On the 1.12.0 PR the hosted re-review of the fix commit was
    rate-limited, which the table makes visible instead of leaving it to a green check.
+7. **Fill in "Needs you"** before handing the PR over. Every unticked checkbox in the
+   description either gets ticked or gets a row there with the exact steps a person
+   must take (commands, or where to click). Merging is always a row. CodeRabbit's
+   "Finishing Touches" boxes are bot buttons that push commits, not tasks; leave them
+   unticked and say whether clicking one is recommended.
 
 **Never exclude a file from review to silence a false positive.** The first pass
 at this excluded `scripts/fanout_workflow.js` because a module parser misreads its
