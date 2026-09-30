@@ -332,6 +332,13 @@ name any commit no reviewer has seen. Threads collapse once resolved; the table 
 record of what was raised and what became of it, including when the hosted review was
 rate-limited and a later commit went unreviewed.
 
+**Every unticked box in a PR description gets a "Needs you" row or gets ticked.** The row
+names what a person must do and the exact commands or clicks to do it. An unticked box
+with no explanation is a task nobody owns; observed on PRs 21 and 22, where a skipped
+local review and two dropped checklist items were left for the maintainer to discover.
+Bot action buttons (CodeRabbit's "Finishing Touches") are not tasks: leave them unticked
+and say so.
+
 **When a finding is right about the syntax and wrong about the file, change the
 context, not the code.** Never exclude a file from review to silence a false
 positive: the first attempt at this excluded `fanout_workflow.js`, which would
