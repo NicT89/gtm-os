@@ -10,8 +10,10 @@ name: Release on version change
 # Trigger: a push to main that changes VERSION. workflow_dispatch is also allowed so
 # you can publish the current VERSION on demand (e.g. the very first time).
 #
-# plugin.json's "version" field is kept in sync automatically here (see the "Sync
-# plugin.json" step below) — upstream packages only ever need to bump VERSION.
+# Bump VERSION and plugin.json's "version" together in the PR; ci.yml's
+# check_version_sync.py fails the PR if they disagree. The "Sync plugin.json"
+# step below is a safety net: when the two already agree it exits without
+# committing, and it only commits and pushes to main if they somehow do not.
 #
 # See https://semver.org and
 # https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository

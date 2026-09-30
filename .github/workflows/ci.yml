@@ -8,11 +8,9 @@ name: ci
 #    the skill just silently fails to load or trigger.
 # 3. tests — the deterministic scripts the skills depend on.
 #
-# Deliberately absent: a check that VERSION equals plugin.json's version. That
-# job used to live here (as version-check.yml) and was retired when release.yml
-# took over syncing the two automatically. Requiring them to match *before* merge
-# false-fails every release PR, since a release now bumps VERSION alone and the
-# manifest is updated after the merge. See MAINTAINING.md.
+# The skills job also runs scripts/check_version_sync.py: VERSION and
+# plugin.json's version must agree before merge, so a release PR bumps both in
+# the same commit. See MAINTAINING.md.
 #
 # Public repositories only. Every job carries `if: ${{ !github.event.repository.private }}`,
 # so a copy of this workflow in a private repository skips instead of spending billed
@@ -65,9 +63,9 @@ jobs:
         run: python3 scripts/validate_instance_config.py
 
       - name: Version and manifest agree
-        # release.yml no longer pushes a sync commit to main, so a PR that bumps
-        # one and not the other would ship the mismatch. This is what lets `main`
-        # require a pull request: nothing has to push to it after the merge.
+        # A PR that bumps one and not the other fails here. Because they agree
+        # at merge, release.yml's sync step finds nothing to change and does not
+        # push, which is what lets `main` require a pull request.
         run: python3 scripts/check_version_sync.py
 
   tests:

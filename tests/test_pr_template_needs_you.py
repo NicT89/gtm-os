@@ -9,7 +9,15 @@ import unittest
 from pathlib import Path
 
 TEMPLATE = Path(__file__).resolve().parent.parent / ".github" / "PULL_REQUEST_TEMPLATE.md"
-HEADER = re.compile(r"^\|\s*#\s*\|\s*What\s*\|.*\|\s*Exact steps\s*\|\s*$", re.M)
+HEADER = re.compile(
+    r"^\|\s*#\s*\|\s*What\s*\|\s*Why it is not done\s*\|\s*Exact steps\s*\|\s*$", re.M
+)
+MERGE_ROW = re.compile(r"^\|\s*1\s*\|\s*Merge this PR\s*\|", re.M)
+REVIEW_FIELDS = (
+    "- Reviews run:",
+    "- Commits no reviewer has seen:",
+    "| # | Source | File | Finding | Outcome |",
+)
 
 
 def needs_you(text):
@@ -19,13 +27,25 @@ def needs_you(text):
 
 
 class NeedsYouSection(unittest.TestCase):
-    """The section exists and carries a table with an "Exact steps" column."""
+    """The section, its four columns, the merge row, and the review fields exist."""
 
     def test_template_has_section_with_steps_column(self):
         """The shipped template has the section and its table header."""
         body = needs_you(TEMPLATE.read_text())
         self.assertIsNotNone(body, "PR template lost its '## Needs you' section")
         self.assertRegex(body, HEADER)
+
+    def test_template_has_merge_row_and_review_fields(self):
+        """Merging is always a row, and "Review findings" keeps its fields."""
+        text = TEMPLATE.read_text()
+        self.assertRegex(needs_you(text) or "", MERGE_ROW)
+        for field in REVIEW_FIELDS:
+            self.assertIn(field, text)
+
+    def test_missing_why_column_is_caught(self):
+        """Dropping "Why it is not done" fails; the header is matched column by column."""
+        body = needs_you("## Needs you\n\n| # | What | Exact steps |\n|---|---|---|\n")
+        self.assertNotRegex(body, HEADER)
 
     def test_missing_steps_column_is_caught(self):
         """A table without the steps column fails, so the check can fail."""
