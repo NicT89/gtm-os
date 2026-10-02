@@ -77,6 +77,41 @@ Full process: MAINTAINING.md.
      reviewed. Excluding fanout_workflow.js would have hidden a prompt-injection
      finding to save one predictable parser complaint. -->
 
+## Review findings
+
+- Reviews run: <!-- e.g. "CodeRabbit on <sha>: <count> findings" / "rate-limited on <sha>" / "self-review only" -->
+- Commits no reviewer has seen: <!-- list the SHAs, or "none" -->
+
+| # | Source | File | Finding | Outcome |
+|---|---|---|---|---|
+| 1 | | | | |
+
+<!-- One row per finding, from any reviewer: CodeRabbit (hosted or CLI), a human, or
+     your own self-review. Keep this table current as the review goes on; it is the
+     record that outlives the threads, which collapse once resolved.
+
+     Source: CodeRabbit, CLI, a reviewer's handle, or self.
+     Finding: one line, in your words, not pasted from the bot.
+     Outcome: "fixed in <sha>" (with the test that covers it, when there is one),
+     "declined: <reason>", or "open". Nothing merges with a row still "open".
+
+     Replace the table with "No findings" only when a review actually completed.
+     A rate-limited run is not zero findings; say it in "Reviews run". -->
+
+## Needs you
+
+| # | What | Why it is not done | Exact steps |
+|---|---|---|---|
+| 1 | Merge this PR | Merging is a human decision | |
+
+<!-- Every checkbox left unticked anywhere in this description gets a row here, or
+     gets ticked. An unticked box with no row is a task nobody owns. The steps are
+     commands or clicks a person can follow without asking a follow-up question.
+
+     Bot action buttons (CodeRabbit's "Finishing Touches", "Generate unit tests",
+     and the like) are not tasks: they push commits when clicked. Leave them
+     unticked, and say here whether you recommend clicking any, and why. -->
+
 ## Skill changes
 
 <!-- Delete this section if no SKILL.md changed. -->

@@ -148,6 +148,17 @@ CLI. Neither is required to open a PR: the GitHub review runs regardless.
    context, never the code. See the rule below.
 5. **Feed the miss back into `.coderabbit.yaml`.** A finding that reveals the
    reviewer lacked repo context is a config change, not just a reply.
+6. **Log it in the PR's "Review findings" table**: one row per finding from any
+   reviewer, with its outcome (`fixed in <sha>`, `declined: <reason>`, or `open`),
+   plus which reviews ran and which commits none of them saw. Resolved threads
+   collapse out of sight; the table is what shows, at merge time, that nothing was
+   left open. On the 1.12.0 PR the hosted re-review of the fix commit was
+   rate-limited, which the table makes visible instead of leaving it to a green check.
+7. **Fill in "Needs you"** before handing the PR over. Every unticked checkbox in the
+   description either gets ticked or gets a row there with the exact steps a person
+   must take (commands, or where to click). Merging is always a row. CodeRabbit's
+   "Finishing Touches" boxes are bot buttons that push commits, not tasks; leave them
+   unticked and say whether clicking one is recommended.
 
 **Never exclude a file from review to silence a false positive.** The first pass
 at this excluded `scripts/fanout_workflow.js` because a module parser misreads its
@@ -201,6 +212,29 @@ applied. Three things to check every time, because all three have actually come 
 State every deviation from the delivery's own instructions in the PR description.
 A deviation that is explained is a decision; an unexplained one looks like a mistake
 the next reader has to re-litigate.
+
+## GitHub Actions: public repositories only
+
+CI (`ci.yml`) and releases (`release.yml`) run on GitHub Actions. That costs nothing
+here because this repository is public on the maintainer's personal account, and
+standard GitHub-hosted runners are free on public repositories
+([GitHub billing docs](https://docs.github.com/billing/managing-billing-for-github-actions/about-billing-for-github-actions)).
+On a private repository the same jobs consume the account's metered minutes.
+
+Policy: **Actions run only on public repositories.** They are not to run in private
+repositories, including any in a paid organization. Two things hold that line:
+
+- **Every job is guarded** with `if: ${{ !github.event.repository.private }}`, so a copy
+  of these workflows in a private repository skips each job instead of billing it.
+  `tests/test_workflows_public_only.py` fails if any job, in any workflow file, lacks
+  the guard, so a new job cannot quietly opt out.
+- **A private copy gets no CI and no releases from Actions.** Run the checks in
+  CLAUDE.md's PR-loop list locally before every push, and paste the results into the PR.
+  A skipped job reports as skipped, which satisfies a required status check, so a green
+  PR in a private repository says nothing about whether the checks ran.
+
+If this repository is ever made private, the same applies to it: CI and releases stop,
+and the release process in this file has to be done by hand.
 
 ## Branch protection
 
