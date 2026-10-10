@@ -12,6 +12,11 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-10-10
+
+Adds one skill. Nothing existing changes, and upgrading needs no action beyond re-running
+the install flow.
+
 ### Added
 
 - `signup-flow-cro` skill: audits signup, trial and waitlist flows for friction. Adapted
