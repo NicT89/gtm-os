@@ -12,6 +12,15 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+### Added
+
+- `signup-flow-cro` skill: audits signup, trial and waitlist flows for friction. Adapted
+  from the MIT-licensed `signup` skill in coreyhaines31/marketingskills, with the upstream
+  license kept in the skill folder and credited in `NOTICE`. Changes from upstream: the
+  version check and connector preflight every skill here carries, the no-invented-numbers
+  rule applied to impact estimates and reassurance copy, a WCAG source on the touch-target
+  size, and the lookup material split into `references/`.
+
 ## [1.12.0] - 2026-09-27
 
 GTM OS is now designed as two parts: this open plugin, and **GTM MCP**, a hosted service

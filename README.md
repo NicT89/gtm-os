@@ -89,6 +89,7 @@ deployment value to a `{KEY}` first so none of your resolved IDs ever leave your
 | `environment-setup` | Diagnoses and wires the connectors, from whatever state you are already in |
 | `play-builder` | Defines your plays (which accounts go to which list, sequence and persona) in your own words, and builds the Apollo fields, lists and inactive sequences each one needs |
 | `gtm-os-demo` | The offline demo: the real decision logic over synthetic accounts, no connectors, no credits. Run it first, and again with your config before the first live scan |
+| `signup-flow-cro` | Audits a signup, trial or waitlist flow for friction: sourced findings, quick wins, test hypotheses, and an optional redesigned field set. Adapted from coreyhaines31/marketingskills (MIT) |
 
 ## Who this is for
 

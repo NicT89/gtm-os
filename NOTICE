@@ -46,3 +46,8 @@ GTM OS orchestrates external services (CRM, Airtable, Apify, CB Insights, and
 optionally Brand Kit OS). Those services carry their own terms, pricing, and
 data-handling obligations. This license covers GTM OS itself and grants no
 rights to them.
+
+The `skills/signup-flow-cro` skill is adapted from the `signup` skill in
+coreyhaines31/marketingskills (https://github.com/coreyhaines31/marketingskills),
+Copyright (c) 2025 Corey Haines, released under the MIT License. Its license is
+kept at skills/signup-flow-cro/LICENSE and continues to apply to that material.
