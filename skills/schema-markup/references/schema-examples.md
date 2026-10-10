@@ -114,7 +114,7 @@ For product pages (e-commerce or SaaS).
     "priceCurrency": "USD",
     "price": "99.99",
     "availability": "https://schema.org/InStock",
-    "priceValidUntil": "2024-12-31"
+    "priceValidUntil": "YYYY-MM-DD (a real future date, or remove this property)"
   },
   "aggregateRating": {
     "@type": "AggregateRating",
@@ -356,7 +356,14 @@ Combine multiple schema types using @graph.
     },
     {
       "@type": "BreadcrumbList",
-      "itemListElement": [...]
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://example.com/"
+        }
+      ]
     }
   ]
 }

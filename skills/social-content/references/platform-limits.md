@@ -2,6 +2,8 @@
 
 Quick reference for hashtag limits, character counts, and visible text thresholds on each major social platform.
 
+**These limits come from upstream without per-row sources or verification dates, and platforms change them.** Check the platform's current help center before relying on one, and do not quote a limit to a client from this table alone.
+
 ---
 
 ## Instagram
@@ -30,7 +32,7 @@ Quick reference for hashtag limits, character counts, and visible text threshold
 
 | Element | Limit |
 |---------|-------|
-| Max hashtags | 5 (since August 2025) |
+| Max hashtags | 5 (reported change in August 2025; verify in TikTok's help center) |
 | Recommended hashtags | 3 – 5 |
 | Max caption chars | 4,000 |
 | Visible before "more" | ~150 chars |

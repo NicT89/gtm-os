@@ -20,7 +20,7 @@ Bezos's line was **"your margin is my opportunity"** — where a competitor mone
 
 ## What each case teaches
 
-- **Crew → Unsplash** — The anchor case. A near-zero-cost byproduct (leftover photos from a redesign, ~3 hrs to ship) became a top-of-funnel giant. Give away what others charge for; the reach compounds.
+- **Crew → Unsplash** — The anchor case. A near-zero-cost byproduct (leftover photos from a redesign, quick to ship) became a top-of-funnel giant. Give away what others charge for; the reach compounds.
 - **HubSpot Website Grader** — Small build, large return. Proof that an analyzer/grader can double as a lead engine *and* a qualification engine — most leads auto-qualified because the tool's inputs revealed fit.
 - **Baremetrics Forecasting** — A tool adjacent to the core product (revenue analytics) that converts trials well because using it makes the paid product's value obvious.
 - **CoSchedule Headline Analyzer** — Repeat-use analyzer with a low-friction path to subscription. High recurring usage keeps the brand in front of the audience.

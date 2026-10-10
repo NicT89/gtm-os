@@ -1,6 +1,6 @@
 ---
 name: frontend-design
-description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
+description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults. Use when the user says "design a landing page", "build a frontend", "make this UI look less generic", "make this distinctive", "redesign this page", "pick fonts and colors", "give this a visual identity", or shares a UI that "looks like every other AI-built site".
 license: Complete terms in LICENSE.txt
 ---
 

@@ -86,9 +86,9 @@ You can combine multiple schema types on one page using `@graph`:
 {
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "Organization", ... },
-    { "@type": "WebSite", ... },
-    { "@type": "BreadcrumbList", ... }
+    { "@type": "Organization", "@id": "https://example.com/#organization" },
+    { "@type": "WebSite", "@id": "https://example.com/#website" },
+    { "@type": "BreadcrumbList", "itemListElement": [] }
   ]
 }
 ```

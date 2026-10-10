@@ -51,9 +51,9 @@ Pick the primary model from the value metric, then layer a second only if a sing
 
 ## The Value/Price Ratio
 
-Aim for roughly a **10:1 value-to-price ratio** (Ryan Kulp): the customer should perceive about **10x more value than they pay**. This is the buffer that makes the purchase feel obvious rather than negotiated, and it leaves headroom to raise prices later as you add value.
+Aim for perceived value **well above the price** (a rule of thumb operators such as Ryan Kulp state as a ratio; it is a heuristic, not a measured threshold, and perceived value is hard to quantify). This is the buffer that makes the purchase feel obvious rather than negotiated, and it leaves headroom to raise prices later as you add value.
 
-If you can't articulate 10x value, the problem is usually the offer or the positioning, not the price point.
+If you can't articulate value far above the price, the problem is usually the offer or the positioning, not the price point.
 
 ---
 

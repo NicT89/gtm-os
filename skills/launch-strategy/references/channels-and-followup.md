@@ -43,7 +43,7 @@ Product Hunt can be powerful for reaching early adopters, but it's not magic—i
 - Optimized landing page and onboarding before launch
 - Built relationships with productivity/SaaS influencers in advance
 - Responded to every comment on launch day
-- Result: #2 Product of the Month
+- Result: a strong Product Hunt placement (check the launch page before citing a rank)
 
 **Reform** (Form builder):
 - Studied successful launches and applied insights
@@ -51,7 +51,7 @@ Product Hunt can be powerful for reaching early adopters, but it's not magic—i
 - Engaged in communities before launch (provided value first)
 - Treated launch as all-day engagement event
 - Directed traffic to capture signups
-- Result: #1 Product of the Day
+- Result: a strong Product Hunt placement (check the launch page before citing a rank)
 
 ---
 

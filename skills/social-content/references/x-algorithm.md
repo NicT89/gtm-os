@@ -35,11 +35,11 @@ Every signal below is a separate weighted term in the scoring code:
 
 ## The 10 rules
 
-1. **Open with a specific claim in the first 8 words.** [reported] Dwell is scored two ways [verified], and scroll-past is the dwell-killer. Don't warm up — the hook *is* the post.
+1. **Open with a specific claim in the first few words.** [reported; secondary analyses quote a word count, not linked here] Dwell is scored two ways [verified], and scroll-past is the dwell-killer. Don't warm up — the hook *is* the post.
 
-2. **Wait ~60 minutes between original posts.** [reported number] The author-diversity scorer is verified: within a feed response, each additional post from the same author gets a decayed score. Clustered posts cannibalize each other's reach.
+2. **Space out original posts.** [reported; secondary analyses quote an interval, not linked here] The author-diversity scorer is verified: within a feed response, each additional post from the same author gets a decayed score. Clustered posts cannibalize each other's reach.
 
-3. **Name your topic in the first 10 words.** [reported] Topic-based candidate sourcing and followed-topic hydration are verified in the pipeline — the algorithm routes posts to topic followers, but only if it can tell what the topic is. Vague musings don't get routed.
+3. **Name your topic early in the post.** [reported] Topic-based candidate sourcing and followed-topic hydration are verified in the pipeline — the algorithm routes posts to topic followers, but only if it can tell what the topic is. Vague musings don't get routed.
 
 4. **Write for the DM-forward, not the like.** [verified structure; relative weight reported] Share-via-DM is its own scored signal. The test for every post: "would someone send this to a friend?" beats "would someone like this?"
 
@@ -51,9 +51,9 @@ Every signal below is a separate weighted term in the scoring code:
 
 8. **Name specific things.** [verified mechanism] Two reasons: specificity is what enables topic routing (rule 3), and the muted-keyword filter removes posts *pre-scoring* — generic engagement-bait phrases are commonly muted; specific nouns ("Claude", "Stripe") rarely are.
 
-9. **Video must clear the minimum duration — with captions.** [verified mechanism; ~8s reported] The video-quality-view weight only applies above `MIN_VIDEO_DURATION_MS`. Below the threshold, video earns zero video credit. Captions serve the dwell signals (most viewing is muted).
+9. **Video must clear the minimum duration — with captions.** [verified mechanism; the threshold value is withheld in `params.rs`] The video-quality-view weight only applies above `MIN_VIDEO_DURATION_MS`. Below the threshold, video earns zero video credit. Captions serve the dwell signals (most viewing is muted).
 
-10. **Be present for the first 30 minutes.** [reported] Early replies compound: each reply you answer is a fresh engagement event, and reply chains feed the dwell and conversation signals. Post when you can stay, not when the scheduler fires.
+10. **Be present right after posting.** [reported] Early replies compound: each reply you answer is a fresh engagement event, and reply chains feed the dwell and conversation signals. Post when you can stay, not when the scheduler fires.
 
 ## What kills reach [verified]
 

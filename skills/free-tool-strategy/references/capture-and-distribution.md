@@ -38,7 +38,7 @@ Free tools attract links because:
 
 ## Common Pitfalls
 
-- **Over-engineering** — Shipping a bloated tool when the winning cases were tiny (Unsplash: 3 hrs; Website Grader: 2 engineers, 2 weeks). Scope to the one job.
+- **Over-engineering** — Shipping a bloated tool when the winning cases were small builds (Unsplash, Website Grader). Scope to the one job.
 - **Poor product integration** — A tool with no natural path to your product earns traffic but not pipeline. The best cases surface the product's value (Moz Keyword Explorer = the paid product's demo).
 - **Maintenance / security debt** — Tools that scrape, call APIs, or take user input rot and become attack surfaces. Budget for upkeep before you build.
 - **Vanity metrics** — Visitors and usage feel good but don't pay. Track leads, qualification rate, and trial/signup conversion — the numbers the case library reports.

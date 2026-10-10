@@ -33,7 +33,7 @@ Ask each respondent:
 The four questions measure price perceptions, not purchase probabilities. Before forecasting demand, use additional purchase-intent research (such as the Newton-Miller-Smith extension, with its assumptions stated), a choice study or actual price tests. Compare revenue, margin and retention; a higher acceptable price does not guarantee unchanged demand. See [Sawtooth's explanation of the method and its limits](https://sawtoothsoftware.com/resources/blog/posts/van-westendorp-pricing-sensitivity-meter).
 
 ### Survey Tips
-- Need 100-300 respondents for reliable data
+- Size the sample per segment you need to read separately, using your research provider's guidance or a sample-size calculator, not a fixed count
 - Segment by persona (different willingness to pay)
 - Use realistic product descriptions
 - Consider adding purchase intent questions

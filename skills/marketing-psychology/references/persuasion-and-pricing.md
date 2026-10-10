@@ -47,7 +47,7 @@ Start with an unreasonably large request, then retreat to what you actually want
 **Marketing application**: Show enterprise pricing first, then reveal the affordable starter plan. The contrast makes it feel like a deal.
 
 ### Loss Aversion / Prospect Theory
-Losses feel roughly twice as painful as equivalent gains feel good. People will work harder to avoid losing than to gain.
+Losses loom larger than equivalent gains (Kahneman and Tversky's prospect theory); cite a specific study before quoting a ratio. People will work harder to avoid losing than to gain.
 
 **Marketing application**: Frame in terms of what they'll lose by not acting. "Don't miss out" beats "You could gain."
 

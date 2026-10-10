@@ -51,13 +51,15 @@ Before implementing schema, understand:
 
 ### Schema Implementation
 ```json
-// Full JSON-LD code block
 {
   "@context": "https://schema.org",
-  "@type": "...",
-  // Complete markup
+  "@type": "SCHEMA_TYPE",
+  "name": "PAGE_OR_ENTITY_NAME"
 }
 ```
+
+Replace the placeholder values and add every property the chosen type needs. The block
+must stay valid JSON: no comments inside it.
 
 ### Testing Checklist
 - [ ] Requested Google appearance is currently supported, or a separate semantic consumer is identified

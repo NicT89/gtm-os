@@ -410,7 +410,7 @@ SavvyCal (a scheduling tool) originally led with feature-forward copy. They rewr
 
 > **"You shouldn't have to feel awkward sending out your scheduling link."**
 
-That one line **roughly tripled (3×) conversions**. It works because it hits all three beats of the Human Action Model at once:
+That one line reportedly lifted conversions sharply (upstream gave a multiplier without a source, so none is quoted here). It works because it hits all three beats of the Human Action Model at once:
 
 - **Discomfort:** the small social awkwardness of "here's my link, pick a time," named exactly as users feel it.
 - **Vision:** scheduling that feels considerate to *both* people.

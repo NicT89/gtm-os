@@ -145,7 +145,7 @@ People prefer the current state of affairs. Change requires effort and feels ris
 ### Default Effect
 People tend to accept pre-selected options. Defaults are powerful.
 
-**Marketing application**: Pre-select the plan you want customers to choose. Opt-out beats opt-in for subscriptions (ethically applied).
+**Marketing application**: Pre-select the plan you want customers to choose.
 
 ### Paradox of Choice
 Too many options overwhelm and paralyze. Fewer choices often lead to more decisions.

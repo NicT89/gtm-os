@@ -274,12 +274,11 @@ The user should maintain a list of sources somewhere persistent at `.agents/list
 **A ready-to-fill template lives at [listening-sources-template.md](listening-sources-template.md).** Copy it into the project and edit. The source path depends on how the skill was installed:
 
 ```bash
-# Plugin / marketplace install (most common):
-cp .agents/skills/social/references/listening-sources-template.md .agents/listening-sources.md
-# .claude/ install:
-cp .claude/skills/social/references/listening-sources-template.md .agents/listening-sources.md
-# Working inside the marketingskills repo:
-cp skills/social/references/listening-sources-template.md .agents/listening-sources.md
+# Installed as the GTM OS plugin: locate the template in the plugin cache, then copy it
+TEMPLATE=$(find ~/.claude/plugins -path '*social-content/references/listening-sources-template.md' | head -n 1)
+cp "$TEMPLATE" .agents/listening-sources.md
+# Working inside the gtm-os repo:
+cp skills/social-content/references/listening-sources-template.md .agents/listening-sources.md
 ```
 
 The template covers: brand/category, ICP (for scoring), target accounts per platform, intent keywords, subreddits, saved-search URLs, and a do-not-engage list.
