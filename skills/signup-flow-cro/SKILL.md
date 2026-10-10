@@ -34,6 +34,10 @@ Establish:
 
 If the flow is a URL, scrape it with Firecrawl (JS wait on, since signup pages are usually
 client-rendered) and capture every field, label, error state and CTA verbatim before judging.
+A scrape is a credit spend: before running it, tell the user it consumes Firecrawl credits and
+that a single scrape is not always one credit (the plugin root's
+references/scraping-playbook.md records one that cost 5), then report the actual burn from
+the response after. Screenshots or a description cost nothing and are a fine substitute.
 
 ## Step 2: Audit against the four principles
 
