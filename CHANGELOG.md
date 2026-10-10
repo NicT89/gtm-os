@@ -14,8 +14,8 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [1.13.0] - 2026-10-10
 
-Adds one skill. Nothing existing changes, and upgrading needs no action beyond re-running
-the install flow.
+Adds thirteen marketing skills adapted from open-source skill libraries. Nothing existing
+changes, and upgrading needs no action beyond re-running the install flow.
 
 ### Added
 
@@ -25,6 +25,17 @@ the install flow.
   version check and connector preflight every skill here carries, the no-invented-numbers
   rule applied to impact estimates and reassurance copy, a WCAG source on the touch-target
   size, and the lookup material split into `references/`.
+- Eleven more skills adapted from coreyhaines31/marketingskills (MIT), under the names
+  they had before that library's 2.0 rename: `competitor-alternatives`,
+  `free-tool-strategy`, `schema-markup`, `copywriting`, `email-sequence`, `launch-strategy`,
+  `marketing-psychology`, `marketing-ideas`, `social-content`, `pricing-strategy` and
+  `copy-editing`. Each carries the version check, reads product context from Brand Kit OS
+  when connected, and states the no-invented-numbers rule. Upstream figures with no source
+  (case-study results, benchmark rates, quoted lifts) are rewritten as qualitative claims or
+  placeholders. `email-sequence` hands cold outbound back to `gtm-blueprint` and
+  `outreach-audit`.
+- `frontend-design`, adapted from anthropics/skills (Apache-2.0): distinctive visual design
+  for new or reworked UI, with Brand Kit OS as the brand source when connected.
 
 ## [1.12.0] - 2026-09-27
 

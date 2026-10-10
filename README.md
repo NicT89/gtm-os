@@ -90,6 +90,18 @@ deployment value to a `{KEY}` first so none of your resolved IDs ever leave your
 | `play-builder` | Defines your plays (which accounts go to which list, sequence and persona) in your own words, and builds the Apollo fields, lists and inactive sequences each one needs |
 | `gtm-os-demo` | The offline demo: the real decision logic over synthetic accounts, no connectors, no credits. Run it first, and again with your config before the first live scan |
 | `signup-flow-cro` | Audits a signup, trial or waitlist flow for friction: sourced findings, quick wins, test hypotheses, and an optional redesigned field set. Adapted from coreyhaines31/marketingskills (MIT) |
+| `competitor-alternatives` | Builds competitor comparison and alternative pages (vs, alternatives, competitor-vs-competitor) and audits existing ones. Adapted from coreyhaines31/marketingskills (MIT) |
+| `free-tool-strategy` | Plans an engineering-as-marketing free tool: concept, gating, distribution, and whether it is worth building. Adapted from coreyhaines31/marketingskills (MIT) |
+| `schema-markup` | Adds and fixes structured data (JSON-LD) for rich results. Adapted from coreyhaines31/marketingskills (MIT) |
+| `copywriting` | Writes marketing page copy: clarity first, the customer's language, no AI tells. Adapted from coreyhaines31/marketingskills (MIT) |
+| `email-sequence` | Designs lifecycle email sequences (welcome, nurture, re-engagement, onboarding). Cold outbound stays with gtm-blueprint and outreach-audit. Adapted from coreyhaines31/marketingskills (MIT) |
+| `launch-strategy` | Plans a product or feature launch across owned, rented and borrowed channels. Adapted from coreyhaines31/marketingskills (MIT) |
+| `marketing-psychology` | Applies behavioral-science principles and mental models to marketing decisions. Adapted from coreyhaines31/marketingskills (MIT) |
+| `marketing-ideas` | Generates and prioritizes marketing ideas by stage, budget and channel. Adapted from coreyhaines31/marketingskills (MIT) |
+| `social-content` | Creates and repurposes social posts and short-form video, and triages social listening. Adapted from coreyhaines31/marketingskills (MIT) |
+| `pricing-strategy` | Designs pricing, packaging and tiers, and plans price changes. Adapted from coreyhaines31/marketingskills (MIT) |
+| `copy-editing` | Edits existing marketing copy in focused passes without losing the core message. Adapted from coreyhaines31/marketingskills (MIT) |
+| `frontend-design` | Gives new or reworked UI a distinctive, deliberate visual design, using Brand Kit OS when connected. Adapted from anthropics/skills (Apache-2.0) |
 
 ## Who this is for
 

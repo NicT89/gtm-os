@@ -47,7 +47,15 @@ optionally Brand Kit OS). Those services carry their own terms, pricing, and
 data-handling obligations. This license covers GTM OS itself and grants no
 rights to them.
 
-The `skills/signup-flow-cro` skill is adapted from the `signup` skill in
-coreyhaines31/marketingskills (https://github.com/coreyhaines31/marketingskills),
-Copyright (c) 2025 Corey Haines, released under the MIT License. Its license is
-kept at skills/signup-flow-cro/LICENSE and continues to apply to that material.
+These skills are adapted from coreyhaines31/marketingskills
+(https://github.com/coreyhaines31/marketingskills), Copyright (c) 2025 Corey
+Haines, released under the MIT License: signup-flow-cro, competitor-alternatives,
+free-tool-strategy, schema-markup, copywriting, email-sequence, launch-strategy,
+marketing-psychology, marketing-ideas, social-content, pricing-strategy and
+copy-editing. Each skill folder keeps that license in its LICENSE file, and it
+continues to apply to that material.
+
+The `skills/frontend-design` skill is adapted from anthropics/skills
+(https://github.com/anthropics/skills), licensed under the Apache License 2.0.
+Its license is kept at skills/frontend-design/LICENSE.txt, and the skill states
+the changes made to it.
