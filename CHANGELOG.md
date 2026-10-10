@@ -33,7 +33,8 @@ changes, and upgrading needs no action beyond re-running the install flow.
   when connected, and states the no-invented-numbers rule. Upstream figures with no source
   (case-study results, benchmark rates, quoted lifts) are rewritten as qualitative claims or
   placeholders. `email-sequence` hands cold outbound back to `gtm-blueprint` and
-  `outreach-audit`.
+  `outreach-audit`. Each SKILL.md keeps the intake and output format and routes to
+  `references/` for the detailed playbook, so a run loads only the part it needs.
 - `frontend-design`, adapted from anthropics/skills (Apache-2.0): distinctive visual design
   for new or reworked UI, with Brand Kit OS as the brand source when connected.
 
