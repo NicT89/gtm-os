@@ -23,8 +23,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# A fence may be indented (inside a list item); the closing fence matches the opening indent.
-FENCE = re.compile(r"^(?P<indent>[ \t]*)```json[ \t]*\n(?P<body>.*?)^(?P=indent)```",
+# A fence may be indented (inside a list item). Per CommonMark, a closing fence is a line of
+# backticks with nothing but whitespace after it, and an unclosed fence runs to the end of the
+# document. Without both rules a line like ```extra would end the block early, and an unclosed
+# block would be skipped entirely: either way invalid JSON goes unchecked.
+FENCE = re.compile(r"^(?P<indent>[ \t]*)```json[ \t]*\n(?P<body>.*?)(?:^[ \t]*```+[ \t]*$|\Z)",
                    re.S | re.M)
 
 
@@ -36,6 +39,7 @@ def json_blocks(text):
 
 
 def markdown_files():
+    """Every Markdown file in the repo, outside .git and node_modules."""
     return sorted(p for p in ROOT.rglob("*.md")
                   if ".git" not in p.parts and "node_modules" not in p.parts)
 
@@ -44,24 +48,47 @@ class JsonBlockScanner(unittest.TestCase):
     """The scanner must find blocks, or every repo-wide assertion below is vacuous."""
 
     def test_finds_a_top_level_block(self):
+        """A fence at the start of a line is found."""
         self.assertEqual(len(list(json_blocks('x\n```json\n{"a": 1}\n```\n'))), 1)
 
     def test_finds_an_indented_block(self):
+        """A fence inside a list item is found and dedented before parsing."""
         text = '- item\n\n  ```json\n  {"a": 1}\n  ```\n'
         (_, body), = json_blocks(text)
         self.assertEqual(json.loads(body), {"a": 1})
 
     def test_comment_inside_a_block_is_a_parse_error(self):
+        """The defect this file exists for: a `//` comment does not parse."""
         (_, body), = json_blocks('```json\n{\n  // note\n  "a": 1\n}\n```\n')
         with self.assertRaises(json.JSONDecodeError):
             json.loads(body)
 
     def test_jsonc_blocks_are_skipped(self):
+        """`jsonc` is the escape hatch for blocks that need comments."""
         self.assertEqual(list(json_blocks('```jsonc\n{ // ok\n}\n```\n')), [])
 
     def test_reports_the_line_the_block_starts_on(self):
+        """Failures point at the opening fence's line."""
         (line, _), = json_blocks('one\ntwo\n```json\n{}\n```\n')
         self.assertEqual(line, 3)
+
+    def test_backticks_followed_by_text_do_not_close_a_block(self):
+        """A line like ```extra is content, so invalid JSON after it is still checked."""
+        (_, body), = json_blocks('```json\n{}\n```extra\n// invalid\n```\n')
+        self.assertIn("// invalid", body)
+        with self.assertRaises(json.JSONDecodeError):
+            json.loads(body)
+
+    def test_an_unclosed_block_runs_to_the_end_and_is_checked(self):
+        """An unclosed fence is not skipped: it extends to the end of the document."""
+        (_, body), = json_blocks('intro\n```json\n{"a": [...]}\n')
+        with self.assertRaises(json.JSONDecodeError):
+            json.loads(body)
+
+    def test_a_longer_closing_fence_closes_the_block(self):
+        """Four backticks with nothing after them are a valid closer."""
+        (_, body), = json_blocks('```json\n{"a": 1}\n````\nnot json\n')
+        self.assertEqual(json.loads(body), {"a": 1})
 
 
 class RepoJsonBlocksParse(unittest.TestCase):
@@ -71,6 +98,7 @@ class RepoJsonBlocksParse(unittest.TestCase):
         self.assertGreater(found, 0)
 
     def test_every_json_block_parses(self):
+        """Every ```json block in every Markdown file parses."""
         for path in markdown_files():
             for line, body in json_blocks(path.read_text("utf-8")):
                 where = f"{path.relative_to(ROOT)}:{line}"
