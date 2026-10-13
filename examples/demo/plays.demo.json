@@ -1,0 +1,106 @@
+{
+  "_README": "ILLUSTRATIVE DEMO PLAYS. A generic set in the plays-file shape, so the offline demo can run. These are not any deployment's live plays and not a recommendation: plays differ completely between organizations, which is why their criteria are free text judged by the model rather than options chosen from a list. Write your own with the play-builder skill; the guidance for every field is in skills/play-builder/references/play-fields.md. This set happens to use the 2x2-plus-override shape described in references/plays.md, because it is easy to follow, not because plays must take that shape.",
+  "schema_version": 1,
+  "provenance": "illustrative",
+  "plays": [
+    {
+      "id": "first-gtm-hire",
+      "code": "P1",
+      "label": "First GTM hire",
+      "priority": 20,
+      "signal_types": ["hiring"],
+      "entry_criteria": "The company has nobody in a dedicated go-to-market role today (the free people search by organization id finds no sales, marketing operations or revenue operations staff), and it has an open posting for its first go-to-market leader or first dedicated GTM hire.",
+      "evidence_to_check": "Free people search by organization id against GTM and RevOps titles, read by title AND by seniority; the job posting itself for scope and seniority.",
+      "exit_criteria": "The posting is filled or withdrawn, or someone joins in a GTM role.",
+      "persona": "The founder or CEO running the search.",
+      "angle": "They are about to hand pipeline to one person; the question is what that person inherits.",
+      "exclusive_with": [],
+      "apollo": {
+        "account_list": "(P1) [Claude] First GTM Hire - Accounts",
+        "contact_list": "(P1) [Claude] First GTM Hire - Contacts",
+        "sequence": "(P1) [Claude] First GTM Hire"
+      },
+      "fields": {
+        "standard": ["APOLLO_CF_CONTACT_OPENER", "APOLLO_CF_CONTACT_BLUEPRINT", "APOLLO_CF_CONTACT_LINKEDIN_PROFILE_SUMMARY", "APOLLO_CF_ACCOUNT_PLAY", "APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON"],
+        "custom": [
+          {"label": "GTM Jobs w/ URL", "object": "account", "type": "textarea", "purpose": "One line per open GTM role: role | URL | posted date. The opener's reference beat cites it."},
+          {"label": "JD Summary", "object": "account", "type": "textarea", "purpose": "What the posting says the hire will own, in two sentences, from the posting text only."}
+        ]
+      },
+      "scheduled_tasks": ["Weekly: re-check the posting; if it has closed, re-assign the play rather than keep sending."],
+      "workflows": [{"trigger_list": "(P1) [Claude] First GTM Hire - Contacts", "fills": ["APOLLO_CF_CONTACT_LINKEDIN_PROFILE_SUMMARY"], "schedule": "On list membership"}]
+    },
+    {
+      "id": "founder-direct",
+      "code": "P2",
+      "label": "Founder direct",
+      "priority": 10,
+      "signal_types": ["funding"],
+      "entry_criteria": "The company raised recently and still has nobody in a dedicated go-to-market role, and it is not hiring one: the founders are still doing the selling themselves.",
+      "evidence_to_check": "The funding round and its date from enrichment; free people search for GTM staff; the careers page or postings search showing no open GTM roles.",
+      "exit_criteria": "A GTM role is posted (move to the first-hire play) or someone joins in a GTM role.",
+      "persona": "A founder or co-founder.",
+      "angle": "Proof before headcount: what a founder-led pipeline looks like before the first hire.",
+      "exclusive_with": [],
+      "apollo": {
+        "account_list": "(P2) [Claude] Founder Direct - Accounts",
+        "contact_list": "(P2) [Claude] Founder Direct - Contacts",
+        "sequence": "(P2) [Claude] Founder Direct"
+      },
+      "fields": {
+        "standard": ["APOLLO_CF_CONTACT_OPENER", "APOLLO_CF_CONTACT_BLUEPRINT", "APOLLO_CF_ACCOUNT_PLAY", "APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON"],
+        "custom": []
+      },
+      "scheduled_tasks": [],
+      "workflows": []
+    },
+    {
+      "id": "team-expansion",
+      "code": "P3",
+      "label": "Team expansion",
+      "priority": 10,
+      "signal_types": ["hiring"],
+      "entry_criteria": "At least one person already works in a dedicated go-to-market role, and the company is hiring more go-to-market roles on top of them.",
+      "evidence_to_check": "Free people search for existing GTM staff and their start dates; open GTM postings.",
+      "exit_criteria": "The postings close, or the existing GTM lead turns out to be new in seat (the new-leader play takes over).",
+      "persona": "A member of the existing GTM team.",
+      "angle": "The team is growing faster than its process; what breaks at the next hire.",
+      "exclusive_with": [],
+      "apollo": {
+        "account_list": "(P3) [Claude] Team Expansion - Accounts",
+        "contact_list": "(P3) [Claude] Team Expansion - Contacts",
+        "sequence": "(P3) [Claude] Team Expansion"
+      },
+      "fields": {
+        "standard": ["APOLLO_CF_CONTACT_OPENER", "APOLLO_CF_ACCOUNT_PLAY", "APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON"],
+        "custom": []
+      },
+      "scheduled_tasks": [],
+      "workflows": []
+    },
+    {
+      "id": "new-leader",
+      "code": "P4",
+      "label": "New leader",
+      "priority": 30,
+      "signal_types": ["hiring", "funding"],
+      "entry_criteria": "Someone joined the company in a go-to-market leadership seat within roughly the last nine months. When this is true it takes precedence over the team plays, because a new leader's first months are a different conversation from a team's expansion.",
+      "evidence_to_check": "Free people search for GTM leaders and their start dates; a job change on their profile.",
+      "exit_criteria": "The leader has been in seat long enough that the first-months framing no longer holds.",
+      "persona": "The new leader.",
+      "angle": "What they are expected to have fixed by the end of their first quarter.",
+      "exclusive_with": [],
+      "apollo": {
+        "account_list": "(P4) [Claude] New Leader - Accounts",
+        "contact_list": "(P4) [Claude] New Leader - Contacts",
+        "sequence": "(P4) [Claude] New Leader"
+      },
+      "fields": {
+        "standard": ["APOLLO_CF_CONTACT_OPENER", "APOLLO_CF_ACCOUNT_PLAY", "APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON"],
+        "custom": []
+      },
+      "scheduled_tasks": [],
+      "workflows": []
+    }
+  ]
+}

@@ -42,6 +42,8 @@ def valid_config():
             config[key] = "fld" + "a" * 14
         elif key.startswith("APOLLO_CF_"):
             config[key] = "0" * 24
+        elif key == "OUTCOME_FALLBACK":
+            config[key] = "airtable"
         else:
             config[key] = "something"
     return config
@@ -67,15 +69,26 @@ class ReferenceCheck(unittest.TestCase):
         self.assertEqual(validator.check_references(SCHEMA_KEYS), [])
 
     def test_runtime_placeholders_are_exempt(self):
-        """{MOTION} is filled in per run, not per deployment, so it is not a config key."""
-        # {MOTION} is filled in per run, not per deployment, so it must not be
-        # reported even though it is not a config key.
-        self.assertIn("MOTION", validator.RUNTIME_PLACEHOLDERS)
-        self.assertNotIn("MOTION", SCHEMA_KEYS)
+        """{SIGNAL_TYPE} is filled in per run, not per deployment, so it is not a config key."""
+        # {SIGNAL_TYPE} is filled in per run, not per deployment, so it must not be
+        # reported even though it is not a config key. It was {MOTION} until 1.11.0; that
+        # word now belongs only to the target's GTM motion.
+        self.assertIn("SIGNAL_TYPE", validator.RUNTIME_PLACEHOLDERS)
+        self.assertNotIn("SIGNAL_TYPE", SCHEMA_KEYS)
+        self.assertNotIn("MOTION", validator.RUNTIME_PLACEHOLDERS)
 
 
 class ConfigCheck(unittest.TestCase):
     """Each way a real config file is supposed to fail."""
+
+    def test_outcome_fallback_accepts_only_named_stores(self):
+        """A typo'd fallback would silently send outcomes nowhere."""
+        config = valid_config()
+        for good in ("airtable", "sqlite", ""):
+            config["OUTCOME_FALLBACK"] = good
+            self.assertEqual(validator.check_config(write_config(config), SCHEMA_KEYS), [])
+        config["OUTCOME_FALLBACK"] = "postgres"
+        self.assertTrue(validator.check_config(write_config(config), SCHEMA_KEYS))
 
     def test_a_complete_config_passes(self):
         """The validator must be able to pass, or it reads as a gate while blocking everything."""

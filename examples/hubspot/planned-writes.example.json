@@ -1,0 +1,12 @@
+{
+  "_README": "ILLUSTRATIVE planned writes against portal-map.example.json, in the shape manage_crm_objects takes. Synthetic records on .example domains.",
+  "writes": [
+    {"object": "contacts", "id": 1001,
+     "properties": {"gtm_play": "P1", "gtm_play_assigned_on": "2026-09-27", "gtm_persona_score": "72"}},
+    {"object": "companies",
+     "properties": {"domain": "northwind.example", "name": "Northwind", "gtm_signals": "hiring;funding", "gtm_account_score": "64"}},
+    {"object": "notes",
+     "properties": {"hs_note_body": "[GTM OS outcome v1]\nevent: reply", "hs_timestamp": "2026-09-27T15:04:00Z"},
+     "associations": [{"object": "contacts", "id": 1001}]}
+  ]
+}

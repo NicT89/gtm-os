@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""The two scoring passes must sum to 100, and motion assignment must precede scoring.
+"""The two scoring passes must sum to 100, and play assignment must precede scoring.
 
 Splitting `archetype/motion fit 25` into motion fit 15 + archetype fit 10 is the kind of edit
 that silently breaks a rubric: the dimensions still read plausibly, each table still looks
 complete, and the total quietly stops being 100. Nothing would catch that, because no reader
 adds up a table they are skimming.
 
-The ordering half matters for the same reason finding 4 did. Motion fit is 15 points sourced
-from Step 1.5, so Step 1.5 has to run first. If someone later moves motion assignment after
+The ordering half matters for the same reason finding 4 did. Play fit (motion fit until
+1.11.0) is 15 points sourced from Step 1.5, so Step 1.5 has to run first. If someone later
+moves play assignment after
 scoring -- the arrangement that existed until 1.9.4, where the motion was not assigned until
 `gtm-blueprint` Step 3 -- those 15 points are scored against a value that does not exist yet,
 and a missing input scores as a low one rather than as an error.
@@ -21,7 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SCAN = ROOT / "skills" / "gtm-signal-scan" / "SKILL.md"
-CODES = ROOT / "references" / "motion-codes.md"
+PLAYS = ROOT / "references" / "plays.md"
 
 
 class ScorePasses(unittest.TestCase):
@@ -46,26 +47,48 @@ class ScorePasses(unittest.TestCase):
         self.assertEqual(second, 45, f"pass 2 dimensions sum to {second}")
         self.assertEqual(first + second, 100)
 
-    def test_motion_fit_and_archetype_fit_are_separate_dimensions(self):
+    def test_play_fit_and_archetype_fit_are_separate_dimensions(self):
         """They were one dimension worth 25 and resolve at different stages."""
         pass1, pass2 = self.split_sections()
-        self.assertIn("Motion fit", pass1)
+        self.assertIn("Play fit", pass1)
         self.assertIn("Archetype fit", pass2)
         self.assertNotIn("archetype/motion fit 25,", self.scan)
 
-    def test_motion_assignment_precedes_scoring(self):
-        """Motion fit is scored in pass 1, so the motion must already be assigned."""
+    def test_play_assignment_precedes_scoring(self):
+        """Play fit is scored in pass 1, so the play must already be assigned."""
         self.assertLess(
-            self.scan.index("## Step 1.5: Motion assignment"),
+            self.scan.index("## Step 1.5: Play assignment"),
             self.scan.index("## Step 2:"),
-            "motion is assigned after the score that depends on it",
+            "the play is assigned after the score that depends on it",
         )
 
-    def test_the_step_points_at_the_legend_rather_than_restating_it(self):
+    def test_score_py_dimensions_equal_the_skill_tables(self):
+        """score.py carries the doctrine as code; SKILL.md carries it as prose.
+
+        Two copies of a rubric is exactly the drift CLAUDE.md warns about, so this pins
+        them together: same names, same pass, same points. Break it by changing any value
+        in score.py's DIMENSIONS or in either SKILL.md table.
+        """
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "score", ROOT / "skills" / "gtm-signal-scan" / "scripts" / "score.py")
+        score = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(score)
+        pass1, pass2 = self.split_sections()
+
+        def rows(section, which):
+            found = re.findall(r"^\|\s*([A-Za-z][^|]*?)\s*\|\s*(\d+)\s*\|", section, re.M)
+            return [(re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_"), which, int(pts))
+                    for name, pts in found]
+
+        self.assertEqual(rows(pass1, 1) + rows(pass2, 2), list(score.DIMENSIONS))
+
+    def test_the_step_points_at_the_plays_doctrine_rather_than_restating_it(self):
         """Every other copy of a taxonomy in this repo drifted from its source."""
         step = self.scan[self.scan.index("## Step 1.5"):self.scan.index("## Step 2:")]
-        self.assertIn("motion-codes.md", step)
-        self.assertTrue(CODES.exists(), "the legend this step points at must exist")
+        self.assertIn("references/plays.md", step)
+        self.assertIn("{PLAYS_FILE}", step)
+        self.assertTrue(PLAYS.exists(), "the doctrine this step points at must exist")
 
 
 if __name__ == "__main__":

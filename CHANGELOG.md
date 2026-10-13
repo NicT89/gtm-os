@@ -12,6 +12,225 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-10-12
+
+Makes distrust cheap: four defects found on live runs, each fixed where it fires, plus a
+register that stops the next one being rediscovered. None of them threw an error; each
+returned a well-formed answer that happened to be false. Upgrading needs no action beyond
+re-running the install flow.
+
+### Added
+
+- `references/known-failure-modes.md`: known defects, each classified under-reports,
+  over-reports or stale, with a free detection method. `scripts/check_failure_register.py`
+  (now in CI) rejects a row without one.
+- `gtm-signal-scan`: the falsification query is a step. A zero result and a silently ignored
+  filter look identical, so a zero that decides a field is re-run against a value nothing
+  could match first; an unfalsified zero is reported as unverified.
+- `skills/gtm-signal-scan/scripts/field_match.py`: cosmetic differences in a field
+  ("VP, Go-to-Market" vs "VP, Go to Market") no longer count as conflicts. It deliberately
+  does not fold different seats together.
+- `field_gate.py` check 4: a record whose stored employer or title disagrees with a reported
+  job change fails, and the skill reads the job description for the new role rather than
+  trusting the title.
+
+### Changed
+
+- `gtm-signal-scan` Step 1.5: the people search that decides a play sets
+  `include_similar_titles: false`, because a fuzzy title search counted engineers as GTM staff.
+
+## [1.13.0] - 2026-10-10
+
+Adds thirteen marketing skills adapted from open-source skill libraries. Nothing existing
+changes, and upgrading needs no action beyond re-running the install flow.
+
+### Added
+
+- `signup-flow-cro` skill: audits signup, trial and waitlist flows for friction. Adapted
+  from the MIT-licensed `signup` skill in coreyhaines31/marketingskills, with the upstream
+  license kept in the skill folder and credited in `NOTICE`. Changes from upstream: the
+  version check and connector preflight every skill here carries, the no-invented-numbers
+  rule applied to impact estimates and reassurance copy, a WCAG source on the touch-target
+  size, and the lookup material split into `references/`.
+- Eleven more skills adapted from coreyhaines31/marketingskills (MIT), under the names
+  they had before that library's 2.0 rename: `competitor-alternatives`,
+  `free-tool-strategy`, `schema-markup`, `copywriting`, `email-sequence`, `launch-strategy`,
+  `marketing-psychology`, `marketing-ideas`, `social-content`, `pricing-strategy` and
+  `copy-editing`. Each carries the version check, reads product context from Brand Kit OS
+  when connected, and states the no-invented-numbers rule. Upstream figures with no source
+  (case-study results, benchmark rates, quoted lifts) are rewritten as qualitative claims or
+  placeholders. `email-sequence` hands cold outbound back to `gtm-blueprint` and
+  `outreach-audit`. Each SKILL.md keeps the intake and output format and routes to
+  `references/` for the detailed playbook, so a run loads only the part it needs.
+- `frontend-design`, adapted from anthropics/skills (Apache-2.0): distinctive visual design
+  for new or reworked UI, with Brand Kit OS as the brand source when connected.
+
+## [1.12.0] - 2026-09-27
+
+GTM OS is now designed as two parts: this open plugin, and **GTM MCP**, a hosted service
+that will run scraping, scoring, persona scores, the learning loop's analysis and the Brand
+Kit OS link. GTM MCP is not live yet, and **this release adds no GTM MCP behavior**: it adds
+the contracts, checkers and HubSpot support the next steps build on. The one workflow that
+changes is a HubSpot write, which now runs a pre-sync check first.
+
+### Added
+
+- **HubSpot portal discovery and a pre-sync check.** `references/hubspot-adapter.md` maps a
+  portal's objects (custom objects included), properties, types and options into a portal
+  map, using the HubSpot MCP's read-only tools. `scripts/hubspot_presync.py` checks every
+  planned write against it before sending: writable object, known property, never a
+  human-managed property, value fits its type and options, dedupe key and required fields on
+  creates. HubSpot stays in the Generic tier until a deployment has run it end to end.
+- **Outcome records and the learning-loop contract** (`references/outcomes.md`,
+  `scripts/check_outcomes.py`). Outcomes go to your CRM first, as native activity or a fixed,
+  parseable note; Airtable or SQLite is a fallback only. Every record carries the play and
+  scores as they were at enrollment, and every unknown is marked. Learning proposals are
+  checked against a minimum sample you set; nothing is ever applied automatically.
+- **Scrape delivery contract** (`references/scrape-delivery.md`,
+  `scripts/check_scrape_rows.py`). Scraped rows must match the posts base 1:1, read from
+  `references/airtable-posts-base.md` at run time, and your own Airtable connector writes
+  them.
+- **Persona scores contract** (`references/persona-scores.md`): what goes in, what comes out
+  per contact and per company, and what stays yours to define.
+- **`references/gtm-mcp.md`**: what the hosted service does, how you connect (a key Claude
+  Code keeps in your keychain), what it keeps, and what works without it. The connector
+  block waits in `examples/gtm-mcp/plugin-connector.json` until launch.
+- **Config keys**, all optional: `GTM_ORG_ID`, `GTM_MCP_CUSTOMER_ID` and `BRAND_KIT_OS_ID`
+  (identity references, never credentials), `HUBSPOT_PORTAL_MAP_FILE`, and
+  `OUTCOME_FALLBACK` (`airtable` or `sqlite` only). `learning.min_sample` is a new optional
+  scoring-config key.
+
+### Changed
+
+- Brand Kit OS is now described as recommended rather than optional: composition is
+  noticeably better with a brand kit in place. The fallback without one is unchanged.
+- `gtm-blueprint`'s HubSpot write path runs the pre-sync check first.
+
+### Upgrading
+
+Add the five new keys to your `instance-config.json`; empty is valid for all of them.
+Nothing else is required. If your CRM is HubSpot, build the portal map before the next
+write.
+
+## [1.11.0] - 2026-09-26
+
+Plays: the routes that decide which list, sequence and persona an account gets, now defined
+by each deployment in its own words, with the Apollo objects each one owns. And one operator's
+routing no longer ships as if it were the engine's.
+
+### Added
+
+- **`play-builder` skill.** Interviews for each play against written guidance, writes the
+  deployment's plays file, links every play to scoring, and, with approval for each object,
+  creates the standard Apollo fields, the play's lists and an inactive sequence. Sequence
+  activation stays a human gate.
+- **Plays file (`PLAYS_FILE`, default `plays.json`).** A play's entry criteria, persona and
+  angle are free text, judged by the model against guidance in
+  `skills/play-builder/references/play-fields.md`, because plays differ completely between
+  organizations. `check_plays.py` checks the shape (codes, priority, the Apollo naming rule,
+  known fields, criteria written as a sentence), never the content.
+- **Standard Play fields** on accounts and contacts (`APOLLO_CF_*_PLAY`,
+  `APOLLO_CF_*_PLAY_ASSIGNED_ON`): which play, why, the evidence, and when. The standard vs
+  custom field split is in `skills/play-builder/references/standard-fields.md`.
+- **`references/plays.md`**: what a play is, how the scan assigns one, and the naming rule.
+- **A design rule in CLAUDE.md**: deterministic where it is universal, guided free text where
+  it differs by organization.
+
+### Changed
+
+- **"Motion" in the routing sense is now "play".** The word already meant the target's own GTM
+  motion, which decides the closer. Scoring's "Motion fit" is now "Play fit"; `gtm-signal-scan`
+  Step 1.5 is "Play assignment"; the runtime placeholder `{MOTION}` (which held the signal
+  type) is `{SIGNAL_TYPE}`.
+- **Play assignment moved from `score.py` to the model.** The scan gathers free evidence,
+  judges every play's criteria, holds the account when the evidence cannot decide, and records
+  the play, reasoning, evidence and date. `score.py` takes the assigned play as input and holds
+  any account without one. The demo shows assignment as a labeled FIXTURE.
+- **`provision-gtm-engine`** hands play definition to `play-builder`, builds one list pair and
+  one sequence per play, and no longer claims the API cannot create fields
+  (`apollo_fields_create` exists; it is used with approval per field and a read-back).
+
+### Fixed
+
+- `score.py` holds an account whose assigned play is not in the scoring config (or, with
+  `--plays`, not in the plays file) instead of scoring that play 0 and still tiering it.
+- An account has one scoring play; its contacts may route to different plays by persona.
+  `references/plays.md` and `outreach-audit` said an account could carry several plays, which
+  `score.py`, reading one `account["play"]`, could not honor.
+- Two figures in `references/signals-doctrine.md` had no source (Apollo's buying-intent option
+  count and an Apify per-post price) and are now stated without numbers.
+- `setup_status.py` no longer says the scoring config holds motions; `gtm-os-demo` and
+  `play-builder` report an update only when the remote version is newer.
+
+### Removed
+
+- **`references/motion-codes.md`** and every M1-M5 reference: one operator's five routes, their
+  live sequence names and a personal job-search track, presented as engine doctrine. A test now
+  fails if they come back.
+
+### Upgrading
+
+Write your plays with `play-builder` (or convert your existing routes: describe them and it
+will draft the file), then add `"PLAYS_FILE": "plays.json"` and the four Play field keys to
+`instance-config.json`, rename `motion_fit`/`points_by_motion` to `play_fit`/`points_by_play`
+in your scoring config, and run `python3 scripts/demo.py --config instance-config.json`. Until
+a plays file exists, `gtm-signal-scan` stops at Step 1.5 and routes you to `play-builder`.
+
+## [1.10.0] - 2026-09-26
+
+The offline demo, and the scoring arithmetic it runs on. You can now see the engine make
+every decision it makes in a live scan without connecting a single tool, and check your own
+setup before the first live run spends a credit.
+
+### Added
+
+- **`gtm-os-demo` skill and `scripts/demo.py`.** Say `run the demo`. It runs the engine's
+  real decision logic over synthetic accounts on `.example` domains: dedupe, exclusions,
+  motion assignment, two-pass scoring, reachability ranking, the credit statement a live
+  run would ask approval for, the field gate, and the deterministic composition checks.
+  Every hold carries its reason. Nothing is called, spent, written or sent. The committed
+  output is `examples/demo-report.md`, and a test fails if it drifts from the generator.
+- **Preview mode: `python3 scripts/demo.py --config instance-config.json`.** The same
+  synthetic accounts through YOUR instance: your instance config is validated and your
+  scoring config drives the motions, exclusions, scores and tiers. Every gap comes back as
+  a finding: an unset key, a missing or illustrative scoring config, a motion with no list
+  or sequence, an unrecorded catch-all enrollment policy. Still no API calls: it checks the
+  shape of your setup, not connectivity.
+- **Run-mode labels.** Every report row is `SIMULATED`, `FIXTURE`, `PREVIEW` or `LIVE`,
+  defined once in `references/run-manifest.md`. A result that is not `LIVE` is never
+  evidence about a real account, and a `FIXTURE` is never something the engine produced.
+- **`skills/gtm-signal-scan/scripts/score.py`.** Motion assignment, both scoring passes and
+  tiering, computed instead of done in prose. An absent input scores 0 AND is flagged
+  `unknown`, and a motion is never assigned on an unknown input: the account is held with
+  the free call that would resolve it named. The dimensions (names, pass, maximum points)
+  stay in SKILL.md Step 2 and a test pins the script to those tables.
+- **`skills/gtm-signal-scan/scripts/rank_people.py`.** Step 4b's role-fit x reachability
+  ranking. It parses the reachability tiers out of `references/apollo-credit-costs.md` at
+  run time rather than carrying a copy, the copy being how `unverified` once went missing
+  from T4.
+- **`SCORING_CONFIG_FILE` instance key** (default `scoring-config.json`, optional). Names
+  the JSON file holding your deployment's motions, exclusion thresholds, per-dimension
+  rules, tier cutoffs, people priorities and catch-all policy.
+  `examples/demo/scoring.demo.json` shows the shape; every value in it is illustrative.
+
+### Changed
+
+- **`gtm-signal-scan` Step 2 scores with `score.py`** when a scoring config exists, and
+  otherwise scores by hand against the tables and labels every score `manual`. Step 4b
+  ranks with `rank_people.py`.
+- **`provision-gtm-engine` Phase 1 saves the rubric as the scoring config** and runs the
+  demo in preview mode before the first live scan. `SETUP.md` gains a Step 0 (run the demo)
+  and runs preview mode at Step 4; `environment-setup` runs it after validation.
+
+### Upgrading
+
+Nothing breaks. To get deterministic scoring, write your scoring config at provisioning
+(or copy `examples/demo/scoring.demo.json` next to `instance-config.json`, REPLACE every
+value with your own decisions, and set `"provenance": "deployment"`), add
+`"SCORING_CONFIG_FILE": "scoring-config.json"` to your `instance-config.json`, then run
+`python3 scripts/demo.py --config instance-config.json` and clear its blocking findings.
+Until you do, the scan behaves as before and labels its scores `manual`.
+
 ## [1.9.4] - 2026-09-10
 
 The rest of the 1.9.2 contract audit, as one release. Every finding here is the same defect

@@ -118,6 +118,10 @@ the IDs are real. If a value the user needs has no key in the schema, add it to
 [references/instance-config.md](../../references/instance-config.md); a `{KEY}` with no
 schema entry fails CI, which is the check doing its job.
 
+Then run the `gtm-os-demo` skill in preview mode (`python3 scripts/demo.py --config
+instance-config.json`). It spends nothing and turns every remaining gap, including a
+missing scoring config or an unrecorded catch-all policy, into a named finding.
+
 ## Step 5: Prove it with one target
 
 Setup is not done at Step 4. Run `scrape-linkedin-posts` against ONE target the user

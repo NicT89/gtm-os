@@ -17,7 +17,7 @@ Usage:
 
 Exit code 0 = all checks pass, 1 = a check failed, 2 = usage error.
 
-Runtime placeholders like {MOTION} are NOT config keys — they are filled in during
+Runtime placeholders like {SIGNAL_TYPE} are NOT config keys — they are filled in during
 a run. They live in RUNTIME_PLACEHOLDERS below and are exempt from check 1. Adding
 a new one there is a deliberate act: prefer a config key when the value is fixed
 for a deployment.
@@ -34,7 +34,7 @@ SCHEMA_PATH = REPO_ROOT / "instance-config.example.json"
 # Tokens that look like config keys but are filled in at run time, or are prose
 # referring to the mechanism itself rather than to a specific key.
 RUNTIME_PLACEHOLDERS = {
-    "MOTION",
+    "SIGNAL_TYPE",
     "ACCOUNT_LIST",
     "CONTACT_LISTS",
     "SEQUENCE",
@@ -44,6 +44,18 @@ RUNTIME_PLACEHOLDERS = {
 
 # Keys allowed to stay empty: optional connectors, or values only some deployments use.
 OPTIONAL_KEYS = {
+    # Identity references (1.12.0). Copies of what the GTM MCP holds, so the customer's
+    # agent knows which org, GTM MCP account and brand kit are theirs. Never the
+    # authority: the server derives the org from the key. Empty until GTM MCP onboarding.
+    "GTM_ORG_ID",
+    "GTM_MCP_CUSTOMER_ID",
+    "BRAND_KIT_OS_ID",
+    # Empty means HubSpot is not in use. With HubSpot, it names the portal map that
+    # references/hubspot-adapter.md builds and scripts/hubspot_presync.py reads.
+    "HUBSPOT_PORTAL_MAP_FILE",
+    # Empty means outcomes are written to the CRM only (references/outcomes.md);
+    # "airtable" or "sqlite" names the fallback for writes the CRM cannot take.
+    "OUTCOME_FALLBACK",
     "APOLLO_CF_ACCOUNT_CBI_MOSAIC_SCORE",
     "APOLLO_CF_ACCOUNT_CBI_COMMERCIAL_MATURITY",
     "APOLLO_CF_ACCOUNT_NAMED_INVESTORS",
@@ -69,6 +81,18 @@ OPTIONAL_KEYS = {
     # Ships with a working default filename; empty means the skill falls back
     # to it. Documented as optional, so it must validate as optional.
     "SCRAPE_ROSTER_ARTIFACT",
+    # Ships naming a default file; empty means the same default. The file itself is
+    # optional too: without it gtm-signal-scan scores by hand and labels every score.
+    "SCORING_CONFIG_FILE",
+    # Ships naming a default file, like the scoring config. Without the file the scan
+    # cannot assign plays and routes the operator to the play-builder skill.
+    "PLAYS_FILE",
+    # The standard routing fields every play writes. Optional so an existing deployment
+    # keeps validating on upgrade; play-builder creates them at onboarding.
+    "APOLLO_CF_ACCOUNT_PLAY",
+    "APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON",
+    "APOLLO_CF_CONTACT_PLAY",
+    "APOLLO_CF_CONTACT_PLAY_ASSIGNED_ON",
 }
 
 # Single-brace {TOKEN}, not part of a {{merge token}}.
@@ -112,6 +136,8 @@ def looks_like_id(key, value):
         return value.startswith("fld")
     if key.startswith("APOLLO_CF_"):
         return bool(re.fullmatch(r"[0-9a-f]{24}", value))
+    if key == "OUTCOME_FALLBACK":
+        return value in ("airtable", "sqlite")
     return True
 
 

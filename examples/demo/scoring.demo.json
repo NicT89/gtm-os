@@ -1,0 +1,174 @@
+{
+  "_README": "ILLUSTRATIVE DEMO PARAMETERS. Every rule, threshold and cutoff in this file exists so the offline demo can run; none is a recommendation and none was tuned against real outcomes. Your deployment's scoring config is decided at provisioning (provision-gtm-engine Phase 1) and named by SCORING_CONFIG_FILE in instance-config.json. Values traceable to the repo are listed under _sources; everything else is a demo parameter.",
+  "_sources": {
+    "exclusions.max_gtm_team": "gtm-signal-scan SKILL.md Step 2: exclude a GTM engineering team of 2+ (hiring) or a sales/RevOps team of 4+ (funding).",
+    "dimensions.signal_age.windows.*.zero_points_after_days": "gtm-signal-scan Step 1 filters: postings within 60 days; funding within 6 months (183 days).",
+    "dimensions.geography.countries": "gtm-signal-scan Step 1 filters: US.",
+    "people.size_bands": "An interpretation of gtm-signal-scan Step 4's approximate bands (~15 pick 3, ~50 pick 4-5, ~100 pick 6-7), taking the upper end of each band.",
+    "people.good_tier_max": "gtm-signal-scan Step 4: Good tier picks 1-2 regardless.",
+    "people.role_priority": "gtm-signal-scan Step 4 selection priority. The weights are demo parameters.",
+    "people.skip_terms": "gtm-signal-scan Step 4: skip advisors, investors, board members, engineers, recruiters.",
+    "dimensions.play_fit.points_by_play": "Keyed by the play ids in examples/demo/plays.demo.json. The point values are demo parameters."
+  },
+  "provenance": "illustrative",
+  "schema_version": 1,
+  "exclusions": {
+    "categories": [
+      "competitor",
+      "job_board",
+      "staffing_firm",
+      "offshore_only"
+    ],
+    "max_gtm_team": {
+      "hiring": 1,
+      "funding": 3
+    }
+  },
+  "dimensions": {
+    "play_fit": {
+      "points_by_play": {
+        "first-gtm-hire": 15,
+        "new-leader": 15,
+        "founder-direct": 12,
+        "team-expansion": 8
+      }
+    },
+    "signal_age": {
+      "windows": {
+        "hiring": {
+          "full_points_within_days": 14,
+          "zero_points_after_days": 60
+        },
+        "funding": {
+          "full_points_within_days": 30,
+          "zero_points_after_days": 183
+        }
+      }
+    },
+    "budget_signal": {
+      "field": "headcount_growth_pct",
+      "steps": [
+        [
+          30,
+          15
+        ],
+        [
+          15,
+          10
+        ],
+        [
+          5,
+          5
+        ]
+      ]
+    },
+    "geography": {
+      "countries": [
+        "US"
+      ]
+    },
+    "stage_and_funding": {
+      "points_by_stage": {
+        "Seed": 14,
+        "Series A": 20,
+        "Series B": 16,
+        "Series C": 8
+      },
+      "default": 0
+    },
+    "archetype_fit": {
+      "points_by_archetype": {
+        "build": 10,
+        "support": 6,
+        "backfill": 3
+      },
+      "default": 0
+    },
+    "stack_overlap": {
+      "technologies": [
+        "Apollo",
+        "HubSpot",
+        "Clay",
+        "Segment",
+        "n8n"
+      ],
+      "points_each": 5
+    },
+    "warm_path": {}
+  },
+  "pre_tiers": {
+    "excellent": 40,
+    "good": 30,
+    "fair": 20
+  },
+  "tiers": {
+    "excellent": 80,
+    "good": 65,
+    "fair": 50
+  },
+  "people": {
+    "size_bands": [
+      [
+        30,
+        3
+      ],
+      [
+        75,
+        5
+      ],
+      [
+        null,
+        7
+      ]
+    ],
+    "good_tier_max": 2,
+    "t3_max_rank": 1,
+    "role_priority": [
+      {
+        "rank": 1,
+        "weight": 1.0,
+        "title_terms": [
+          "ceo",
+          "chief executive",
+          "founder",
+          "co founder",
+          "cofounder"
+        ]
+      },
+      {
+        "rank": 2,
+        "weight": 0.8,
+        "title_terms": [
+          "coo",
+          "chief operating",
+          "chief of staff",
+          "head of operations"
+        ]
+      },
+      {
+        "rank": 3,
+        "weight": 0.6,
+        "title_terms": [
+          "growth",
+          "marketing",
+          "product",
+          "business development",
+          "bizdev"
+        ]
+      }
+    ],
+    "skip_terms": [
+      "advisor",
+      "investor",
+      "board",
+      "engineer",
+      "recruiter"
+    ]
+  },
+  "catch_all_policy": {
+    "decision": "unset",
+    "decided_on": "",
+    "reason": "",
+    "bounce_threshold": ""
+  }
+}

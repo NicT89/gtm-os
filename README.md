@@ -87,6 +87,21 @@ deployment value to a `{KEY}` first so none of your resolved IDs ever leave your
 | `gap-closer` | Works the open-question list: persona-routed batches, drafts for human sending, answers written back as sourced facts |
 | `event-attribution` | Reconciles an event attendee list against the CRM and tags every match, so field spend stops being unattributable |
 | `environment-setup` | Diagnoses and wires the connectors, from whatever state you are already in |
+| `play-builder` | Defines your plays (which accounts go to which list, sequence and persona) in your own words, and builds the Apollo fields, lists and inactive sequences each one needs |
+| `gtm-os-demo` | The offline demo: the real decision logic over synthetic accounts, no connectors, no credits. Run it first, and again with your config before the first live scan |
+| `signup-flow-cro` | Audits a signup, trial or waitlist flow for friction: sourced findings, quick wins, test hypotheses, and an optional redesigned field set. Adapted from coreyhaines31/marketingskills (MIT) |
+| `competitor-alternatives` | Builds competitor comparison and alternative pages (vs, alternatives, competitor-vs-competitor) and audits existing ones. Adapted from coreyhaines31/marketingskills (MIT) |
+| `free-tool-strategy` | Plans an engineering-as-marketing free tool: concept, gating, distribution, and whether it is worth building. Adapted from coreyhaines31/marketingskills (MIT) |
+| `schema-markup` | Adds and fixes structured data (JSON-LD) for rich results. Adapted from coreyhaines31/marketingskills (MIT) |
+| `copywriting` | Writes marketing page copy: clarity first, the customer's language, no AI tells. Adapted from coreyhaines31/marketingskills (MIT) |
+| `email-sequence` | Designs lifecycle email sequences (welcome, nurture, re-engagement, onboarding). Cold outbound stays with gtm-blueprint and outreach-audit. Adapted from coreyhaines31/marketingskills (MIT) |
+| `launch-strategy` | Plans a product or feature launch across owned, rented and borrowed channels. Adapted from coreyhaines31/marketingskills (MIT) |
+| `marketing-psychology` | Applies behavioral-science principles and mental models to marketing decisions. Adapted from coreyhaines31/marketingskills (MIT) |
+| `marketing-ideas` | Generates and prioritizes marketing ideas by stage, budget and channel. Adapted from coreyhaines31/marketingskills (MIT) |
+| `social-content` | Creates and repurposes social posts and short-form video, and triages social listening. Adapted from coreyhaines31/marketingskills (MIT) |
+| `pricing-strategy` | Designs pricing, packaging and tiers, and plans price changes. Adapted from coreyhaines31/marketingskills (MIT) |
+| `copy-editing` | Edits existing marketing copy in focused passes without losing the core message. Adapted from coreyhaines31/marketingskills (MIT) |
+| `frontend-design` | Gives new or reworked UI a distinctive, deliberate visual design, using Brand Kit OS when connected. Adapted from anthropics/skills (Apache-2.0) |
 
 ## Who this is for
 
@@ -148,10 +163,22 @@ below is the reference stack.
   name.
 - **Google Drive / Box / OneDrive** (optional) — file home for briefs and audit logs.
   A local folder works too.
+- **HubSpot** (generic CRM) — supported with native schema discovery: the engine maps your
+  portal's properties and custom objects, then checks every write against that map before
+  sending it ([`references/hubspot-adapter.md`](references/hubspot-adapter.md)).
+- **GTM MCP** (hosted by Launch99, not live yet) — the service GTM OS will run on for
+  scraping, scoring, persona scores, the learning loop's analysis and your brand kit link.
+  It holds none of your credentials; your own connectors do every write. It keeps your
+  account, a log of your calls, and a copy of the data it scrapes for you. What it does and
+  keeps is stated in full in [`references/gtm-mcp.md`](references/gtm-mcp.md). Until it
+  launches, everything runs as it does today.
 
 ## What output looks like
 
-[`examples/`](examples/) holds a sample scan report, audit-log entry, and composed
+Say `run the demo` to see it without connecting anything: the `gtm-os-demo` skill writes
+a labeled report of a full synthetic run, and
+[`examples/demo-report.md`](examples/demo-report.md) is that report as committed.
+[`examples/`](examples/) also holds a sample scan report, audit-log entry, and composed
 blueprint. Every company and figure there is synthetic; real run artifacts live in
 your own storage, never in this repo.
 

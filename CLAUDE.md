@@ -185,6 +185,46 @@ Four structural conventions every skill in this repo follows:
    not mean not owned.** Most users already have the tool and have simply never shaped it
    for this engine, so probing beats asking and asking beats recommending a signup.
 
+## Deterministic where it is universal, guided where it is theirs
+
+Decide, for every field or rule you add, whether it is the same for every organization that
+installs this plugin or whether it differs between them. The answer decides how it is built.
+
+- **Universal → deterministic.** Scoring arithmetic, reachability tiers, credit math, field
+  completeness, the shape of a config file, naming rules. Write code, with tests that prove
+  the check can fail.
+- **Organization-specific → free text with guidance.** A play's entry criteria, a persona, an
+  angle: anything that is wildly different from one company to the next. Do NOT turn these
+  into a list of options to choose from; an enumerated vocabulary forces every company onto
+  the axes of whichever company it was written for. Instead write guidance for the field (what
+  it is for, the bar it has to clear, a weak and a strong example, a test) and let the model
+  apply it. `skills/play-builder/references/play-fields.md` is the model to copy.
+
+The two meet at the boundary: a guided field still gets a deterministic SHAPE check (present,
+non-empty, a sentence rather than a keyword), never a content check. `check_plays.py` is the
+pattern. A field that was made deterministic when it should have been guided shows up as
+operators forcing their situation into the nearest option; one that was left free when it is
+universal shows up as two runs disagreeing about arithmetic.
+
+## The plugin is the open part; GTM MCP is the closed part
+
+From 1.12.0 GTM OS is designed as two parts. This repo is public and ships the skills, the
+human gates, connector setup, structure checks, and the **contracts** a customer's systems
+must match. The hosted **GTM MCP** (`references/gtm-mcp.md`) will hold scraping, the scoring
+and ranking engine, persona scores, the learning loop's analysis, and the Brand Kit OS link.
+
+- **Write the contract here, never the engine.** A new capability that belongs to GTM MCP
+  gets its inputs, outputs and gates documented in `references/`, plus a checker for the
+  shape, and nothing about how the service computes the answer.
+- **The customer's connectors do every write.** GTM MCP returns data; nothing in this repo
+  may assume the service holds a customer's credentials.
+- **Never trust an id from the client.** Identity comes from the key, server-side. The
+  identity keys in instance-config.json are references for the customer's agent.
+- **Nothing changes for an install until GTM MCP is live.** `score.py` and `rank_people.py`
+  stay here until the service replaces them, and the offline demo must always run without a
+  key. The connector block waits in `examples/gtm-mcp/plugin-connector.json`, and
+  `tests/test_gtm_mcp_connector.py` fails if it reaches the manifest early.
+
 ## Apollo accepts fields it then discards: read the write back
 
 Three separate Apollo endpoints have now accepted a field, returned `success`, and silently
@@ -219,6 +259,12 @@ target's own go-to-market shape, one of the five in
 `skills/gtm-blueprint/references/motion-templates.md`. The opener anchors on the signal type;
 the plan and the closer come from the motion. `references/signals-doctrine.md` defines both,
 once.
+
+A third term, **play**, is our own route to an account: its list, sequence, persona and
+`play_fit` points. Plays belong to each deployment and are defined in its plays file;
+`references/plays.md` says how. Until 1.11.0 plays were called "motions" and one operator's
+five of them (M1-M5) shipped as if they were the engine's, which was the same collision a
+third time.
 
 The word "motion" named both until 1.9.4, and the collision was not cosmetic: `outreach-audit`
 picked the closer from the signal type, named a closer string that exists in no template, and
@@ -281,6 +327,18 @@ finding at face value, and do not dismiss one because it is inconvenient.
 **Reply in each finding's own thread**, one conversation per finding, naming what
 changed and in which commit. A finding you decline still gets a reply with the
 reason.
+
+**Log every finding in the PR's "Review findings" table** as well, with its outcome, and
+name any commit no reviewer has seen. Threads collapse once resolved; the table is the
+record of what was raised and what became of it, including when the hosted review was
+rate-limited and a later commit went unreviewed.
+
+**Every unticked box in a PR description gets a "Needs you" row or gets ticked.** The row
+names what a person must do and the exact commands or clicks to do it. An unticked box
+with no explanation is a task nobody owns; observed on PRs 21 and 22, where a skipped
+local review and two dropped checklist items were left for the maintainer to discover.
+Bot action buttons (CodeRabbit's "Finishing Touches") are not tasks: leave them unticked
+and say so.
 
 **When a finding is right about the syntax and wrong about the file, change the
 context, not the code.** Never exclude a file from review to silence a false
@@ -394,7 +452,9 @@ went unchecked in the first place. For behavior, review against the harness refe
 Apollo, Airtable, Apify and Firecrawl are each required, conditionally: Airtable for the
 posts base, Apify for post scraping, Firecrawl as the default web extractor. Google Drive,
 CB Insights, Brand Kit OS and a warehouse are optional, and each skill degrades explicitly
-when one is missing rather than guessing. The authoritative per-connector list is
+when one is missing rather than guessing. HubSpot, as the CRM, is generic with native schema
+discovery (`references/hubspot-adapter.md`), and GTM MCP is the hosted dependency described
+above, not live yet. The authoritative per-connector list is
 [references/environment-setup.md](references/environment-setup.md); this paragraph called
 Airtable and Apify optional and omitted Firecrawl entirely until 1.9.2. The Research
 Vault base is optional in the same way: with its keys empty, the research skills produce
