@@ -75,12 +75,19 @@ play touches carries the play's code at the front of its own name.
 payload distinguishes them, so a zero is not evidence until the filter has been shown to
 constrain.
 
-**The step:** re-run the same query, changing only the filter value to something nothing could
-match — a title no company posts, a technology nobody uses. If that also returns zero, the
-filter works and the real zero is trustworthy. If it returns results, the filter is being
-ignored and the original zero meant nothing.
+**The step:** two free calls, each changing only the filter value.
 
-It costs one free call. Run it:
+1. **Positive control:** a value you know matches, such as a title the company visibly
+   posts. It must return results. If it also returns zero, the query is broken or the data is
+   absent, and the impossible-value test below cannot tell you anything.
+2. **Negative control:** a value nothing could match, such as a title no company posts. It must
+   return zero. If it returns results, the filter is being ignored and the original zero meant
+   nothing.
+
+Only when both behave is the real zero trustworthy. Two zeros on their own prove nothing: an
+ignored filter on an empty result set returns zero for every value.
+
+It costs two free calls. Run it:
 
 - whenever a zero decides a qualification field,
 - the first time a filter is used in a run,

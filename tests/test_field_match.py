@@ -114,6 +114,11 @@ class TestNormalizerInternals(unittest.TestCase):
     def test_self_test_suite_is_green(self):
         self.assertEqual(field_match.self_test(), 0)
 
+    def test_self_test_counts_a_wrong_expectation(self):
+        """The failure path must work, or a green self-test proves nothing."""
+        wrong = [("deliberately wrong", "VP Sales", "Vice President Sales", False)]
+        self.assertEqual(field_match.self_test(wrong), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

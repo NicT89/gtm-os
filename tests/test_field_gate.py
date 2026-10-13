@@ -346,6 +346,35 @@ class TestStaleEmployment(unittest.TestCase):
             })
         verdict = field_gate.run_gate(rec, field_gate.EXAMPLE_CONFIG, "hiring")
         self.assertFalse(any("stale employment" in m for m in verdict["missing_required"]))
+        # Proves the event was processed and matched, not skipped.
+        self.assertIsNotNone(verdict["job_change"])
+        self.assertEqual(verdict["job_change"]["drift"], [])
+
+    def test_abbreviation_is_not_a_job_change(self):
+        """The gate must fold titles the way field_match.py does."""
+        rec = self._record(
+            organization_name="Acme",
+            title="VP Sales",
+            contact_job_change_event={
+                "new_organization_name": "Acme",
+                "title": "Vice President Sales",
+                "is_dismissed": False,
+            })
+        verdict = field_gate.run_gate(rec, field_gate.EXAMPLE_CONFIG, "hiring")
+        self.assertEqual(verdict["job_change"]["drift"], [])
+
+    def test_non_string_job_change_field_fails_cleanly(self):
+        """Malformed input is a gate failure, not a traceback."""
+        rec = self._record(
+            organization_name="Acme",
+            title="VP Sales",
+            contact_job_change_event={
+                "new_organization_name": "Acme",
+                "title": ["Vice President Sales"],
+                "is_dismissed": False,
+            })
+        verdict = field_gate.run_gate(rec, field_gate.EXAMPLE_CONFIG, "hiring")
+        self.assertTrue(any("not text" in m for m in verdict["missing_required"]))
 
     def test_dismissed_event_is_ignored(self):
         rec = self._record(contact_job_change_event={

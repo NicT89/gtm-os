@@ -21,6 +21,7 @@ Exit codes:
 """
 
 import re
+import json
 import sys
 from pathlib import Path
 
@@ -47,9 +48,29 @@ def parse_rows(text):
     return rows
 
 
+def malformed_rows(text):
+    """Numbered rows with the wrong number of cells, which parse_rows would skip.
+
+    Skipping them silently would let a broken entry pass CI as long as any other row
+    were sound, so they are reported instead.
+    """
+    bad = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            continue
+        cells = [c.strip() for c in stripped.split("|")]
+        if len(cells) != EXPECTED_COLUMNS and len(cells) > 1 and cells[1].isdigit():
+            bad.append((cells[1], len(cells) - 2))
+    return bad
+
+
 def check(text):
     """Return a list of problem strings; empty means the register is sound."""
     problems = []
+    for number, cell_count in malformed_rows(text):
+        problems.append("row " + number + ": has " + str(cell_count) + " cells, expected "
+                        + str(EXPECTED_COLUMNS - 2) + " -- a malformed row is not checked at all")
     rows = parse_rows(text)
     if not rows:
         problems.append("no data rows found -- the register is empty or malformed")
@@ -96,6 +117,10 @@ SELF_TESTS = [
      HEADER + GOOD_ROW.replace("Something specific goes wrong here.", ""), 1),
     ("a duplicate id fails", HEADER + GOOD_ROW + "\n" + GOOD_ROW, 1),
     ("an empty register fails", HEADER, 1),
+    ("a row missing a cell fails, even beside a good row",
+     HEADER + GOOD_ROW + "\n| 2 | A source | UNDER | Something goes wrong here. |", 1),
+    ("a row with an extra cell fails, even beside a good row",
+     HEADER + GOOD_ROW + "\n" + GOOD_ROW.replace("| 1 |", "| 2 |").rstrip("|") + "| extra |", 1),
 ]
 
 
@@ -114,6 +139,8 @@ def self_test():
 def main(argv):
     if len(argv) == 2 and argv[1] == "--self-test":
         return 1 if self_test() else 0
+    as_json = "--json" in argv[1:]
+    argv = [a for a in argv if a != "--json"]
     if len(argv) > 2:
         print(__doc__.strip(), file=sys.stderr)
         return 2
@@ -124,6 +151,11 @@ def main(argv):
         print("could not read " + str(path) + ": " + str(exc), file=sys.stderr)
         return 2
     problems = check(text)
+    if as_json:
+        print(json.dumps({"register": str(path), "rows": len(parse_rows(text)),
+                          "problems": problems, "verdict": "FAIL" if problems else "PASS"},
+                         indent=2))
+        return 1 if problems else 0
     if problems:
         for p in problems:
             print("FAIL  " + p)

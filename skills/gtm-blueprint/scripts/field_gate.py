@@ -124,16 +124,41 @@ EXAMPLE_CONFIG = {
 }
 
 
+def _load_field_match():
+    """The signal-scan skill's normalizer, so both skills fold titles identically.
+
+    A second, simpler normalizer here disagreed with field_match.py: "VP Sales"
+    against "Vice President Sales" agreed there and failed this gate as a job change.
+    Both scripts ship in the same plugin, so this loads the one source of truth.
+    """
+    import importlib.util
+    from pathlib import Path
+    path = (Path(__file__).resolve().parents[2]
+            / "gtm-signal-scan" / "scripts" / "field_match.py")
+    spec = importlib.util.spec_from_file_location("field_match", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _normalize(text):
     """Fold cosmetic variation so a re-spelling is not read as a job change.
 
-    Providers disagree on punctuation constantly -- "VP, Go-to-Market" against
-    "VP, Go to Market" is one seat, not two. Comparing raw strings here would
-    fail a record for a hyphen, which is the opposite of the intended behaviour.
+    Providers disagree on punctuation and abbreviation constantly -- "VP, Go-to-Market"
+    against "Vice President, Go to Market" is one seat, not two. Comparing raw strings
+    here would fail a record for a hyphen, which is the opposite of the intended behaviour.
     """
-    import re as _re
-    lowered = _re.sub(r"\([^)]*\)", " ", (text or "").lower()).replace("&", " and ")
-    return " ".join(_re.sub(r"[^a-z0-9 ]+", " ", lowered).split())
+    return _load_field_match().normalize(text or "")
+
+
+def _text(value, label, problems):
+    """A stripped string, or "" for an absent value; a non-string is reported, not raised."""
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    problems.append(f"{label} is {type(value).__name__}, not text -- cannot check employment")
+    return ""
 
 
 def _differs(a, b):
@@ -262,10 +287,12 @@ def run_gate(record, config, signal_type):
     job_change = record.get(config.get("job_change_key") or "contact_job_change_event")
     job_change_status = None
     if isinstance(job_change, dict) and not job_change.get("is_dismissed"):
-        new_org = (job_change.get("new_organization_name") or "").strip()
-        new_title = (job_change.get("title") or "").strip()
-        stored_org = (record.get("organization_name") or "").strip()
-        stored_title = (record.get("title") or "").strip()
+        malformed = []
+        new_org = _text(job_change.get("new_organization_name"), "job change employer", malformed)
+        new_title = _text(job_change.get("title"), "job change title", malformed)
+        stored_org = _text(record.get("organization_name"), "organization_name", malformed)
+        stored_title = _text(record.get("title"), "title", malformed)
+        missing_required.extend(malformed)
         drift = []
         if new_org and _differs(stored_org, new_org):
             drift.append("employer on record is " + repr(stored_org)
@@ -292,7 +319,7 @@ def run_gate(record, config, signal_type):
                 "requirement": "record must agree with the latest reported job change",
                 "populated": False,
                 "remediation": "Update employer and title from the job-change event, "
-                               "re-verify the email, and re-route the motion: a move out of "
+                               "re-verify the email, and re-assign the account's play: a move out of "
                                "the target function is a disqualification, not a signal.",
             })
 

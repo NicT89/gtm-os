@@ -25,8 +25,11 @@ re-running the install flow.
   over-reports or stale, with a free detection method. `scripts/check_failure_register.py`
   (now in CI) rejects a row without one.
 - `gtm-signal-scan`: the falsification query is a step. A zero result and a silently ignored
-  filter look identical, so a zero that decides a field is re-run against a value nothing
-  could match first; an unfalsified zero is reported as unverified.
+  filter look identical, so before a zero decides a field the same query is run with a value
+  known to match (it must return results) and one nothing could match (it must return zero);
+  an unfalsified zero is reported as unverified.
+- `field_gate.py` now folds titles with the same normalizer as `field_match.py`, so "VP Sales"
+  against "Vice President Sales" is no longer read as a job change.
 - `skills/gtm-signal-scan/scripts/field_match.py`: cosmetic differences in a field
   ("VP, Go-to-Market" vs "VP, Go to Market") no longer count as conflicts. It deliberately
   does not fold different seats together.

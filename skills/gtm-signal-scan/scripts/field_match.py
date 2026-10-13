@@ -131,9 +131,11 @@ SELF_TESTS = [
 ]
 
 
-def self_test():
+def self_test(cases=None):
+    """Run the pinned cases (or `cases`) and return the number that failed."""
+    cases = SELF_TESTS if cases is None else cases
     failures = 0
-    for name, a, b, expected in SELF_TESTS:
+    for name, a, b, expected in cases:
         got = agree(a, b)
         ok = got == expected
         if not ok:
@@ -144,7 +146,7 @@ def self_test():
                   + " -> expected " + str(expected) + ", got " + str(got))
             print("        normalized: " + repr(normalize(a)) + " / " + repr(normalize(b)))
     print()
-    print(str(len(SELF_TESTS) - failures) + "/" + str(len(SELF_TESTS)) + " passed")
+    print(str(len(cases) - failures) + "/" + str(len(cases)) + " passed")
     return failures
 
 
