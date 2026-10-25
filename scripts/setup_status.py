@@ -111,23 +111,34 @@ GROUPS = [
         lambda k: k.startswith("APOLLO_CF_"),
         "gtm-blueprint, gtm-signal-scan, outreach-audit, company-deep-research "
         "writeback, scrape-linkedin-posts push-back.",
-        "Create the definitions with the play-builder skill (apollo_fields_create, each "
-        "field approved first and read back after) or in the Apollo UI, then read the "
-        "24-hex IDs out of a record's typed_custom_fields.",
+        "CHECK BEFORE YOU CREATE: these very often already exist under your own "
+        "naming. List them with apollo_fields_index (modality 'account' and "
+        "'contact', source 'custom'); an unrecorded ID is the common case, a "
+        "missing field is not. Only if one genuinely does not exist, create the "
+        "definition with the play-builder skill (apollo_fields_create, each field "
+        "approved first and read back after) or in the Apollo UI, then read the "
+        "24-hex ID out of apollo_fields_index or a record's typed_custom_fields.",
     ),
     (
         "Apollo lists",
         lambda k: k.startswith("APOLLO_LIST_"),
         "gtm-signal-scan list routing, and the profile-enrichment workflow trigger.",
-        "These are list NAMES, not IDs. Create them in Apollo first; the enrichment "
-        "list name must match exactly what your enrichment workflow watches.",
+        "CHECK BEFORE YOU CREATE: run apollo_labels_index and look for lists that "
+        "already serve these purposes under different names. Create only what is "
+        "genuinely absent. The enrichment list must match exactly what your "
+        "enrichment workflow watches.",
     ),
     (
         "Airtable posts base",
         lambda k: k.startswith("AIRTABLE_") and "VAULT" not in k,
         "scrape-linkedin-posts entirely, and gtm-signal-scan Step 6.",
-        "Build the base per references/airtable-posts-base.md, then read base, "
-        "table, and field IDs from airtable.com/<base>/api/docs.",
+        "CHECK BEFORE YOU BUILD: run list_bases and read the schema of anything that "
+        "looks like a posts archive. Three outcomes, only one of which is a build. "
+        "If a base matches the reference schema, record the IDs and stop. If a "
+        "posts archive exists on a DIFFERENT schema, that is not a gap to fill, it "
+        "is a decision: adopt the reference schema in a new base, or map the engine "
+        "onto yours and lose the link fields and date filtering. Only if nothing "
+        "exists, build per references/airtable-posts-base.md.",
     ),
     (
         "Research Vault (optional)",
@@ -135,8 +146,10 @@ GROUPS = [
         "Nothing hard-stops. Empty means company-deep-research, gap-closer, "
         "event-attribution, and the fan-out harness degrade to report-only: full "
         "reports, no persisted facts, no baseline for the next run to diff against.",
-        "Build a second base per references/research-vault.md. Skip deliberately, "
-        "not by accident.",
+        "CHECK BEFORE YOU BUILD: run list_bases first. A Vault built to spec but "
+        "never recorded here is indistinguishable from no Vault at all on this "
+        "side. Only if none exists, build per references/research-vault.md. Skip "
+        "deliberately, not by accident.",
     ),
     (
         "Apify",
@@ -316,11 +329,15 @@ def print_human(report):
 
     Groups are flagged TODO (blocking), look (holds an inherited default), or
     ok. Blocking groups also print what they block and how to close them, so
-    the next action never requires opening another file.
+    the next action never requires opening another file. A ready group with a
+    blank optional key prints how to close it too, marked as optional.
     """
     if not report["config_present"]:
         print(f"No {Path(report['config_path']).name} yet.\n")
         print("  cp instance-config.example.json instance-config.json\n")
+        print("  A blank below means NOT RECORDED. It does not mean not built.")
+        print("  Probe each connector before creating anything: the usual case is")
+        print("  that you already own the object and nobody wrote its ID down.\n")
         print("Then re-run this. Everything below is what you will need to fill in.\n")
 
     for g in report["groups"]:
@@ -334,6 +351,11 @@ def print_human(report):
             print(f"        close it: {g['how_to_close']}")
         elif g["needs_review"]:
             print(f"        works as shipped: {g['how_to_close']}")
+        elif any(not e["required"] and e["state"] in ("unset", "missing")
+                 for e in g["keys"]):
+            # Optional and blank does not block, but it is still the moment a
+            # reader decides whether to build, so the check-first advice shows.
+            print(f"        if you use it: {g['how_to_close']}")
         print()
 
     t = report["totals"]
