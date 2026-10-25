@@ -34,6 +34,10 @@ One fix to the setup report. Upgrading needs no action beyond re-running the ins
   schema and mapping the engine onto yours.
 
   Written in September on a branch that never merged; ported onto current `main` here.
+- **A blank optional group printed no guidance at all.** With every Research Vault key
+  empty the group read `ok` and nothing else, so its how-to-close advice, the new check-first
+  line included, never reached the reader deciding whether to build. A ready group with a
+  blank optional key now prints that advice under `if you use it:`, and still does not block.
 
 ## [1.14.0] - 2026-10-12
 

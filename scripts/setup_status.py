@@ -329,7 +329,8 @@ def print_human(report):
 
     Groups are flagged TODO (blocking), look (holds an inherited default), or
     ok. Blocking groups also print what they block and how to close them, so
-    the next action never requires opening another file.
+    the next action never requires opening another file. A ready group with a
+    blank optional key prints how to close it too, marked as optional.
     """
     if not report["config_present"]:
         print(f"No {Path(report['config_path']).name} yet.\n")
@@ -350,6 +351,11 @@ def print_human(report):
             print(f"        close it: {g['how_to_close']}")
         elif g["needs_review"]:
             print(f"        works as shipped: {g['how_to_close']}")
+        elif any(not e["required"] and e["state"] in ("unset", "missing")
+                 for e in g["keys"]):
+            # Optional and blank does not block, but it is still the moment a
+            # reader decides whether to build, so the check-first advice shows.
+            print(f"        if you use it: {g['how_to_close']}")
         print()
 
     t = report["totals"]
