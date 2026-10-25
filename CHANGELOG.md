@@ -12,6 +12,62 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-10-12
+
+Makes distrust cheap: four defects found on live runs, each fixed where it fires, plus a
+register that stops the next one being rediscovered. None of them threw an error; each
+returned a well-formed answer that happened to be false. Upgrading needs no action beyond
+re-running the install flow.
+
+### Added
+
+- `references/known-failure-modes.md`: known defects, each classified under-reports,
+  over-reports or stale, with a free detection method. `scripts/check_failure_register.py`
+  (now in CI) rejects a row without one.
+- `gtm-signal-scan`: the falsification query is a step. A zero result and a silently ignored
+  filter look identical, so before a zero decides a field the same query is run with a value
+  known to match (it must return results) and one nothing could match (it must return zero);
+  an unfalsified zero is reported as unverified.
+- `field_gate.py` now folds titles with the same normalizer as `field_match.py`, so "VP Sales"
+  against "Vice President Sales" is no longer read as a job change.
+- `skills/gtm-signal-scan/scripts/field_match.py`: cosmetic differences in a field
+  ("VP, Go-to-Market" vs "VP, Go to Market") no longer count as conflicts. It deliberately
+  does not fold different seats together.
+- `field_gate.py` check 4: a record whose stored employer or title disagrees with a reported
+  job change fails, and the skill reads the job description for the new role rather than
+  trusting the title.
+
+### Changed
+
+- `gtm-signal-scan` Step 1.5: the people search that decides a play sets
+  `include_similar_titles: false`, because a fuzzy title search counted engineers as GTM staff.
+
+## [1.13.0] - 2026-10-10
+
+Adds thirteen marketing skills adapted from open-source skill libraries. Nothing existing
+changes, and upgrading needs no action beyond re-running the install flow.
+
+### Added
+
+- `signup-flow-cro` skill: audits signup, trial and waitlist flows for friction. Adapted
+  from the MIT-licensed `signup` skill in coreyhaines31/marketingskills, with the upstream
+  license kept in the skill folder and credited in `NOTICE`. Changes from upstream: the
+  version check and connector preflight every skill here carries, the no-invented-numbers
+  rule applied to impact estimates and reassurance copy, a WCAG source on the touch-target
+  size, and the lookup material split into `references/`.
+- Eleven more skills adapted from coreyhaines31/marketingskills (MIT), under the names
+  they had before that library's 2.0 rename: `competitor-alternatives`,
+  `free-tool-strategy`, `schema-markup`, `copywriting`, `email-sequence`, `launch-strategy`,
+  `marketing-psychology`, `marketing-ideas`, `social-content`, `pricing-strategy` and
+  `copy-editing`. Each carries the version check, reads product context from Brand Kit OS
+  when connected, and states the no-invented-numbers rule. Upstream figures with no source
+  (case-study results, benchmark rates, quoted lifts) are rewritten as qualitative claims or
+  placeholders. `email-sequence` hands cold outbound back to `gtm-blueprint` and
+  `outreach-audit`. Each SKILL.md keeps the intake and output format and routes to
+  `references/` for the detailed playbook, so a run loads only the part it needs.
+- `frontend-design`, adapted from anthropics/skills (Apache-2.0): distinctive visual design
+  for new or reworked UI, with Brand Kit OS as the brand source when connected.
+
 ## [1.12.0] - 2026-09-27
 
 GTM OS is now designed as two parts: this open plugin, and **GTM MCP**, a hosted service

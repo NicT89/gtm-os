@@ -65,6 +65,12 @@ jobs:
         # typo cannot ship as a confusing runtime "missing ID" failure.
         run: python3 scripts/validate_instance_config.py
 
+      - name: Failure register has a detection method per row
+        # A register of known defects is only useful if every row says how to
+        # catch the defect yourself. A row without one is a complaint, and this
+        # rejects it rather than letting the register decay into a grievance list.
+        run: python3 scripts/check_failure_register.py
+
       - name: Version and manifest agree
         # A PR that bumps one and not the other fails here. Because they agree
         # at merge, release.yml's sync step finds nothing to change and does not
