@@ -7,7 +7,9 @@ place, so most of these tests pin that boundary.
 
 Run: python3 -m unittest discover -s tests -v
 """
+import contextlib
 import importlib.util
+import io
 import json
 import tempfile
 import unittest
@@ -180,6 +182,35 @@ class Classification(unittest.TestCase):
         vault = next(g for g in report["groups"]
                      if g["group"] == "Research Vault (optional)")
         self.assertTrue(vault["ready"])
+
+    def test_empty_vault_still_prints_its_check_first_guidance(self):
+        """Optional must not mean silent: the Vault's how-to-close text still shows.
+
+        Found by CodeRabbit on the 1.14.1 PR: with every Vault key blank the group
+        was `ready` with no defaults, so neither output branch printed and the new
+        CHECK BEFORE YOU BUILD advice reached nobody.
+        """
+        config = filled_config()
+        for key in SCHEMA:
+            if "VAULT" in key:
+                config[key] = ""
+        report, _ = status.build_report(write_config(config))
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            status.print_human(report)
+        vault_block = out.getvalue().split("Research Vault (optional)", 1)[1]
+        vault_block = vault_block.split("\n\n", 1)[0]
+        self.assertIn("if you use it: CHECK BEFORE YOU BUILD", vault_block)
+
+    def test_filled_vault_prints_no_guidance(self):
+        """A fully recorded optional group stays a one-line ok."""
+        report, _ = status.build_report(write_config(filled_config()))
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            status.print_human(report)
+        vault_block = out.getvalue().split("Research Vault (optional)", 1)[1]
+        vault_block = vault_block.split("\n\n", 1)[0]
+        self.assertNotIn("if you use it", vault_block)
 
 
 class Errors(unittest.TestCase):

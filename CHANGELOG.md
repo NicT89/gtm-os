@@ -12,6 +12,33 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.14.1] - 2026-10-25
+
+One fix to the setup report. Upgrading needs no action beyond re-running the install flow.
+
+### Fixed
+
+- **`scripts/setup_status.py` told people to build things they already own.** Every "how to
+  close it" line assumed the object was absent, so a fresh reader was told to "build the
+  base" and "create the field definitions" when the overwhelmingly likely case, and the one
+  the whole setup module is built around, is that they own it and nobody recorded the ID.
+  Observed on a real workspace: the script reported 62 open keys against a deployment whose
+  Vault was already built to spec, whose Apollo custom fields all existed, and whose lists
+  all existed. Every group now says CHECK BEFORE YOU CREATE and names the probe, and the
+  no-config banner states plainly that a blank means not recorded rather than not built.
+  The Apollo fields line keeps the play-builder creation path added in 1.11.0, now as the step after
+  the check rather than the first instruction.
+
+  The Airtable line also gains the third outcome it was missing: a posts archive on a
+  DIFFERENT schema is not a gap to fill, it is a decision between adopting the reference
+  schema and mapping the engine onto yours.
+
+  Written in September on a branch that never merged; ported onto current `main` here.
+- **A blank optional group printed no guidance at all.** With every Research Vault key
+  empty the group read `ok` and nothing else, so its how-to-close advice, the new check-first
+  line included, never reached the reader deciding whether to build. A ready group with a
+  blank optional key now prints that advice under `if you use it:`, and still does not block.
+
 ## [1.14.0] - 2026-10-12
 
 Makes distrust cheap: four defects found on live runs, each fixed where it fires, plus a
