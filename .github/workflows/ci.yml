@@ -25,6 +25,13 @@ on:
   push:
   pull_request:
 
+# Least privilege. Every job only checks out the repo and runs local scripts, so
+# the token needs to read contents and nothing else. tests/test_ci_permissions.py
+# fails on any wider grant, here or in a job's own `permissions:` block, so a job
+# that genuinely needs more is a deliberate change to that test too.
+permissions:
+  contents: read
+
 jobs:
   manifests:
     if: ${{ !github.event.repository.private }}
