@@ -12,6 +12,51 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.15.0] - 2026-10-27
+
+Three new skills, the plugin now declares its connectors, and the instance config moves out
+of the plugin folder. **One upgrade action:** if your `instance-config.json` sits at the plugin
+root, move it to your own working folder (or set `GTM_OS_INSTANCE_CONFIG`). The old location
+is still read for local clones, but a synced marketplace install replaces the plugin folder on
+every update and would lose it.
+
+### Added
+
+- **`pmf-five-gate-playbook` skill.** Pull, Prove, Pay, Use, Keep, with the reverse ICP first.
+  Buyer paths are discovered from customer data and interviews and may stay `unknown`; none is
+  assumed. Thresholds read `TBD` until agreed with the customer.
+- **`evidence-register` skill.** Label-first claims (KNOWN, INFERRED, UNVERIFIED), evidence IDs,
+  highlighted-screenshot capture (`capture.py` merges its results file instead of overwriting it),
+  internal breadcrumbs, a claim ledger and a question database with a view that fails when a claim
+  has no source.
+- **`gtm-intelligence-report` skill.** Parameterized reportlab builder, brand config, chart helpers,
+  appendices generated from the database, and `check_report.py` (em dashes, trailing labels,
+  forbidden names, unsourced claims, empty pages, footer project ID and version).
+- **`references/hubspot-reverse-icp.md`.** The exact HubSpot MCP calls, field mapping and observed
+  write behavior for reading a customer base, plus the website-logo fallback and the install-time
+  question. Complements `hubspot-adapter.md`, which covers HubSpot as the write target.
+- **`references/local-sqlite-store.md`.** What the local database adds beside HubSpot, Apollo and Brand
+  Kit OS, and four storage options with trade-offs.
+- **`.mcp.json`: the plugin declares its connectors.** Apollo, HubSpot, Airtable, Apify and
+  Firecrawl, each at the vendor's own OAuth server, no credential in the file. In claude.ai and
+  Cowork the plugin's Connectors tab now lists each one with its Added / Connected state, which is
+  the first probe of `environment-setup` made visible; Claude Code connects to them directly.
+  `tests/test_plugin_connectors.py` holds the file to the vendor-host and no-credential rules.
+- **`FORKING.md` and `examples/fork/upstream-sync.yml`.** How a company forks the engine, installs
+  the plugin from its fork, receives upstream releases as reviewable pull requests (by hand with
+  Sync fork, or weekly with the example workflow), and keeps its own changes off upstream.
+
+### Changed
+
+- **`instance-config.json` lives in the operator's working folder, not the plugin root.**
+  `scripts/validate_instance_config.py` and `scripts/setup_status.py` resolve it as `--config`,
+  then `$GTM_OS_INSTANCE_CONFIG`, then `./instance-config.json`, then the plugin root (legacy).
+  `SETUP.md`, `references/instance-config.md`, `references/environment-setup.md` and the skills
+  that read the file say so.
+- `references/environment-setup.md` lists HubSpot's read-only role (reverse ICP) beside its CRM
+  role, and asks "Do you use HubSpot?" during setup.
+
+
 ## [1.14.1] - 2026-10-25
 
 One fix to the setup report. Upgrading needs no action beyond re-running the install flow.

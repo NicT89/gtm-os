@@ -1,0 +1,25 @@
+{
+  "_README": "The connectors GTM OS runs on, declared so the plugin's Connectors tab in claude.ai and Cowork lists each one with its Added / Connected state, and Claude Code connects to them directly. Every entry is the vendor's own OAuth server: the plugin carries no key and no secret, and each user signs in with their own account. Adding this plugin does not sign anyone in; environment-setup still probes every connector and places it on the S0 to S4 ladder before anything runs. Apollo, Apify and Firecrawl are required for a full run; Airtable is required for the posts base; HubSpot is optional (reverse ICP read, or the CRM when CRM_PROVIDER is hubspot). Brand Kit OS is optional and ships as its own plugin, so it is not duplicated here. tests/test_plugin_connectors.py checks this file against the vendor-URL rules in references/mcp-coverage-map.md.",
+  "mcpServers": {
+    "apollo": {
+      "type": "http",
+      "url": "https://mcp.apollo.io/mcp"
+    },
+    "hubspot": {
+      "type": "http",
+      "url": "https://mcp.hubspot.com"
+    },
+    "airtable": {
+      "type": "http",
+      "url": "https://mcp.airtable.com/mcp"
+    },
+    "apify": {
+      "type": "http",
+      "url": "https://mcp.apify.com"
+    },
+    "firecrawl": {
+      "type": "http",
+      "url": "https://mcp.firecrawl.dev/v2/mcp-oauth"
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 The Vault is where all company and people research lands. Skills write facts here with full provenance; conversation memory is never the system of record. One Airtable base per instance (move to Supabase only if volume demands it; the schema ports 1:1).
 
-Instance values are resolved by [SETUP.md](../SETUP.md) into `instance-config.json` at the plugin root (git-ignored). This reference carries the schema only; your base and table IDs live in that file, and skills address them by key the same way they address the posts base:
+Instance values are resolved by [SETUP.md](../SETUP.md) into `instance-config.json` in your working folder (never inside the plugin folder). This reference carries the schema only; your base and table IDs live in that file, and skills address them by key the same way they address the posts base:
 
 | Key | Value |
 |---|---|

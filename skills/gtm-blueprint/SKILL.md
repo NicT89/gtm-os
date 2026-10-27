@@ -21,7 +21,7 @@ If the CRM connector is unavailable or a tool call fails, stop and report which 
 
 ## Instance configuration
 
-Read `instance-config.json` at the plugin root and resolve every `{KEY}` in this skill. If the file is missing or a needed key is empty, STOP and point the user at the plugin root's `references/instance-config.md`. Never guess a field ID: writing a composed blueprint into the wrong custom field is silent and hard to undo.
+Read `instance-config.json` in your working folder (resolution order in the plugin root's `references/instance-config.md`) and resolve every `{KEY}` in this skill. If the file is missing or a needed key is empty, STOP and point the user at the plugin root's `references/instance-config.md`. Never guess a field ID: writing a composed blueprint into the wrong custom field is silent and hard to undo.
 
 - Seller context source: Brand Kit OS brand kit (canonical) if connected, else the CRM's own context center, else a company-context document the user names.
 - CRM: `{CRM_PROVIDER}`. Blueprint field `{APOLLO_CF_CONTACT_BLUEPRINT}`, opener field `{APOLLO_CF_CONTACT_OPENER}`; write via the CRM's contact-update call using typed custom fields.

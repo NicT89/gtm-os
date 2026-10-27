@@ -2,9 +2,29 @@
 
 Every value that is specific to *your* workspace — CRM custom field IDs, Airtable
 base and field IDs, list names, your field prefix — lives in one file:
-`instance-config.json` at the plugin root. The skills never hardcode these; they
-reference keys by name, like `{AIRTABLE_POSTS_BASE_ID}`, and resolve them from that
-file at run time.
+`instance-config.json`, **in your own working folder, not in the plugin folder**. The
+skills never hardcode these; they reference keys by name, like
+`{AIRTABLE_POSTS_BASE_ID}`, and resolve them from that file at run time.
+
+## Where the file lives (changed in 1.15.0)
+
+A plugin installed from a marketplace is replaced on every update, and in claude.ai chat
+its folder is not somewhere you can write. So the file lives outside the plugin, and
+every script and skill finds it in this order:
+
+1. `--config <path>` on the command line.
+2. `$GTM_OS_INSTANCE_CONFIG`, an absolute path. Set it once in your shell profile (Claude
+   Code) or name the path in your project `CLAUDE.md` or Project instructions (chat,
+   Cowork) so every run resolves the same file.
+3. `instance-config.json` in the current working directory: your working folder, the one
+   `SETUP.md` tells you to run the engine from.
+4. `instance-config.json` at the plugin root, the pre-1.15 location. Still honored for a
+   local clone, never relied on for a synced install.
+
+The recommended home is a private folder or repo of your own, next to your audit log and
+run reports (the "instance" side of the instance/playbook split in `SETUP.md`). In chat,
+where no script can run, the skill reads the file from your connected folder or from the
+path your Project instructions name, and otherwise asks you to attach it.
 
 This is what makes the engine installable by anyone. It also means **a skill will
 stop rather than guess** if a key it needs is missing — which is the correct
@@ -14,13 +34,14 @@ Airtable base.
 ## Setup
 
 ```bash
-cp instance-config.example.json instance-config.json
+# from YOUR working folder, not the plugin folder:
+cp <plugin root>/instance-config.example.json ./instance-config.json
 # fill in the values, then:
-python3 scripts/validate_instance_config.py
+python3 <plugin root>/scripts/validate_instance_config.py        # finds ./instance-config.json
 ```
 
-`instance-config.json` is gitignored. It describes your workspace, not the
-template — it must never be committed here.
+`instance-config.json` describes your workspace, not the template. It must never be
+committed to this repo or to any fork of it; it belongs in your private instance folder.
 
 ## What each group of keys is, and where to find it
 

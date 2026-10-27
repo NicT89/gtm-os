@@ -1,0 +1,62 @@
+# Weekly upstream sync for a fork of NicT89/gtm-os.
+#
+# Copy this file to .github/workflows/upstream-sync.yml on YOUR FORK. Every Monday it
+# fetches upstream main and, if your main is behind, opens (or refreshes) a pull request
+# on your fork. Nothing merges automatically: you read the CHANGELOG section for the
+# release, then merge the PR. Merging is what updates your installed plugin.
+#
+# Needs: Settings > Actions > General > "Allow GitHub Actions to create and approve pull
+# requests" enabled on your fork. Uses only the built-in GITHUB_TOKEN.
+
+name: Sync from upstream gtm-os
+
+on:
+  schedule:
+    - cron: "17 13 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/NicT89/gtm-os.git
+          git fetch upstream main --tags
+          BEHIND="$(git rev-list --count HEAD..upstream/main)"
+          echo "behind=$BEHIND" >> "$GITHUB_ENV"
+          echo "upstream_version=$(git show upstream/main:VERSION | tr -d '[:space:]')" >> "$GITHUB_ENV"
+
+      - name: Nothing to do
+        if: env.behind == '0'
+        run: echo "Fork is up to date with upstream main."
+
+      - name: Push sync branch
+        if: env.behind != '0'
+        run: |
+          git config user.name "gtm-os upstream sync"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -B upstream-sync upstream/main
+          git push --force origin upstream-sync
+
+      - name: Open or refresh the pull request
+        if: env.behind != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE="Upstream release v${upstream_version}"
+          BODY="Upstream main is ${behind} commit(s) ahead. Read the CHANGELOG.md section for v${upstream_version} before merging. Merging updates every installed copy of the plugin on the next marketplace sync."
+          if gh pr list --head upstream-sync --state open --json number --jq 'length' | grep -q '^0$'; then
+            gh pr create --head upstream-sync --base main --title "$TITLE" --body "$BODY"
+          else
+            gh pr edit upstream-sync --title "$TITLE" --body "$BODY"
+          fi

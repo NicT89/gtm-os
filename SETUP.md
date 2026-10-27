@@ -37,12 +37,16 @@ policy).
 
 Skills in this repo reference deployment values as `{KEY}` tokens — CRM custom field IDs,
 Airtable base/table/field IDs, list names, your field prefix. **The repo never contains a
-resolved value for any specific instance.** Resolved values live in one local,
-git-ignored file:
+resolved value for any specific instance.** Resolved values live in one file
+**outside the plugin**, in your own working folder:
 
 ```
-instance-config.json          (repo root; gitignored; created in Step 3)
+<your working folder>/instance-config.json      (created in Step 3; never in the plugin folder)
 ```
+
+The plugin folder is replaced on every update, so nothing of yours lives there. Scripts
+find the file through `--config`, `$GTM_OS_INSTANCE_CONFIG`, or the current directory, in
+that order; `references/instance-config.md` has the detail.
 
 `instance-config.example.json` is the template, `references/instance-config.md` explains
 every key and where to find its value, and `scripts/validate_instance_config.py` checks
@@ -126,7 +130,8 @@ what makes the second run worth paying for.
 ## Step 3: Resolve the variables into `instance-config.json`
 
 ```bash
-cp instance-config.example.json instance-config.json
+# in your working folder:
+cp <plugin root>/instance-config.example.json ./instance-config.json
 ```
 
 Before hunting for values, see what the copy actually left you with:
