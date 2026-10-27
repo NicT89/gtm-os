@@ -17,8 +17,9 @@
 #   "Approve and run" on the PR's checks before it can merge.
 #
 # If a reviewer resolves a conflict by committing to the upstream-sync branch, this
-# workflow leaves that branch alone: it only resets the branch when upstream has moved
-# past what the branch already contains.
+# workflow never resets that branch: when upstream moves again it merges upstream main
+# into the existing branch, and if that merge conflicts it leaves the branch untouched
+# and says so in the pull request body.
 
 name: Sync from upstream gtm-os
 
@@ -52,24 +53,27 @@ jobs:
         if: env.behind == '0'
         run: echo "Fork is up to date with upstream main."
 
-      - name: Decide whether the sync branch needs resetting
+      - name: Update the sync branch without discarding reviewer commits
         if: env.behind != '0'
-        run: |
-          # Leave an existing upstream-sync branch alone when it already contains upstream
-          # main: a reviewer may have committed a conflict resolution on it.
-          if git fetch origin upstream-sync 2>/dev/null && git merge-base --is-ancestor upstream/main FETCH_HEAD; then
-            echo "reset=no" >> "$GITHUB_ENV"
-          else
-            echo "reset=yes" >> "$GITHUB_ENV"
-          fi
-
-      - name: Push sync branch
-        if: env.behind != '0' && env.reset == 'yes'
         run: |
           git config user.name "gtm-os upstream sync"
           git config user.email "actions@users.noreply.github.com"
-          git checkout -B upstream-sync upstream/main
-          git push --force origin upstream-sync
+          echo "note=" >> "$GITHUB_ENV"
+          if git fetch origin upstream-sync 2>/dev/null; then
+            # The branch exists: it may carry a reviewer's conflict resolution. Never reset it.
+            git checkout -B upstream-sync FETCH_HEAD
+            if git merge-base --is-ancestor upstream/main HEAD; then
+              echo "upstream-sync already contains upstream main; nothing to push."
+            elif git merge --no-edit upstream/main; then
+              git push origin upstream-sync
+            else
+              git merge --abort
+              echo "note=Merging upstream main into the existing upstream-sync branch conflicts with commits on it. The branch was left untouched: resolve the conflict on it by hand (git merge upstream/main), then push." >> "$GITHUB_ENV"
+            fi
+          else
+            git checkout -B upstream-sync upstream/main
+            git push origin upstream-sync
+          fi
 
       - name: Open or refresh the pull request
         if: env.behind != '0'
@@ -77,7 +81,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TITLE="Upstream release v${upstream_version}"
-          BODY="Upstream main is ${behind} commit(s) ahead. Read the CHANGELOG.md section for v${upstream_version} before merging. Merging updates every installed copy of the plugin on the next marketplace sync."
+          BODY="Upstream main is ${behind} commit(s) ahead. Read the CHANGELOG.md section for v${upstream_version} before merging. Merging updates every installed copy of the plugin on the next marketplace sync. ${note}"
           if gh pr list --head upstream-sync --state open --json number --jq 'length' | grep -q '^0$'; then
             gh pr create --head upstream-sync --base main --title "$TITLE" --body "$BODY"
           else
