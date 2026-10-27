@@ -27,6 +27,7 @@ The default section list, and what each must contain, is in `references/report-s
 ```bash
 cp scripts/config.example.json my-report/config.json     # fill client, project ID, version, palette, fonts, logo
 cp scripts/content_template.py my-report/content.py      # write the content; keep it OUT of the plugin repo
+# then set "content_module": "content.py" in my-report/config.json (the example names content_template.py)
 python3 scripts/build_report.py my-report/config.json
 python3 scripts/check_report.py <pdf> --db <db> --project-id <ID> --version <v> --forbid "<individual names>"
 ```

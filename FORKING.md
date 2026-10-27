@@ -21,10 +21,23 @@ unless you ask for it.
 1. On github.com, open `NicT89/gtm-os` and select **Fork**. Choose your organization as the
    owner. Keep the name `gtm-os` (the marketplace name inside `.claude-plugin/marketplace.json`
    is `gtm-os` and does not depend on the repo name, but keeping it avoids confusion).
-2. Make the fork **private** if your organization requires it. A private fork still receives
-   upstream releases; the only difference is that `release.yml` skips on private repos so you
-   do not spend Actions minutes. You do not need releases on your fork: you install from a
-   branch, not from a release.
+2. **If your copy must be private, do not fork.** GitHub cannot make a fork of a public
+   repository private. Create a new private repository in your organization instead and
+   load it from upstream:
+
+   ```
+   git clone --bare https://github.com/NicT89/gtm-os.git
+   cd gtm-os.git && git push --mirror https://github.com/<your-org>/gtm-os.git
+   cd .. && rm -rf gtm-os.git
+   git clone https://github.com/<your-org>/gtm-os.git && cd gtm-os
+   git remote add upstream https://github.com/NicT89/gtm-os.git
+   ```
+
+   Everything below applies to a private copy the same way, with one difference: GitHub's
+   **Sync fork** button does not exist for it, so upstream releases arrive through the
+   workflow in section 3 or by hand (`git fetch upstream && git merge upstream/main`).
+   `release.yml` skips on a private repository, which is fine: you install from a branch,
+   not from a release.
 3. Protect `main` on your fork (Settings > Branches): require a pull request. Your own changes
    land on branches and merge through PRs, the same way upstream works.
 

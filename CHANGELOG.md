@@ -55,6 +55,14 @@ every update and would lose it.
   that read the file say so.
 - `references/environment-setup.md` lists HubSpot's read-only role (reverse ICP) beside its CRM
   role, and asks "Do you use HubSpot?" during setup.
+- Review hardening before release: `evidence-register` captures full-page screenshots and marks a
+  source PARTIAL when not every needle was highlighted; `rebuild` builds into a temporary file and
+  never deletes a working database on a bad dump; `check_report.py` rejects template placeholder
+  text, checks the footer region rather than the whole page, and verifies every `[EV-nn]` cited in
+  the PDF exists in the database with a successful capture; cover counts come from the database;
+  the validator and status scripts exit 2 when a named config path does not exist; the fork guide
+  gives a private-copy procedure (a public fork cannot be made private) and the sync workflow
+  pins its action and preserves reviewer commits on an open sync branch.
 
 
 ## [1.14.1] - 2026-10-25

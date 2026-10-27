@@ -33,6 +33,7 @@ Prints a human-readable report by default, or the raw verdict with --json so a r
 can log it to the audit trail.
 """
 import argparse
+import os
 import json
 import sys
 from pathlib import Path
@@ -419,6 +420,10 @@ def main():
         sys.exit(2)
 
     config_path = resolve_config_path(args.config)
+    if (args.config or os.environ.get("GTM_OS_INSTANCE_CONFIG")) and not config_path.exists():
+        print(f"error {config_path} was named (--config or $GTM_OS_INSTANCE_CONFIG) but does not exist",
+              file=sys.stderr)
+        sys.exit(2)
     report, code = build_report(config_path)
 
     if "error" in report:

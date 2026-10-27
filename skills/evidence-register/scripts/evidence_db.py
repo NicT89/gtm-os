@@ -35,11 +35,23 @@ def cmd_init(db):
 
 
 def cmd_rebuild(db, dump):
-    if os.path.exists(db):
-        os.remove(db)
-    c = sqlite3.connect(db)
-    c.executescript(open(dump, encoding="utf-8").read())
-    c.commit()
+    # Build into a temporary file and replace the working copy only once the dump has
+    # executed cleanly, so a missing or malformed dump never deletes a usable database.
+    tmp = db + ".rebuild.tmp"
+    if os.path.exists(tmp):
+        os.remove(tmp)
+    try:
+        with open(dump, encoding="utf-8") as f:
+            sql = f.read()
+        c = sqlite3.connect(tmp)
+        c.executescript(sql)
+        c.commit()
+        c.close()
+    except Exception as e:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        sys.exit(f"rebuild failed, {db} left untouched: {e}")
+    os.replace(tmp, db)
     print(f"rebuilt {db} from {dump}")
 
 
@@ -72,9 +84,17 @@ def cmd_ingest(db, items, results, titles=None):
     for it in items:
         r = res.get(it["id"], {})
         shot = f"{it['id']}.png"
-        status = "captured, text highlighted" if r.get("highlighted") else "captured, NO highlight (text not found)"
-        if r.get("error"):
+        wanted = [n.lstrip("=") for n in it["needles"]]
+        got = [n.lstrip("=") for n in r.get("highlighted", [])]
+        missing = [n for n in wanted if n not in got]
+        if r.get("error") or not r.get("captured"):
             status = "capture failed"
+        elif not got:
+            status = "captured, NO highlight (text not found)"
+        elif missing:
+            status = f"captured, PARTIAL highlight ({len(got)} of {len(wanted)} found)"
+        else:
+            status = "captured, text highlighted"
         note = f"HTTP {r.get('status')}; page title: {r.get('title')}"
         c.execute(
             "INSERT OR REPLACE INTO sources(source_id,kind,title,locator,exact_text,retrieved_on,screenshot_file,screenshot_status,notes)"

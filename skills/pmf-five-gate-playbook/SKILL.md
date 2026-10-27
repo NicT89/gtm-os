@@ -17,7 +17,7 @@ Customer list, pricing and trial history, usage data, case studies, current stac
 
 ## Steps
 
-1. **Reverse ICP first.** Pull the existing customer base: CRM first (`references/hubspot-reverse-icp.md` at the plugin root), then logos scraped from the customer's website if no CRM is reachable. Score each customer against the ICP card fields and find the highest-overlap cluster. Stated segments stay hypotheses until this runs. Split customers by any pricing or packaging change so price sensitivity is visible.
+1. **Reverse ICP first.** Connectors go through the `environment-setup` skill and the plugin root's `references/environment-setup.md` before anything is read; a missing CRM is a connection question, not a signup. Then pull the existing customer base: CRM first (`references/hubspot-reverse-icp.md` at the plugin root), then logos scraped from the customer's website if no CRM is reachable. Score each customer against the ICP card fields and find the highest-overlap cluster. Stated segments stay hypotheses until this runs. Split customers by any pricing or packaging change so price sensitivity is visible.
 2. **Buyer discovery.** Find who actually buys, from customer records and interviews. For each won customer record four roles: the person who paid, the approver, the champion and the user. Define a buyer path only when two or more customers show the same pattern. Until then the path is `unknown`, and that is a valid output. Never import a buyer path from another engagement. A segment's absence of a role (no procurement team, no RevOps) is a fact to record, not a disqualifier, unless the customer's own win data says so.
 3. **The gates, in order.** Thresholds are agreed with the customer; until agreed they read `TBD`, never a number from this skill.
    - Pull: the prospect replies and books.
@@ -25,7 +25,7 @@ Customer list, pricing and trial history, usage data, case studies, current stac
    - Pay: they buy at the offered price (conversion, cycle length, discounting).
    - Use: they reach the value actions (usage beyond logins when the product can show it).
    - Keep: they renew or expand.
-4. **Interviews.** Within the first 30 days, 5 to 10 conversations with current paying customers, active users first. Ask who paid, who approved, at what spend and why. They confirm or kill the reverse-ICP hypotheses and fill ICP fields the data could not.
+4. **Interviews.** Conversations with current paying customers, active users first; the window and the count are agreed with the customer in the week-1 plan and recorded there (they are not fixed by this skill). Ask who paid, who approved, at what spend and why. They confirm or kill the reverse-ICP hypotheses and fill ICP fields the data could not.
 5. **Price-tier motion test.** Ask whether the buyer or approval path changes above a spend threshold. Treat it as a hypothesis, test it with the won-deal data, record the outcome.
 6. **Messaging guardrail.** Any feature that only some tiers or segments can buy is only used in assets and outreach for the segments that can buy it. The engagement database records which feature maps to which segment.
 7. **Score weekly** per segment on the five gates. Compare against the customer's stated pivot-or-persist rule; if none exists, propose one and log it as a question.

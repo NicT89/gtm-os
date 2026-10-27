@@ -41,6 +41,9 @@ class Connectors(unittest.TestCase):
             with self.subTest(name):
                 self.assertNotIn("headers", server)
                 self.assertNotIn("?", server["url"])
+                parsed = urlparse(server["url"])
+                self.assertIsNone(parsed.username, "credential in URL userinfo")
+                self.assertIsNone(parsed.password, "credential in URL userinfo")
                 self.assertNotIn("user_config", json.dumps(server))
         self.assertNotIn("userConfig", MCP)
 

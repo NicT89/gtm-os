@@ -7,6 +7,18 @@
 #
 # Needs: Settings > Actions > General > "Allow GitHub Actions to create and approve pull
 # requests" enabled on your fork. Uses only the built-in GITHUB_TOKEN.
+#
+# Two consequences of using GITHUB_TOKEN, both by GitHub's design:
+# - A pull request this workflow opens does NOT start your fork's own CI (events raised by
+#   GITHUB_TOKEN never trigger other workflows). To run CI on it, push an empty-change
+#   commit yourself or close and reopen the PR; or switch the token to a fine-grained PAT
+#   stored as a secret, at the cost of managing that secret.
+# - If your fork requires those checks to merge, someone with write access selects
+#   "Approve and run" on the PR's checks before it can merge.
+#
+# If a reviewer resolves a conflict by committing to the upstream-sync branch, this
+# workflow leaves that branch alone: it only resets the branch when upstream has moved
+# past what the branch already contains.
 
 name: Sync from upstream gtm-os
 
@@ -24,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout fork
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2, pinned to the commit
         with:
           fetch-depth: 0
 
@@ -40,8 +52,19 @@ jobs:
         if: env.behind == '0'
         run: echo "Fork is up to date with upstream main."
 
-      - name: Push sync branch
+      - name: Decide whether the sync branch needs resetting
         if: env.behind != '0'
+        run: |
+          # Leave an existing upstream-sync branch alone when it already contains upstream
+          # main: a reviewer may have committed a conflict resolution on it.
+          if git fetch origin upstream-sync 2>/dev/null && git merge-base --is-ancestor upstream/main FETCH_HEAD; then
+            echo "reset=no" >> "$GITHUB_ENV"
+          else
+            echo "reset=yes" >> "$GITHUB_ENV"
+          fi
+
+      - name: Push sync branch
+        if: env.behind != '0' && env.reset == 'yes'
         run: |
           git config user.name "gtm-os upstream sync"
           git config user.email "actions@users.noreply.github.com"

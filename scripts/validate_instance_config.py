@@ -23,6 +23,7 @@ a new one there is a deliberate act: prefer a config key when the value is fixed
 for a deployment.
 """
 import argparse
+import os
 import json
 import re
 import sys
@@ -227,6 +228,11 @@ def main():
         print(f"ok    every {{KEY}} in skills and references resolves ({len(schema_keys)} keys in schema)")
 
     config_path = resolve_config_path(args.config)
+    explicitly_named = bool(args.config or os.environ.get("GTM_OS_INSTANCE_CONFIG"))
+    if explicitly_named and not config_path.exists():
+        print(f"error {config_path} was named (--config or $GTM_OS_INSTANCE_CONFIG) but does not exist",
+              file=sys.stderr)
+        sys.exit(2)
     if config_path.exists():
         cfg_problems = check_config(config_path, schema_keys)
         if cfg_problems:

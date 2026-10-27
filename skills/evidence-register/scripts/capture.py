@@ -77,7 +77,8 @@ def main():
                 r["present"] = [n for n in it["needles"] if n.lstrip("=") in body]
                 r["highlighted"] = pg.evaluate(JS_MARK, it["needles"])
                 pg.wait_for_timeout(500)
-                pg.screenshot(path=os.path.join(a.out, it["id"] + ".png"))
+                # full page, so every highlighted needle is in the saved evidence, not only the one scrolled to
+                pg.screenshot(path=os.path.join(a.out, it["id"] + ".png"), full_page=True)
                 r["captured"] = datetime.date.today().isoformat()
                 if it.get("count"):
                     r["count_probe"] = pg.evaluate(it["count"])

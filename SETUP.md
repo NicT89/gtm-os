@@ -137,7 +137,7 @@ cp <plugin root>/instance-config.example.json ./instance-config.json
 Before hunting for values, see what the copy actually left you with:
 
 ```bash
-python3 scripts/setup_status.py
+python3 <plugin root>/scripts/setup_status.py
 ```
 
 It groups every key by connector and marks it **set**, **default**, or **unset**, and
@@ -166,11 +166,12 @@ Then fill it in:
 4. **List names and everything else.** Per the key-by-key reference in
    [references/instance-config.md](references/instance-config.md).
 
-Validate before going further:
+Validate before going further. `<plugin root>` is where the plugin is installed (in Claude
+Code, `claude plugin list` prints it); you run these from your working folder:
 
 ```bash
-python3 scripts/setup_status.py            # what is left, and what it blocks
-python3 scripts/validate_instance_config.py  # is what is there well-formed
+python3 <plugin root>/scripts/setup_status.py            # what is left, and what it blocks
+python3 <plugin root>/scripts/validate_instance_config.py  # is what is there well-formed
 ```
 
 The two answer different questions. `setup_status.py` tells you how far you have got
@@ -207,7 +208,7 @@ Full detail, including the headless-run caveat, is in
 
 ```bash
 pip install reportlab matplotlib pillow
-python3 scripts/render_report.py --selftest
+python3 <plugin root>/scripts/render_report.py --selftest
 ```
 
 The selftest renders a one-page sample exercising every block and chart type and prints a
