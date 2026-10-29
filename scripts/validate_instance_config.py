@@ -23,6 +23,7 @@ a new one there is a deliberate act: prefer a config key when the value is fixed
 for a deployment.
 """
 import argparse
+import os
 import json
 import re
 import sys
@@ -179,11 +180,34 @@ def check_config(config_path, schema_keys):
     return problems
 
 
+def resolve_config_path(explicit=None):
+    """Where this deployment's instance-config.json lives, in precedence order.
+
+    1. --config on the command line.
+    2. $GTM_OS_INSTANCE_CONFIG, an absolute path.
+    3. instance-config.json in the current working directory (the operator's own
+       folder, which is where a synced marketplace install keeps it: the plugin folder
+       is replaced on every update and must hold nothing of yours).
+    4. instance-config.json at the plugin root (the pre-1.15 location, kept for a
+       local clone that still stores it there).
+    """
+    import os
+    if explicit:
+        return Path(explicit)
+    env = os.environ.get("GTM_OS_INSTANCE_CONFIG")
+    if env:
+        return Path(env)
+    cwd = Path.cwd() / "instance-config.json"
+    if cwd.exists():
+        return cwd
+    return REPO_ROOT / "instance-config.json"
+
+
 def main():
     """CLI entry point: run the reference check always, the config check if a file exists."""
     p = argparse.ArgumentParser()
     p.add_argument("--config", default=None,
-                   help="Path to instance-config.json. Defaults to the repo root copy if present.")
+                   help="Path to instance-config.json. Default: $GTM_OS_INSTANCE_CONFIG, then ./instance-config.json, then the plugin root copy.")
     args = p.parse_args()
 
     try:
@@ -203,7 +227,12 @@ def main():
     else:
         print(f"ok    every {{KEY}} in skills and references resolves ({len(schema_keys)} keys in schema)")
 
-    config_path = Path(args.config) if args.config else REPO_ROOT / "instance-config.json"
+    config_path = resolve_config_path(args.config)
+    explicitly_named = bool(args.config or os.environ.get("GTM_OS_INSTANCE_CONFIG"))
+    if explicitly_named and not config_path.exists():
+        print(f"error {config_path} was named (--config or $GTM_OS_INSTANCE_CONFIG) but does not exist",
+              file=sys.stderr)
+        sys.exit(2)
     if config_path.exists():
         cfg_problems = check_config(config_path, schema_keys)
         if cfg_problems:

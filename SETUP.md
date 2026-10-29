@@ -37,12 +37,16 @@ policy).
 
 Skills in this repo reference deployment values as `{KEY}` tokens — CRM custom field IDs,
 Airtable base/table/field IDs, list names, your field prefix. **The repo never contains a
-resolved value for any specific instance.** Resolved values live in one local,
-git-ignored file:
+resolved value for any specific instance.** Resolved values live in one file
+**outside the plugin**, in your own working folder:
 
 ```
-instance-config.json          (repo root; gitignored; created in Step 3)
+<your working folder>/instance-config.json      (created in Step 3; never in the plugin folder)
 ```
+
+The plugin folder is replaced on every update, so nothing of yours lives there. Scripts
+find the file through `--config`, `$GTM_OS_INSTANCE_CONFIG`, or the current directory, in
+that order; `references/instance-config.md` has the detail.
 
 `instance-config.example.json` is the template, `references/instance-config.md` explains
 every key and where to find its value, and `scripts/validate_instance_config.py` checks
@@ -126,13 +130,14 @@ what makes the second run worth paying for.
 ## Step 3: Resolve the variables into `instance-config.json`
 
 ```bash
-cp instance-config.example.json instance-config.json
+# in your working folder:
+cp <plugin root>/instance-config.example.json ./instance-config.json
 ```
 
 Before hunting for values, see what the copy actually left you with:
 
 ```bash
-python3 scripts/setup_status.py
+python3 <plugin root>/scripts/setup_status.py
 ```
 
 It groups every key by connector and marks it **set**, **default**, or **unset**, and
@@ -161,11 +166,12 @@ Then fill it in:
 4. **List names and everything else.** Per the key-by-key reference in
    [references/instance-config.md](references/instance-config.md).
 
-Validate before going further:
+Validate before going further. `<plugin root>` is where the plugin is installed (in Claude
+Code, `claude plugin list` prints it); you run these from your working folder:
 
 ```bash
-python3 scripts/setup_status.py            # what is left, and what it blocks
-python3 scripts/validate_instance_config.py  # is what is there well-formed
+python3 <plugin root>/scripts/setup_status.py            # what is left, and what it blocks
+python3 <plugin root>/scripts/validate_instance_config.py  # is what is there well-formed
 ```
 
 The two answer different questions. `setup_status.py` tells you how far you have got
@@ -202,7 +208,7 @@ Full detail, including the headless-run caveat, is in
 
 ```bash
 pip install reportlab matplotlib pillow
-python3 scripts/render_report.py --selftest
+python3 <plugin root>/scripts/render_report.py --selftest
 ```
 
 The selftest renders a one-page sample exercising every block and chart type and prints a

@@ -55,6 +55,13 @@ Full walkthrough: `SETUP.md`. Nothing from your instance — IDs, prospects, rep
 ever comes back to this repo.
 <!-- END GET STARTED -->
 
+**Installing for a company.** Fork the repo into the company's own GitHub organization and add
+the marketplace from the fork, so the company owns its copy and still receives every upstream
+release as a pull request it reviews. `FORKING.md` is the procedure. The plugin declares its
+connectors (Apollo, HubSpot, Airtable, Apify, Firecrawl) in `.mcp.json`; each person connects
+them with their own account from the plugin's Connectors tab.
+
+
 ## Your instance vs. this repo
 
 This repo is a **template you run, not a service you log into.** Install it, point it at

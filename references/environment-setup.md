@@ -46,7 +46,9 @@ reads, and the config validator all cost nothing. A Firecrawl *scrape* consumes 
 credit, so the Firecrawl probe below is the one place a diagnosis spends, and it is
 gated like any other spend: say so first, or use the non-billed check named there.
 
-1. **Is the MCP server present?** List the available tools. If `apollo_*` /
+1. **Is the MCP server present?** In claude.ai and Cowork, open the plugin's **Connectors**
+   tab first: it lists every connector `.mcp.json` declares as Not added, Not connected, or
+   Connected, and a user adds or signs in to each one there. Then list the available tools. If `apollo_*` /
    `airtable_*` / `firecrawl_*` / Apify tools appear, the user is at S2 or better.
    If the tools are absent, that is S0 or S1, and you cannot yet tell which.
 2. **Does it authenticate?** Make the cheapest read-only call the connector offers
@@ -186,6 +188,7 @@ None of these block a run. Each skill states the degradation when one is absent.
 |---|---|---|
 | **CB Insights** | Funding stage, named investors, commercial maturity | Those three `APOLLO_CF_ACCOUNT_CBI_*` / `NAMED_INVESTORS` keys stay empty; the validator permits it. Funding comes from primary sources instead. |
 | **Brand Kit OS** | Structured seller-side brand voice, positioning, audience. Recommended: composition is noticeably better with it | `gtm-blueprint` falls back to the CRM context center or a document you name. |
+| **HubSpot** (read-only) | Their existing customers, to build the reverse ICP (`pmf-five-gate-playbook` step 1) | Website logos stand in, marked `site-logos` and lower confidence. See [hubspot-reverse-icp.md](hubspot-reverse-icp.md). Ask during setup: "Do you use HubSpot?" If yes and not connected, route here; the lookup only reads. |
 | **HubSpot** (as the CRM) | The engine writes to your portal instead of Apollo | Not optional once chosen: run the portal discovery in [hubspot-adapter.md](hubspot-adapter.md) and set `{HUBSPOT_PORTAL_MAP_FILE}` before the first write. Probe with `discover_hubspot_schema`, which is read-only. |
 | **GTM MCP** (hosted by Launch99, not live yet) | Scraping, scoring, persona scores, learning-loop analysis, the brand kit link | Until launch, nothing changes. After launch, the key comes from onboarding and Claude Code stores it; see [gtm-mcp.md](gtm-mcp.md). Copy the three identity references into `{GTM_ORG_ID}`, `{GTM_MCP_CUSTOMER_ID}` and `{BRAND_KIT_OS_ID}`. |
 | **Google Drive / Box / OneDrive** | File home for briefs, reports, audit logs | A local folder works identically. Choose one and say which. |
@@ -280,9 +283,10 @@ and one that was merely copied.
 
 Setup is not complete at S3. It completes at S4, and S4 requires a live call.
 
-1. **Record.** Every resolved value goes into `instance-config.json` at the plugin
-   root, never into a SKILL.md. That file is gitignored because it describes one
-   workspace, not the template. Adding a value the schema does not know about means
+1. **Record.** Every resolved value goes into `instance-config.json` in the user's own
+   working folder, never into a SKILL.md and never inside the plugin folder, which a
+   marketplace update replaces. That file describes one workspace, not the template;
+   `instance-config.md` gives the resolution order scripts and skills use to find it. Adding a value the schema does not know about means
    adding the key to `instance-config.example.json` in the same change; see
    [instance-config.md](instance-config.md).
 

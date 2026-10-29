@@ -1,0 +1,23 @@
+{
+  "client": "ExampleCo",
+  "author_org": "Launch99 Agency",
+  "project_id": "L99-EXAMPLECO-2026-001",
+  "version": "1.0",
+  "status": "Draft for ExampleCo review",
+  "date": "October 9, 2026",
+  "database": "db/engagement.db",
+  "evidence_images_dir": "evidence_jpg",
+  "output": "out/2026-10-09_exampleco_gtm-intelligence-report_v1.0_draft.pdf",
+  "content_module": "content_template.py",
+  "subject": "Product-market fit, competitive landscape, reverse ICP plan",
+  "cover": {
+    "kicker": "GO-TO-MARKET INTELLIGENCE REPORT  |  PROPOSAL",
+    "title_lines": ["ExampleCo:", "Product-Market Fit and", "Competitive Landscape"],
+    "subtitle": "What we found, how fit should be measured, and a 30/60/90 day plan.",
+    "stats": [["(from database)", "competitors compared"], ["5", "gates to measure fit"], ["(from database)", "sources with highlighted proof"]]
+  },
+  "palette": {"primary": "#F56A00", "dark": "#132b4a", "accent": "#31b7b9", "ink": "#0B2545", "link": "#166cd4"},
+  "fonts": {"heading": "", "heading_medium": "", "heading_bold": "", "ui": "", "ui_bold": "", "body": "", "body_bold": ""},
+  "assets": {"logo": ""},
+  "scrub": {}
+}

@@ -105,7 +105,7 @@ human-managed assets are never edited.
 
 ## Step 4: Record and validate
 
-Write every resolved value into `instance-config.json` at the plugin root, never into a
+Write every resolved value into `instance-config.json` in your working folder (never inside the plugin folder; resolution order in the plugin root's `references/instance-config.md`), never into a
 SKILL.md. Then:
 
 ```bash
