@@ -25,9 +25,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def listed_skills():
-    """Skill names in README.md's `| `name` | ... |` table rows."""
+    """Skill names in the table under README.md's `## What it does` heading, and only
+    there: a name appearing in some other table must not count as listed."""
     text = (ROOT / "README.md").read_text("utf-8")
-    return sorted(set(re.findall(r"^\|\s*`([a-z0-9-]+)`\s*\|", text, re.M)))
+    section = re.search(r"^## What it does\n(.*?)(?=^## )", text, re.M | re.S)
+    assert section, "README.md has no '## What it does' section"
+    return sorted(set(re.findall(r"^\|\s*`([a-z0-9-]+)`\s*\|", section.group(1), re.M)))
 
 
 def shipped():

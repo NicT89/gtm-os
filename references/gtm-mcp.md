@@ -12,7 +12,7 @@ that is not part of the plugin.
 
 ## Status
 
-GTM MCP is not live yet. Until it is, everything in this plugin keeps running as it did in
+GTM MCP is parked: designed, not part of any current version. Until a version ships it, everything in this plugin keeps running as it did in
 1.11.0: scoring and ranking run locally from `skills/gtm-signal-scan/scripts/`, scraping runs
 on your own Apify and Firecrawl connectors, and the offline demo needs no key. When it
 launches, a release adds the connector to the plugin manifest and says so in the changelog.

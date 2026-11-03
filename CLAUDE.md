@@ -311,8 +311,9 @@ you need before starting:
    are cheaper here than on the PR.
 4. **Review README.md against the change.** Every PR that adds, renames or removes a
    skill, connector, script, reference or setup step re-reads README.md end to end and
-   amends it: the skill table, the connector list, the Get Started block and any section
-   that describes the changed behavior. `tests/test_skills_listed_are_shipped.py` fails on
+   amends it: the skill table, the connector list, the Get Started block (edit
+   `references/get-started.md` and re-sync the three copies; never hand-edit one) and any
+   section that describes the changed behavior. `tests/test_skills_listed_are_shipped.py` fails on
    a shipped skill missing from the table, but it cannot see prose drift; the read is the
    check. Do the same pass on SETUP.md and AGENTS.md when the change touches setup or the
    agent landing page.
@@ -463,7 +464,7 @@ posts base, Apify for post scraping, Firecrawl as the default web extractor. Goo
 CB Insights, Brand Kit OS and a warehouse are optional, and each skill degrades explicitly
 when one is missing rather than guessing. HubSpot, as the CRM, is generic with native schema
 discovery (`references/hubspot-adapter.md`), and GTM MCP is the hosted dependency described
-above, not live yet. The authoritative per-connector list is
+above, parked for a future version. The authoritative per-connector list is
 [references/environment-setup.md](references/environment-setup.md); this paragraph called
 Airtable and Apify optional and omitted Firecrawl entirely until 1.9.2. The Research
 Vault base is optional in the same way: with its keys empty, the research skills produce
