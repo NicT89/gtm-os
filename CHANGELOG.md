@@ -12,6 +12,23 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.15.1] - 2026-11-02
+
+Documentation and one CI check. Upgrading needs no action.
+
+### Fixed
+- The README skill table omitted the three skills 1.15.0 shipped (`pmf-five-gate-playbook`,
+  `evidence-register`, `gtm-intelligence-report`). Listed now, and
+  `tests/test_skills_listed_are_shipped.py::test_every_shipped_skill_is_listed` fails CI when a
+  skill on disk is missing from the table, so it cannot recur silently.
+
+### Changed
+- GTM MCP is parked: README, `references/environment-setup.md` and CLAUDE.md describe it as a
+  future-version integration rather than "not live yet". No code change; the connector block
+  still waits in `examples/gtm-mcp/`.
+- CLAUDE.md PR loop gains a step: review README.md (and SETUP.md, AGENTS.md when relevant)
+  against every change before bumping VERSION.
+
 ## [1.15.0] - 2026-10-27
 
 Three new skills, the plugin now declares its connectors, and the instance config moves out

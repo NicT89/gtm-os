@@ -96,6 +96,9 @@ deployment value to a `{KEY}` first so none of your resolved IDs ever leave your
 | `environment-setup` | Diagnoses and wires the connectors, from whatever state you are already in |
 | `play-builder` | Defines your plays (which accounts go to which list, sequence and persona) in your own words, and builds the Apollo fields, lists and inactive sequences each one needs |
 | `gtm-os-demo` | The offline demo: the real decision logic over synthetic accounts, no connectors, no credits. Run it first, and again with your config before the first live scan |
+| `pmf-five-gate-playbook` | Runs the product-fit exercise for any customer or project: scores segments on Pull, Prove, Pay, Use, Keep, builds the reverse ICP from the customer base, discovers buyer paths from evidence, and keeps an open-questions log |
+| `evidence-register` | Builds the evidence behind a report: highlighted web screenshots with evidence IDs, breadcrumbs for internal sources, a claim ledger, and an engagement question database |
+| `gtm-intelligence-report` | Produces the versioned GTM intelligence report PDF: label-first findings (KNOWN, INFERRED, UNVERIFIED), segments and reverse ICP, competitive landscape, five-gate plan, 30/60/90 plan, and evidence appendices generated from the engagement database |
 | `signup-flow-cro` | Audits a signup, trial or waitlist flow for friction: sourced findings, quick wins, test hypotheses, and an optional redesigned field set. Adapted from coreyhaines31/marketingskills (MIT) |
 | `competitor-alternatives` | Builds competitor comparison and alternative pages (vs, alternatives, competitor-vs-competitor) and audits existing ones. Adapted from coreyhaines31/marketingskills (MIT) |
 | `free-tool-strategy` | Plans an engineering-as-marketing free tool: concept, gating, distribution, and whether it is worth building. Adapted from coreyhaines31/marketingskills (MIT) |
@@ -173,12 +176,11 @@ below is the reference stack.
 - **HubSpot** (generic CRM) — supported with native schema discovery: the engine maps your
   portal's properties and custom objects, then checks every write against that map before
   sending it ([`references/hubspot-adapter.md`](references/hubspot-adapter.md)).
-- **GTM MCP** (hosted by Launch99, not live yet) — the service GTM OS will run on for
-  scraping, scoring, persona scores, the learning loop's analysis and your brand kit link.
-  It holds none of your credentials; your own connectors do every write. It keeps your
-  account, a log of your calls, and a copy of the data it scrapes for you. What it does and
-  keeps is stated in full in [`references/gtm-mcp.md`](references/gtm-mcp.md). Until it
-  launches, everything runs as it does today.
+- **GTM MCP** (parked): a hosted service for scraping, scoring, persona scores and the
+  learning loop's analysis is designed but not part of any current version. Everything
+  runs on your own connectors today and nothing in this repo calls the service. The
+  contract it would meet is recorded in [`references/gtm-mcp.md`](references/gtm-mcp.md)
+  for a future version.
 
 ## What output looks like
 

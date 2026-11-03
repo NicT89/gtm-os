@@ -54,6 +54,15 @@ class SkillsListedAreShipped(unittest.TestCase):
                     self.assertIn(path, tracked, f"{path} exists but git does not track it; "
                                   "check .gitignore (`git check-ignore -v " + path + "`)")
 
+    def test_every_shipped_skill_is_listed(self):
+        """The reverse direction: a skill the repo ships must appear in the README table.
+        Observed on 1.15.0: three new skills shipped and the table did not list them."""
+        listed = set(listed_skills())
+        on_disk = sorted(p.parent.name for p in (ROOT / "skills").glob("*/SKILL.md"))
+        for name in on_disk:
+            with self.subTest(skill=name):
+                self.assertIn(name, listed, f"skills/{name}/SKILL.md ships but README.md does not list it")
+
     def test_no_skill_file_is_ignored(self):
         """The direct form of the defect: nothing under skills/ may match an ignore rule."""
         files = [str(p.relative_to(ROOT)) for p in (ROOT / "skills").rglob("*")

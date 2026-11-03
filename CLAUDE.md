@@ -208,6 +208,8 @@ universal shows up as two runs disagreeing about arithmetic.
 
 ## The plugin is the open part; GTM MCP is the closed part
 
+**Status: GTM MCP is parked (2026-10-28).** It is a future-version integration; no current release wires it in, and public docs describe it as parked, not "not live yet". The design rules below still govern anything written for it.
+
 From 1.12.0 GTM OS is designed as two parts. This repo is public and ships the skills, the
 human gates, connector setup, structure checks, and the **contracts** a customer's systems
 must match. The hosted **GTM MCP** (`references/gtm-mcp.md`) will hold scraping, the scoring
@@ -307,13 +309,20 @@ you need before starting:
 3. **Review locally before pushing**, if the CLI is authenticated:
    `coderabbit review --base main` (or `--agent` for structured JSON). Findings
    are cheaper here than on the PR.
-4. **Bump `VERSION` last**, immediately before opening the PR — merging a changed
+4. **Review README.md against the change.** Every PR that adds, renames or removes a
+   skill, connector, script, reference or setup step re-reads README.md end to end and
+   amends it: the skill table, the connector list, the Get Started block and any section
+   that describes the changed behavior. `tests/test_skills_listed_are_shipped.py` fails on
+   a shipped skill missing from the table, but it cannot see prose drift; the read is the
+   check. Do the same pass on SETUP.md and AGENTS.md when the change touches setup or the
+   agent landing page.
+5. **Bump `VERSION` last**, immediately before opening the PR — merging a changed
    `VERSION` fires the release, so an early bump on a branch that sits is a
    release waiting to go off. Additive is **minor**, not patch.
-5. **Open the PR**, fill in every template section, and label it (`release`,
+6. **Open the PR**, fill in every template section, and label it (`release`,
    `area: *`, `safety-review` when it touches redaction, credentials, client
    data, or instance IDs).
-6. **Work the review**, per the rules below.
+7. **Work the review**, per the rules below.
 
 ### Working a CodeRabbit review
 
