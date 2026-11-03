@@ -28,9 +28,11 @@ def listed_skills():
     """Skill names in the table under README.md's `## What it does` heading, and only
     there: a name appearing in some other table must not count as listed."""
     text = (ROOT / "README.md").read_text("utf-8")
-    section = re.search(r"^## What it does\n(.*?)(?=^## )", text, re.M | re.S)
+    section = re.search(r"^## What it does\n(.*?)(?=^## |\Z)", text, re.M | re.S)
     assert section, "README.md has no '## What it does' section"
-    return sorted(set(re.findall(r"^\|\s*`([a-z0-9-]+)`\s*\|", section.group(1), re.M)))
+    table = re.search(r"(?:^\|.*\n?)+", section.group(1), re.M)
+    assert table, "'## What it does' has no table"
+    return sorted(set(re.findall(r"^\|\s*`([a-z0-9-]+)`\s*\|", table.group(0), re.M)))
 
 
 def shipped():
