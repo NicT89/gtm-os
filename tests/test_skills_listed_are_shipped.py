@@ -24,10 +24,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def listed_skills():
+def listed_skills(text=None):
     """Skill names in the table under README.md's `## What it does` heading, and only
-    there: a name appearing in some other table must not count as listed."""
-    text = (ROOT / "README.md").read_text("utf-8")
+    there: a name appearing in some other table must not count as listed. `text`
+    overrides the file so the parser's own rules can be tested against a mutated copy."""
+    if text is None:
+        text = (ROOT / "README.md").read_text("utf-8")
     section = re.search(r"^## What it does\n(.*?)(?=^## |\Z)", text, re.M | re.S)
     assert section, "README.md has no '## What it does' section"
     table = re.search(r"(?:^\|.*\n?)+", section.group(1), re.M)
@@ -67,6 +69,28 @@ class SkillsListedAreShipped(unittest.TestCase):
         for name in on_disk:
             with self.subTest(skill=name):
                 self.assertIn(name, listed, f"skills/{name}/SKILL.md ships but README.md does not list it")
+
+    def test_a_row_outside_the_first_table_does_not_count(self):
+        """Pins the parser's scope. Widening listed_skills() to scan every table would make
+        the shipped-skill check pass on a row that sits under Connectors or in a second
+        table under the same heading, which is the vacuous pass the scoping exists to
+        prevent."""
+        text = (ROOT / "README.md").read_text("utf-8")
+        row = next(l for l in text.splitlines() if l.startswith("| `environment-setup`"))
+        without = text.replace(row + "\n", "", 1)
+        self.assertNotIn("environment-setup", listed_skills(without))
+        # a second table under the same heading
+        head = "## What it does\n"
+        i = without.index(head)
+        second = without[:i] + head + without[i + len(head):].replace(
+            "\n\n", "\n\n| Name | x |\n|---|---|\n" + row + "\n\n", 1)
+        self.assertNotIn("environment-setup", listed_skills(second))
+        # a table under a later heading
+        j = without.index("## Who this is for")
+        later = without[:j] + "| Name | x |\n|---|---|\n" + row + "\n\n" + without[j:]
+        self.assertNotIn("environment-setup", listed_skills(later))
+        # and the control: the real file lists it
+        self.assertIn("environment-setup", listed_skills())
 
     def test_no_skill_file_is_ignored(self):
         """The direct form of the defect: nothing under skills/ may match an ignore rule."""
