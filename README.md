@@ -96,6 +96,7 @@ deployment value to a `{KEY}` first so none of your resolved IDs ever leave your
 | `environment-setup` | Diagnoses and wires the connectors, from whatever state you are already in |
 | `play-builder` | Defines your plays (which accounts go to which list, sequence and persona) in your own words, and builds the Apollo fields, lists and inactive sequences each one needs |
 | `gtm-os-demo` | The offline demo: the real decision logic over synthetic accounts, no connectors, no credits. Run it first, and again with your config before the first live scan |
+| `gtm-os-feedback` | Files a bug, feature request or skill feedback upstream as a redacted issue you approve before it is sent; without `gh` it hands you the body and the right form |
 | `pmf-five-gate-playbook` | Runs the product-fit exercise for any customer or project: scores segments on Pull, Prove, Pay, Use, Keep, builds the reverse ICP from the customer base, discovers buyer paths from evidence, and keeps an open-questions log |
 | `evidence-register` | Builds the evidence behind a report: highlighted web screenshots with evidence IDs, breadcrumbs for internal sources, a claim ledger, and an engagement question database |
 | `gtm-intelligence-report` | Produces the versioned GTM intelligence report PDF: label-first findings (KNOWN, INFERRED, UNVERIFIED), segments and reverse ICP, competitive landscape, five-gate plan, 30/60/90 plan, and evidence appendices generated from the engagement database |
@@ -196,6 +197,16 @@ Cost discipline is documented in
 [`references/apollo-credit-costs.md`](references/apollo-credit-costs.md), including
 the score-before-you-reveal rule that keeps burn down.
 
+## Reporting a bug, asking for a feature
+
+Say **"report this bug"**, **"send feedback"** or **"request a feature"** and the
+`gtm-os-feedback` skill files a redacted GitHub issue you approve before it is sent;
+[`CONTRIBUTING.md`](CONTRIBUTING.md) says what it strips and what to expect back. The same
+three forms are at <https://github.com/NicT89/gtm-os/issues/new/choose> if you would rather
+type one. Nothing from your instance belongs in either: no IDs, no prospect or customer
+names, no credentials. A credential or an instance value you find *in this repo* is a
+security report, not an issue: [`SECURITY.md`](SECURITY.md).
+
 ## Versioning
 
 Canonical source: <https://github.com/NicT89/gtm-os>
@@ -217,6 +228,9 @@ GTM OS is released under the **[PolyForm Noncommercial License 1.0.0](LICENSE)**
   commercial copying, not to prevent commercial use.
 
 Contact **Nicolas Thatcher — nthatcher@realblockai.com** to arrange one, or with any
-question about which side of the line you are on.
+question about which side of the line you are on. A commercial grant is written per
+organization, usually inside the engagement agreement that installs the engine for it; it
+names the organization, covers its fork or private copy and every upstream release it
+takes during the term, and does not pass to anyone the organization gives a copy to.
 
 Copyright © 2026 Nicolas Thatcher, Launch99 Agency.
