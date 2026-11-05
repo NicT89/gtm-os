@@ -1,0 +1,45 @@
+name: Feature request
+description: Something the engine should do that it does not.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This tracker is public: describe the capability, not your pipeline. No instance IDs, customer or prospect names, credentials, or workspace links. Say what you would do with it that you cannot do today; that is what decides whether it is universal (built into the engine) or organization-specific (guidance the engine lets you fill in).
+  - type: input
+    id: target
+    attributes:
+      label: Skill or area it belongs to
+      description: An existing skill directory name, or `plugin`, `setup`, `docs`, `scripts`, `connectors`, `other`.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+    validations:
+      required: true
+  - type: textarea
+    id: want
+    attributes:
+      label: What you want the engine to do
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What it would let you do that you cannot today
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How you handle it today, if at all
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Redaction
+      options:
+        - label: Nothing above identifies my instance, my customers, or my prospects.
+          required: true

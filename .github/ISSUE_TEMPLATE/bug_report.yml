@@ -1,0 +1,65 @@
+name: Bug report
+description: A skill, script, gate or reference did the wrong thing.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks. Two things before you type. This tracker is public, so **nothing from your instance goes in here**: no Apollo, Airtable or HubSpot IDs, no prospect or customer names, no credentials, no links into your workspace. Replace any such value with `{KEY}` or `[redacted]`. The `gtm-os-feedback` skill does this for you and shows you the result before it files; running it is the easiest way to get this right.
+  - type: input
+    id: target
+    attributes:
+      label: Skill or area
+      description: The skill directory name (for example `gtm-signal-scan`), or `plugin`, `setup`, `docs`, `scripts`, `connectors`.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: The contents of `VERSION` in your installed copy, as `x.y.z`.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where it ran
+      options:
+        - claude-code
+        - cowork
+        - claude-chat
+        - scheduled
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: did
+    attributes:
+      label: What you ran, and what you asked it to do
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+  - type: textarea
+    id: connectors
+    attributes:
+      label: Connector states at the time (optional)
+      description: "One per line, `name: S0-S4`, as environment-setup reported them."
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Redaction
+      options:
+        - label: I checked that nothing above identifies my instance, my customers, or my prospects.
+          required: true

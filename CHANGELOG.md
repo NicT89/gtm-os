@@ -12,6 +12,34 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-11-05
+
+The feedback loop, and the last connector. Upgrading needs no action; the new connector
+appears on the Connectors tab for anyone who wants it.
+
+### Added
+- **`gtm-os-feedback` skill** and `scripts/feedback.py`: a bug, feature request or
+  skill-feedback report filed upstream as a GitHub issue. Same two-step flow as the setup
+  reporter (render, show the exact body, file only with a token bound to that body) and the
+  same redaction, imported from `setup_feedback.py` rather than restated. Without `gh` it
+  hands over the body and a link to the matching issue form. `tests/test_feedback.py` pins
+  the stripping, the allowlists and the approval binding.
+- **GitHub issue forms** (`.github/ISSUE_TEMPLATE/`): bug, feature request, skill feedback,
+  each with a redaction checkbox; blank issues are off and security reports and commercial
+  license requests route to their own pages. The forms and the script share section ids,
+  and a test fails when they drift or when a form would not parse.
+- **`CONTRIBUTING.md`** (how to report, what never goes in an issue, what happens next) and
+  **`SECURITY.md`** (private reporting for credentials, leaked instance values, gate
+  bypasses, redaction gaps and prompt injection).
+- **Brand Kit OS in `.mcp.json`**, as the vendor's own OAuth server, so the skills that
+  already say "if the Brand Kit OS connector is available" see it on the Connectors tab.
+
+### Changed
+- README: a "Reporting a bug, asking for a feature" section, the new skill in the table,
+  and the License section says how a commercial grant is scoped.
+- MAINTAINING.md: a "Feedback intake" section with the markers to filter on and the
+  reply contract.
+
 ## [1.15.1] - 2026-11-02
 
 Documentation and one CI check. Upgrading needs no action.

@@ -462,7 +462,9 @@ went unchecked in the first place. For behavior, review against the harness refe
 Apollo, Airtable, Apify and Firecrawl are each required, conditionally: Airtable for the
 posts base, Apify for post scraping, Firecrawl as the default web extractor. Google Drive,
 CB Insights, Brand Kit OS and a warehouse are optional, and each skill degrades explicitly
-when one is missing rather than guessing. HubSpot, as the CRM, is generic with native schema
+when one is missing rather than guessing. Six connectors are declared in `.mcp.json` (Apollo,
+HubSpot, Airtable, Apify, Firecrawl, Brand Kit OS), each as the vendor's own OAuth server with
+no credential in the file; `tests/test_plugin_connectors.py` pins the hosts. HubSpot, as the CRM, is generic with native schema
 discovery (`references/hubspot-adapter.md`), and GTM MCP is the hosted dependency described
 above, parked for a future version. The authoritative per-connector list is
 [references/environment-setup.md](references/environment-setup.md); this paragraph called
