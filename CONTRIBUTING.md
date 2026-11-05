@@ -23,9 +23,12 @@ Three ways, in the order they cost you the least:
 
 This tracker is public. Nothing from your instance belongs in it: no Apollo, Airtable or
 HubSpot IDs, no prospect or customer names, no credentials, no run reports, no links into
-your workspace. The skill replaces IDs, email addresses, credentials and private links with
-`[redacted: <kind>]` markers before you see the body. It does not detect names: remove
-prospect and customer names yourself before you approve the body. If you type an issue by
+your workspace. The skill replaces what it can recognize by shape (Airtable IDs, 24-character
+hex CRM field IDs, email addresses, long digit runs, credential patterns, and links to
+anything other than vendor documentation or this repo) with `[redacted: <kind>]` markers
+before you see the body. It recognizes shapes, not meaning: a name, or an ID in a format
+it does not know, passes through untouched. Read the whole body and remove every value
+that identifies your instance, your customers or your prospects before you approve it. If you type an issue by
 hand, replace every such value yourself with `{KEY}` or `[redacted]`. A reproduction that
 needs a real ID can be described ("the posts table", "the contact play field") and the
 maintainer will ask in the thread if more is needed.

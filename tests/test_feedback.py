@@ -182,7 +182,7 @@ class TheIssueFormsMatchTheScript(unittest.TestCase):
     """The forms are the human path; the script is the agent path. Same sections."""
 
     FORM_DIR = REPO_ROOT / ".github" / "ISSUE_TEMPLATE"
-    SCALAR = re.compile(r"^\s+(?:description|label|about|title|name):\s+(?P<v>.*)$")
+    SCALAR = re.compile(r"^\s*(?:description|label|about|title|name):\s+(?P<v>.*)$")
     WELL_QUOTED = re.compile(r'^"(?:[^"\\]|\\.)*"$|^\'(?:[^\']|\'\')*\'$')
 
     def test_every_section_key_is_a_field_id_in_its_form(self):
@@ -199,15 +199,31 @@ class TheIssueFormsMatchTheScript(unittest.TestCase):
         scalar (a second mapping key), and a quoted scalar with trailing characters after
         its closing quote (an extra `"`). PyYAML is not in CI, so this is the check."""
         for form in sorted(self.FORM_DIR.glob("*.yml")):
-            for n, line in enumerate(form.read_text("utf-8").splitlines(), 1):
-                m = self.SCALAR.match(line)
-                if not m:
-                    continue
-                v = m.group("v")
-                if v[0] in "\"'":
-                    self.assertRegex(v, self.WELL_QUOTED, f"{form.name}:{n} quoted scalar is malformed")
-                elif v[0] not in "|>" and ": " in v:
-                    self.fail(f"{form.name}:{n} has an unquoted scalar containing ': '")
+            self.assertEqual(self.scalar_problems(form.read_text("utf-8")), [], form.name)
+
+    @classmethod
+    def scalar_problems(cls, text):
+        problems = []
+        for n, line in enumerate(text.splitlines(), 1):
+            m = cls.SCALAR.match(line)
+            if not m:
+                continue
+            v = m.group("v")
+            if v[0] in "\"'":
+                if not cls.WELL_QUOTED.match(v):
+                    problems.append(f"line {n}: quoted scalar is malformed")
+            elif v[0] not in "|>" and ": " in v:
+                problems.append(f"line {n}: unquoted scalar contains ': '")
+        return problems
+
+    def test_the_scalar_check_sees_top_level_fields_and_both_defect_classes(self):
+        """Pinned on synthetic text so the check is falsifiable without editing a form:
+        a top-level description with an unquoted ': ' (zero indentation, which the first
+        version of this regex skipped), a nested one, and a doubled closing quote."""
+        self.assertEqual(self.scalar_problems('name: Bug report\ndescription: "fine: quoted"\n'), [])
+        self.assertTrue(self.scalar_problems("name: Bug report\ndescription: Bug: details\n"))
+        self.assertTrue(self.scalar_problems("  attributes:\n    label: Kind: of thing\n"))
+        self.assertTrue(self.scalar_problems('    description: "doubled.""\n'))
 
     def test_blank_issues_are_off(self):
         self.assertIn("blank_issues_enabled: false",

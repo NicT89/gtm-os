@@ -135,6 +135,20 @@ class SensitiveValuesAreStrippedFromTheBody(unittest.TestCase):
             with self.subTest(url=raw):
                 self.assert_stripped(leaked, f"see {raw}", "private-link")
 
+    def test_a_link_to_another_github_repository_is_stripped(self):
+        """github.com is allowlisted for THIS repo's docs and issues; any other path on it is
+        somebody's repository, which is exactly the kind of workspace link that must not
+        reach a public issue."""
+        body = body_for(good_report(notes=["see https://github.com/acme-corp/private-crm/issues/4"]))
+        self.assertNotIn("acme-corp", body)
+        self.assertIn("[redacted: private-link]", body)
+        body = body_for(good_report(notes=["see https://github.com/NicT89/gtm-os-fork/blob/main/x.md"]))
+        self.assertNotIn("gtm-os-fork", body)
+
+    def test_a_link_into_this_repository_survives(self):
+        body = body_for(good_report(notes=["per https://github.com/NicT89/gtm-os/blob/main/SETUP.md"]))
+        self.assertIn("https://github.com/NicT89/gtm-os/blob/main/SETUP.md", body)
+
     def test_vendor_documentation_links_survive(self):
         """Stripping these would remove the most useful kind of note."""
         body = body_for(good_report(notes=["https://docs.apify.com/actors says otherwise"]))

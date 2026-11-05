@@ -15,9 +15,10 @@ ran on, optionally each connector's S0-S4 state, a one-line title, and the free-
 sections for that kind. Every free-text field goes through setup_feedback.redact_note, so
 workspace IDs, CRM field IDs, email addresses, credentials and links outside vendor
 documentation are replaced in place with a visible `[redacted: <kind>]` marker. The
-patterns are imported, not restated, so the two reporters cannot drift apart. Person and
-company names are NOT detected: the skill has the reporter remove those before rendering,
-and the preview is where they check.
+patterns are imported, not restated, so the two reporters cannot drift apart. The redactor
+recognizes shapes, not meaning: names and IDs in formats it does not know pass through, so
+the skill has the reporter remove those before rendering, and the preview is the second
+check.
 
 How approval works
 ------------------

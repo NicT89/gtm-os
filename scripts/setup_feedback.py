@@ -112,6 +112,7 @@ SENSITIVE = [
 
 # Vendor documentation is the one kind of URL worth keeping: "their docs said X" is a real
 # finding about the setup module. Anything else is a link into someone's workspace.
+# github.com is allowed only under this repo's own path; see url_is_publishable.
 ALLOWED_URL_HOSTS = {
     "docs.anthropic.com", "github.com", "apollo.io", "docs.apollo.io",
     "airtable.com", "support.airtable.com", "apify.com", "docs.apify.com",
@@ -147,6 +148,11 @@ def url_is_publishable(raw):
     except ValueError:
         return False
     host = (parts.hostname or "").lower()
+    if host == "github.com":
+        # github.com is on the list for links into THIS repo's docs and issues. Any other
+        # path is somebody's repository, private or not, and that is a workspace link.
+        path = parts.path.rstrip("/")
+        return path == f"/{UPSTREAM}" or path.startswith(f"/{UPSTREAM}/")
     return host in ALLOWED_URL_HOSTS
 
 MAX_NOTE_CHARS = 600

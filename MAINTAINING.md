@@ -221,7 +221,10 @@ Issues arrive three ways and look alike: the `gtm-os-feedback` skill (body carri
 (which a reporter typed; the forms pre-apply the `bug`, `enhancement` or `feedback` label).
 Skill and setup reports carry their marker in the body, and that is what to filter on for
 them, since a reporter cannot apply a label. Form submissions carry no marker; find those by
-the label the form applied. `CONTRIBUTING.md` promises what happens next, so
+the label the form applied, and know that GitHub silently drops a form label that does not
+exist in the repository, so `bug`, `enhancement` and `feedback` must all exist (the
+`feedback` label was created on 2026-11-05 for exactly this reason). A periodic unfiltered
+pass over open issues is the safety net for a dropped label. `CONTRIBUTING.md` promises what happens next, so
 it is the contract: triage in arrival order, label the area, reply on every issue before
 it closes, and answer a feature request with **built**, **guided** or **declined**.
 

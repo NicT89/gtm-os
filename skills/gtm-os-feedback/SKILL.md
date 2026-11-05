@@ -48,10 +48,14 @@ Then the target: the skill directory name, or `plugin`, `setup`, `docs`, `script
 where a client or workspace identifier would otherwise ride along.
 
 **Ask for each section and write only what the user says.** The report is their account of
-what happened, never your summary of their workspace. **Names are not detected by the
-redactor.** Before rendering, ask the user to replace any prospect, customer or person name
-with a role or a placeholder ("a Tier 1 account", "the VP we targeted"); the script strips
-IDs, email addresses, credentials and private links, and nothing else. If the defect surfaced in this
+what happened, never your summary of their workspace. **The redactor recognizes shapes,
+not meaning.** It strips Airtable IDs, 24-character hex CRM field IDs, email addresses,
+long digit runs, credential patterns, and links to anything other than vendor documentation
+or this repo (a link to any other GitHub repository is stripped). It does not detect names,
+and it does not know every vendor's ID format. Before rendering, ask the user to replace any
+prospect, customer or person name with a role or a placeholder ("a Tier 1 account", "the VP
+we targeted") and to do the same for any identifier from a system the list above does not
+name. The preview is the second check, not the only one. If the defect surfaced in this
 conversation, offer the relevant lines back to them to confirm, rather than filing your
 narration of it. If a connector state is known from an `environment-setup` run, include it;
 do not probe connectors to find out.
