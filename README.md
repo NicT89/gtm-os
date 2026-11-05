@@ -58,8 +58,8 @@ ever comes back to this repo.
 **Installing for a company.** Fork the repo into the company's own GitHub organization and add
 the marketplace from the fork, so the company owns its copy and still receives every upstream
 release as a pull request it reviews. `FORKING.md` is the procedure. The plugin declares its
-connectors (Apollo, HubSpot, Airtable, Apify, Firecrawl) in `.mcp.json`; each person connects
-them with their own account from the plugin's Connectors tab.
+connectors (Apollo, HubSpot, Airtable, Apify, Firecrawl, Brand Kit OS) in `.mcp.json`; each
+person connects them with their own account from the plugin's Connectors tab.
 
 
 ## Your instance vs. this repo
@@ -167,9 +167,10 @@ below is the reference stack.
   confidence. Without it the research skills still produce their reports; they just
   cannot tell you what changed since last time.
 - **CB Insights** (optional) — funding stage, named investors, commercial maturity.
-- **Brand Kit OS** (optional) — supplies structured brand voice, positioning, and
-  audience data as the seller-side context that `gtm-blueprint` composes against.
-  Without it, the engine falls back to your CRM's context center or a document you
+- **Brand Kit OS** (optional, recommended) — supplies structured brand voice, positioning,
+  and audience data as the seller-side context that `gtm-blueprint` and the content skills
+  compose against. Declared in `.mcp.json`, so it appears on the Connectors tab with the
+  rest. Without it, the engine falls back to your CRM's context center or a document you
   name.
 - **Google Drive / Box / OneDrive** (optional) — file home for briefs and audit logs.
   A local folder works too.

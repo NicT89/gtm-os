@@ -2,8 +2,8 @@
 
 Every entry must be a remote HTTP server at the vendor's own host with no credential in
 the file: a key in a URL or header would ship to every installed copy. The set of hosts
-is the engine's Native and Generic platforms from references/platform-support.md; a new
-connector is added here and in that file together.
+is the engine's Native, Generic and recommended-optional platforms from
+references/platform-support.md; a new connector is added here and in that file together.
 
 Run: python3 -m unittest discover -s tests -v
 """
@@ -21,6 +21,7 @@ EXPECTED_HOSTS = {
     "airtable": "mcp.airtable.com",
     "apify": "mcp.apify.com",
     "firecrawl": "mcp.firecrawl.dev",
+    "brand-kit-os": "www.brandkitos.com",
 }
 
 

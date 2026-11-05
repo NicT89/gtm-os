@@ -1,5 +1,5 @@
 {
-  "_README": "The connectors GTM OS runs on, declared so the plugin's Connectors tab in claude.ai and Cowork lists each one with its Added / Connected state, and Claude Code connects to them directly. Every entry is the vendor's own OAuth server: the plugin carries no key and no secret, and each user signs in with their own account. Adding this plugin does not sign anyone in; environment-setup still probes every connector and places it on the S0 to S4 ladder before anything runs. Apollo, Apify and Firecrawl are required for a full run; Airtable is required for the posts base; HubSpot is optional (reverse ICP read, or the CRM when CRM_PROVIDER is hubspot). Brand Kit OS is optional and ships as its own plugin, so it is not duplicated here. tests/test_plugin_connectors.py checks this file against the vendor-URL rules in references/mcp-coverage-map.md.",
+  "_README": "The connectors GTM OS runs on, declared so the plugin's Connectors tab in claude.ai and Cowork lists each one with its Added / Connected state, and Claude Code connects to them directly. Every entry is the vendor's own OAuth server: the plugin carries no key and no secret, and each user signs in with their own account. Adding this plugin does not sign anyone in; environment-setup still probes every connector and places it on the S0 to S4 ladder before anything runs. Apollo, Apify and Firecrawl are required for a full run; Airtable is required for the posts base; HubSpot is optional (reverse ICP read, or the CRM when CRM_PROVIDER is hubspot). Brand Kit OS is optional and recommended: every skill that says 'if the Brand Kit OS connector is available' reads the seller's own kit through it, and without it they fall back to the CRM context center or a document the user names. It is also installable as its own plugin; declaring it here too means a user of this plugin alone still sees it on the Connectors tab. tests/test_plugin_connectors.py checks this file against the vendor-URL rules in references/mcp-coverage-map.md.",
   "mcpServers": {
     "apollo": {
       "type": "http",
@@ -20,6 +20,10 @@
     "firecrawl": {
       "type": "http",
       "url": "https://mcp.firecrawl.dev/v2/mcp-oauth"
+    },
+    "brand-kit-os": {
+      "type": "http",
+      "url": "https://www.brandkitos.com/mcp"
     }
   }
 }
