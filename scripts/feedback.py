@@ -15,7 +15,9 @@ ran on, optionally each connector's S0-S4 state, a one-line title, and the free-
 sections for that kind. Every free-text field goes through setup_feedback.redact_note, so
 workspace IDs, CRM field IDs, email addresses, credentials and links outside vendor
 documentation are replaced in place with a visible `[redacted: <kind>]` marker. The
-patterns are imported, not restated, so the two reporters cannot drift apart.
+patterns are imported, not restated, so the two reporters cannot drift apart. Person and
+company names are NOT detected: the skill has the reporter remove those before rendering,
+and the preview is where they check.
 
 How approval works
 ------------------
@@ -23,11 +25,12 @@ The same two-step flow as setup_feedback.py, for the same reason: the host's own
 tool-approval prompt on the submit command is the acceptance gate.
 
     1. python3 scripts/feedback.py --report f.json
-       Renders the exact issue body and prints a token derived from it. Sends nothing.
+       Renders the exact title and body and prints a token derived from both. Sends
+       nothing.
 
     2. python3 scripts/feedback.py --report f.json --submit --confirm <token>
-       Files it with the user's own gh credentials. A body that changed after it was
-       shown produces a different token and is refused.
+       Files it with the user's own gh credentials. A title or body that changed after
+       it was shown produces a different token and is refused.
 
 Without gh, or in a chat session with no shell, the render step is still the right
 output: --json carries a `paste_url` that opens the matching issue form on GitHub with
@@ -102,8 +105,9 @@ def validate(report):
     cleaned = {"redactions": []}
 
     kind = report.get("kind")
-    if kind not in KINDS:
+    if not isinstance(kind, str) or kind not in KINDS:
         problems.append(f"kind must be one of {sorted(KINDS)}")
+        kind = None
     cleaned["kind"] = kind
 
     target = report.get("target")
@@ -119,7 +123,7 @@ def validate(report):
     cleaned["plugin_version"] = version
 
     surface = report.get("surface", "other")
-    if surface not in SURFACES:
+    if not isinstance(surface, str) or surface not in SURFACES:
         problems.append(f"surface must be one of {sorted(SURFACES)}")
     cleaned["surface"] = surface
 
@@ -133,9 +137,9 @@ def validate(report):
             problems.append("each connector must be an object with name and state")
             continue
         name, state = entry.get("name"), entry.get("state")
-        if name not in CONNECTORS:
+        if not isinstance(name, str) or name not in CONNECTORS:
             problems.append(f"unknown connector name {name!r}")
-        if state not in STATES:
+        if not isinstance(state, str) or state not in STATES:
             problems.append(f"invalid connector state {state!r}")
         cleaned["connectors"].append({"name": name, "state": state})
 
@@ -160,8 +164,8 @@ def validate(report):
             if not isinstance(text, str) or not text.strip():
                 problems.append(f"section {key!r} is required for kind {kind!r}")
                 continue
-            if len(text) > MAX_NOTE_CHARS * 3:
-                problems.append(f"section {key!r} is over {MAX_NOTE_CHARS * 3} characters; "
+            if len(text) > MAX_NOTE_CHARS:
+                problems.append(f"section {key!r} is over {MAX_NOTE_CHARS} characters; "
                                 "shorten it rather than relying on truncation")
                 continue
             cleaned_text, kinds = redact_note(text.strip())
@@ -197,8 +201,8 @@ def render(cleaned):
                      f"reporter ({kinds}); each is marked in place._")
     else:
         lines.append("_Nothing needed stripping from this report._")
-    lines += ["", "_Filed by the gtm-os-feedback skill. The reporter saw and approved this "
-              "exact body._"]
+    lines += ["", "_Filed by the gtm-os-feedback skill. This exact title and body were shown to "
+              "the reporter before filing._"]
     return title, "\n".join(lines)
 
 
@@ -255,7 +259,7 @@ def main():
         sys.exit(1)
 
     title, body = render(cleaned)
-    token = token_for(body)
+    token = token_for(title + "\n" + body)
 
     if not args.submit:
         if args.json:

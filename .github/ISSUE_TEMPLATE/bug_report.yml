@@ -55,7 +55,7 @@ body:
     id: connectors
     attributes:
       label: Connector states at the time (optional)
-      description: "One per line, `name: S0-S4`, as environment-setup reported them.""
+      description: "One per line, `name: S0-S4`, as environment-setup reported them."
   - type: checkboxes
     id: redacted
     attributes:

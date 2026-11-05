@@ -22,7 +22,7 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from feedback import (  # noqa: E402
     AREAS, FORMS, KINDS, MARKER, known_targets, paste_url, render, validate,
 )
-from setup_feedback import token_for  # noqa: E402
+from setup_feedback import MAX_NOTE_CHARS, token_for  # noqa: E402
 
 # A plausible Airtable table id, derived rather than written down: a literal that looks
 # real invites a push-protection block and a pointless rotation drill.
@@ -85,8 +85,12 @@ class SensitiveValuesAreStrippedFromEveryFreeTextField(unittest.TestCase):
         self.assertIn("[redacted: workspace-id]", body)
 
     def test_an_id_in_the_title_is_stripped(self):
-        body = body_for(good_report(title=f"Writes to {TABLE_ID} every run"))
+        problems, cleaned = validate(good_report(title=f"Writes to {TABLE_ID} every run"))
+        self.assertEqual(problems, [])
+        title, body = render(cleaned)
+        self.assertNotIn(TABLE_ID, title)
         self.assertNotIn(TABLE_ID, body)
+        self.assertIn("[redacted: workspace-id]", title)
 
     def test_an_email_in_a_section_is_stripped(self):
         report = good_report()
@@ -138,6 +142,26 @@ class TheStructuredFieldsAreAllowlisted(unittest.TestCase):
         problems, _ = validate(report)
         self.assertTrue(any("unknown section" in p for p in problems))
 
+    def test_a_section_one_over_the_redaction_limit_is_rejected_not_truncated(self):
+        """validate() and redact_note() must agree on the limit, or a section in the band
+        between them is silently cut at the end, where the reproduction usually is."""
+        report = good_report()
+        report["sections"]["did"] = "x" * (MAX_NOTE_CHARS + 1)
+        problems, _ = validate(report)
+        self.assertTrue(any("did" in p and "over" in p for p in problems), problems)
+        report["sections"]["did"] = "x" * MAX_NOTE_CHARS
+        problems, cleaned = validate(report)
+        self.assertEqual(problems, [])
+        self.assertNotIn("over-length", cleaned["redactions"])
+
+    def test_an_unhashable_enum_value_is_a_rejection_not_a_crash(self):
+        for field, value in (("kind", ["bug"]), ("surface", {"a": 1}),
+                             ("connectors", [{"name": ["apollo"], "state": "S4"}]),
+                             ("connectors", [{"name": "apollo", "state": {"S4": 1}}])):
+            with self.subTest(field=field):
+                problems, _ = validate(good_report(**{field: value}))
+                self.assertTrue(problems)
+
     def test_a_non_semver_version_is_rejected(self):
         problems, _ = validate(good_report(plugin_version="latest"))
         self.assertTrue(any("plugin_version" in p for p in problems))
@@ -158,7 +182,8 @@ class TheIssueFormsMatchTheScript(unittest.TestCase):
     """The forms are the human path; the script is the agent path. Same sections."""
 
     FORM_DIR = REPO_ROOT / ".github" / "ISSUE_TEMPLATE"
-    UNQUOTED_SCALAR = re.compile(r"^\s+(?:description|label|about|title|name):\s+(?P<v>[^\"'|>].*)$")
+    SCALAR = re.compile(r"^\s+(?:description|label|about|title|name):\s+(?P<v>.*)$")
+    WELL_QUOTED = re.compile(r'^"(?:[^"\\]|\\.)*"$|^\'(?:[^\']|\'\')*\'$')
 
     def test_every_section_key_is_a_field_id_in_its_form(self):
         for kind, sections in KINDS.items():
@@ -168,14 +193,20 @@ class TheIssueFormsMatchTheScript(unittest.TestCase):
                     self.assertTrue(re.search(rf"^\s+id: {re.escape(key)}$", text, re.M),
                                     f"{FORMS[kind]} lacks a field with id {key}")
 
-    def test_no_unquoted_scalar_contains_a_colon_space(self):
-        """A `: ` inside an unquoted YAML scalar is a second mapping key, and GitHub
-        silently falls back to a blank issue when a form fails to parse. Observed on the
-        first draft of bug_report.yml; stdlib only, so this is the check."""
+    def test_every_form_scalar_is_well_formed(self):
+        """Two defects seen on the first drafts of bug_report.yml, both of which GitHub
+        answers by silently falling back to a blank issue: a `: ` inside an unquoted
+        scalar (a second mapping key), and a quoted scalar with trailing characters after
+        its closing quote (an extra `"`). PyYAML is not in CI, so this is the check."""
         for form in sorted(self.FORM_DIR.glob("*.yml")):
             for n, line in enumerate(form.read_text("utf-8").splitlines(), 1):
-                m = self.UNQUOTED_SCALAR.match(line)
-                if m and ": " in m.group("v"):
+                m = self.SCALAR.match(line)
+                if not m:
+                    continue
+                v = m.group("v")
+                if v[0] in "\"'":
+                    self.assertRegex(v, self.WELL_QUOTED, f"{form.name}:{n} quoted scalar is malformed")
+                elif v[0] not in "|>" and ": " in v:
                     self.fail(f"{form.name}:{n} has an unquoted scalar containing ': '")
 
     def test_blank_issues_are_off(self):
@@ -183,12 +214,37 @@ class TheIssueFormsMatchTheScript(unittest.TestCase):
                       (self.FORM_DIR / "config.yml").read_text("utf-8"))
 
 
+def token_for_report(report):
+    problems, cleaned = validate(report)
+    assert not problems, problems
+    title, body = render(cleaned)
+    return token_for(title + "\n" + body)
+
+
 class TheApprovalIsBound(unittest.TestCase):
     def test_a_changed_section_changes_the_token(self):
-        first = token_for(body_for(good_report()))
         report = good_report()
         report["sections"]["did"] = "Something else entirely."
-        self.assertNotEqual(first, token_for(body_for(report)))
+        self.assertNotEqual(token_for_report(good_report()), token_for_report(report))
+
+    def test_a_changed_title_changes_the_token(self):
+        """The title is filed too, so an edit to it after preview must invalidate the approval."""
+        self.assertNotEqual(token_for_report(good_report()),
+                            token_for_report(good_report(title="A different title")))
+
+    def test_rendering_never_calls_submit(self):
+        """In-process, with submit patched to explode: the render path must not reach it,
+        or a machine with an authenticated gh files a real issue at preview time."""
+        import feedback
+        from unittest import mock
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump(good_report(), f)
+        with mock.patch.object(feedback, "submit", side_effect=AssertionError("submit called")), \
+             mock.patch.object(sys, "argv", ["feedback.py", "--report", f.name]), \
+             mock.patch.object(sys, "stdout", new_callable=lambda: __import__("io").StringIO()):
+            with self.assertRaises(SystemExit) as ctx:
+                feedback.main()
+        self.assertEqual(ctx.exception.code, 0)
 
 
 class TheCliBehaves(unittest.TestCase):
@@ -229,7 +285,7 @@ class TheCliBehaves(unittest.TestCase):
         proc = self.run_cli(report, "--json")
         out = json.loads(proc.stdout)
         self.assertEqual(out["verdict"], "READY")
-        self.assertEqual(out["confirm_token"], token_for(out["body"]))
+        self.assertEqual(out["confirm_token"], token_for(out["title"] + "\n" + out["body"]))
         self.assertEqual(out["redactions"], ["workspace-id"])
         self.assertIn("bug_report.yml", out["paste_url"])
 

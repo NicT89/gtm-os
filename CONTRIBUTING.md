@@ -23,10 +23,12 @@ Three ways, in the order they cost you the least:
 
 This tracker is public. Nothing from your instance belongs in it: no Apollo, Airtable or
 HubSpot IDs, no prospect or customer names, no credentials, no run reports, no links into
-your workspace. The skill replaces those with `[redacted: <kind>]` markers before you see
-the body; if you type an issue by hand, replace them yourself with `{KEY}` or
-`[redacted]`. A reproduction that needs a real ID can be described ("the posts table",
-"the contact play field") and the maintainer will ask in the thread if more is needed.
+your workspace. The skill replaces IDs, email addresses, credentials and private links with
+`[redacted: <kind>]` markers before you see the body. It does not detect names: remove
+prospect and customer names yourself before you approve the body. If you type an issue by
+hand, replace every such value yourself with `{KEY}` or `[redacted]`. A reproduction that
+needs a real ID can be described ("the posts table", "the contact play field") and the
+maintainer will ask in the thread if more is needed.
 
 ### What happens next
 

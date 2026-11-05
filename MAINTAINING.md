@@ -219,8 +219,9 @@ Issues arrive three ways and look alike: the `gtm-os-feedback` skill (body carri
 `<!-- gtm-os:feedback:v1 -->`), the `environment-setup` skill's setup reports
 (`<!-- gtm-os:setup-feedback:v1 -->`), and the forms under `.github/ISSUE_TEMPLATE/`
 (which a reporter typed; the forms pre-apply the `bug`, `enhancement` or `feedback` label).
-The markers are what to filter on: a reporter cannot apply a label, and a marker is in the
-body whether or not the label survived. `CONTRIBUTING.md` promises what happens next, so
+Skill and setup reports carry their marker in the body, and that is what to filter on for
+them, since a reporter cannot apply a label. Form submissions carry no marker; find those by
+the label the form applied. `CONTRIBUTING.md` promises what happens next, so
 it is the contract: triage in arrival order, label the area, reply on every issue before
 it closes, and answer a feature request with **built**, **guided** or **declined**.
 

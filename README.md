@@ -171,8 +171,8 @@ below is the reference stack.
 - **Brand Kit OS** (optional, recommended) — supplies structured brand voice, positioning,
   and audience data as the seller-side context that `gtm-blueprint` and the content skills
   compose against. Declared in `.mcp.json`, so it appears on the Connectors tab with the
-  rest. Without it, the engine falls back to your CRM's context center or a document you
-  name.
+  rest. Without it, `gtm-blueprint` falls back to your CRM's context center or a document
+  you name, and the content skills ask you for the context.
 - **Google Drive / Box / OneDrive** (optional) — file home for briefs and audit logs.
   A local folder works too.
 - **HubSpot** (generic CRM) — supported with native schema discovery: the engine maps your
