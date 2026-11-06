@@ -208,6 +208,8 @@ universal shows up as two runs disagreeing about arithmetic.
 
 ## The plugin is the open part; GTM MCP is the closed part
 
+**Status: GTM MCP is parked (2026-10-28).** It is a future-version integration; no current release wires it in, and public docs describe it as parked, not "not live yet". The design rules below still govern anything written for it.
+
 From 1.12.0 GTM OS is designed as two parts. This repo is public and ships the skills, the
 human gates, connector setup, structure checks, and the **contracts** a customer's systems
 must match. The hosted **GTM MCP** (`references/gtm-mcp.md`) will hold scraping, the scoring
@@ -307,13 +309,21 @@ you need before starting:
 3. **Review locally before pushing**, if the CLI is authenticated:
    `coderabbit review --base main` (or `--agent` for structured JSON). Findings
    are cheaper here than on the PR.
-4. **Bump `VERSION` last**, immediately before opening the PR — merging a changed
+4. **Review README.md against the change.** Every PR that adds, renames or removes a
+   skill, connector, script, reference or setup step re-reads README.md end to end and
+   amends it: the skill table, the connector list, the Get Started block (edit
+   `references/get-started.md` and re-sync the three copies; never hand-edit one) and any
+   section that describes the changed behavior. `tests/test_skills_listed_are_shipped.py` fails on
+   a shipped skill missing from the table, but it cannot see prose drift; the read is the
+   check. Do the same pass on SETUP.md and AGENTS.md when the change touches setup or the
+   agent landing page.
+5. **Bump `VERSION` last**, immediately before opening the PR — merging a changed
    `VERSION` fires the release, so an early bump on a branch that sits is a
    release waiting to go off. Additive is **minor**, not patch.
-5. **Open the PR**, fill in every template section, and label it (`release`,
+6. **Open the PR**, fill in every template section, and label it (`release`,
    `area: *`, `safety-review` when it touches redaction, credentials, client
    data, or instance IDs).
-6. **Work the review**, per the rules below.
+7. **Work the review**, per the rules below.
 
 ### Working a CodeRabbit review
 
@@ -452,9 +462,11 @@ went unchecked in the first place. For behavior, review against the harness refe
 Apollo, Airtable, Apify and Firecrawl are each required, conditionally: Airtable for the
 posts base, Apify for post scraping, Firecrawl as the default web extractor. Google Drive,
 CB Insights, Brand Kit OS and a warehouse are optional, and each skill degrades explicitly
-when one is missing rather than guessing. HubSpot, as the CRM, is generic with native schema
+when one is missing rather than guessing. Six connectors are declared in `.mcp.json` (Apollo,
+HubSpot, Airtable, Apify, Firecrawl, Brand Kit OS), each as the vendor's own OAuth server with
+no credential in the file; `tests/test_plugin_connectors.py` pins the hosts. HubSpot, as the CRM, is generic with native schema
 discovery (`references/hubspot-adapter.md`), and GTM MCP is the hosted dependency described
-above, not live yet. The authoritative per-connector list is
+above, parked for a future version. The authoritative per-connector list is
 [references/environment-setup.md](references/environment-setup.md); this paragraph called
 Airtable and Apify optional and omitted Firecrawl entirely until 1.9.2. The Research
 Vault base is optional in the same way: with its keys empty, the research skills produce

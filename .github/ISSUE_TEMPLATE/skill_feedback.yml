@@ -1,0 +1,47 @@
+name: Skill feedback
+description: A skill ran to completion and you have an opinion on the result.
+title: "[skill-feedback] "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a skill that worked but could work better. If it did the wrong thing, use the bug report instead. Public tracker: no instance IDs, customer or prospect names, credentials, or workspace links.
+  - type: input
+    id: target
+    attributes:
+      label: Skill
+      description: The skill directory name.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+    validations:
+      required: true
+  - type: textarea
+    id: worked
+    attributes:
+      label: What the skill did well
+    validations:
+      required: true
+  - type: textarea
+    id: did_not
+    attributes:
+      label: Where it fell short
+    validations:
+      required: true
+  - type: textarea
+    id: suggest
+    attributes:
+      label: What you would change
+    validations:
+      required: true
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Redaction
+      options:
+        - label: Nothing above identifies my instance, my customers, or my prospects.
+          required: true
