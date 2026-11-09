@@ -76,9 +76,9 @@ NOT_QUANTITY_RES = [
 # optionally a unit suffix (%, percent, k/m/bn/x in either case), not glued to a word or a
 # path segment. Dates, timestamps, versions and list markers were stripped above, so a
 # hyphen before a digit here is a minus sign or a range, both of which are claims.
-NUMBER_RE = re.compile(
-    r"(?<![\w/.])-?\$?\d+(?:[.,]\d+)?(?:/\$?\d+)?"
-    r"(?:\s?%|\s?percent\b|(?:bn|[kKmMBb])\b|x\b)?(?![\w/]|[.,]\d)")
+_UNIT = r"(?:\s?%|\s?percent\b|(?:bn|[kKmMBb])\b|x\b)?"
+_NUM = r"\$?\d+(?:[.,]\d+)?" + _UNIT
+NUMBER_RE = re.compile(r"(?<![\w/.])-?" + _NUM + r"(?:/" + _NUM + r")?(?![\w/]|[.,]\d)")
 
 
 def asserts_a_quantity(line):
