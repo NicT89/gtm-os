@@ -26,10 +26,13 @@ once the plugin is installed.
 **2. Set it up.** In a working directory of your own — not a clone of this repo — say:
 
 ```
-set up my environment
+onboard <your company>
 ```
 
-The `environment-setup` skill drives it, and it diagnoses what you already have before it
+The `gtm-onboard` skill runs the whole sequence: connectors, the workspace, brand context,
+then the first company brief. Its first step is the `environment-setup` skill, which you can
+also run on its own with `set up my environment`. It diagnoses what you already have before it
+suggests anything, and it diagnoses what you already have before it
 suggests anything, because **not set up almost never means not owned**. The usual
 situation is that you own the tool and have simply never shaped it for this engine.
 Diagnosis costs almost nothing: every probe is a read-only call except the Firecrawl one,

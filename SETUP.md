@@ -14,6 +14,12 @@ the invocable front door that runs it (`"set up my environment"`, `"set up Apoll
 `"connect Airtable"`). Any skill that stops because a connector is missing routes there
 too, so there is exactly one setup procedure rather than a version of it per skill.
 
+**For a new deployment, say `onboard <your company>` instead.** The `gtm-onboard` skill
+runs Step 1 below as its first step, then lays down the workspace
+([references/workspace-schema.md](references/workspace-schema.md)), settles brand context
+([references/brand-context.md](references/brand-context.md)) and hands off to the first
+company brief. The steps on this page are the same steps, for running them by hand.
+
 **Before anything else, read the rule that governs the whole module: not set up does not
 mean not owned.** Most users already have Apollo, Airtable, Apify, and Firecrawl. What
 they do not have is those tools *shaped for this engine* — the custom fields do not

@@ -11,9 +11,19 @@ Input: one company URL. Output: a working, documented GTM engine that company's 
 
 Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
+## Before Phase 0: the workspace
+
+If the deployment has no workspace yet (no `_index/instance.md` in the working folder), run
+the `gtm-onboard` skill first; it audits connectors, lays down the workspace, settles brand
+context and hands back here. Do not scrape before the structure that holds the result exists.
+
 ## Phase 0: Company context brief (agent, ~1 hour)
 
-Scrape the site (home, pricing, careers, docs, blog) per the plugin root's `references/scraping-playbook.md` (Firecrawl default, markdown storage, sitemap-first). Extract: what they sell, their 2-3 distribution models and the buyer persona per model (most companies have multiple: a primary product for one persona and secondary channels like widgets, APIs, or partnerships for others), competitive frame, pricing model, GTM motion type (PLG free trial vs sales-led book-a-call, classify from the primary website CTA), public support channels, and review-site presence. Pull firmographics and hiring signals from Apollo; for recently merged or acquired companies treat the CRM's org record as a possible merge artifact (funding history, social links, and founding dates can mix both entities) and verify funding history and identity claims against primary press releases before citing them. Draft ICP hypothesis v0.
+Scrape the site (home, pricing, careers, docs, blog) per the plugin root's `references/scraping-playbook.md` (Firecrawl default, markdown storage, sitemap-first). Extract: what they sell, their 2-3 distribution models and the buyer persona per model (most companies have multiple: a primary product for one persona and secondary channels like widgets, APIs, or partnerships for others), competitive frame, pricing model, GTM motion type (PLG free trial vs sales-led book-a-call, classify from the primary website CTA), public support channels, and review-site presence. Pull firmographics and hiring signals from Apollo; for recently merged or acquired companies treat the CRM's org record as a possible merge artifact (funding history, social links, and founding dates can mix both entities) and verify funding history and identity claims against primary press releases before citing them. When the brand context is file-based (`references/brand-context.md`, connector absent), the
+extraction above is also written into `{BRAND_CONTEXT_DIR}/company-profile.md`, `products.md`,
+`audiences.md` and `proof-and-quotes.md`, each fact KNOWN with its URL or INFERRED with the
+clause; if `gtm-onboard` already wrote them, read them rather than scraping twice. Draft ICP
+hypothesis v0.
 **GATE 1: human signs off the ICP hypothesis before anything is built.**
 
 ## Phase 1: Signal design

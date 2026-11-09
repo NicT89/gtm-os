@@ -12,6 +12,54 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-11-08
+
+Onboarding as a front door, and brand context without the connector. Upgrading needs no
+action; a deployment already running keeps its workspace and nothing moves.
+
+### Added
+- **`gtm-onboard` skill.** The sequence for a new deployment, in order, with each gate
+  named: connectors through `environment-setup` under a strong-recommendation policy (a
+  declined connector is recorded with its fallback and never nagged about), session mode
+  detected from the tools present, Project instructions rendered and pasted by the user,
+  the workspace laid down and audited by script before any brand file is written, brand
+  context from Brand Kit OS or from a site scrape plus interview with a label on every fact,
+  hand-off to `provision-gtm-engine` Phase 0, and three default scheduled tasks created
+  paused and switched on only after a live-fire run. The stack audit is recorded as not
+  built in this version rather than pretended.
+- **`references/brand-context.md`.** One lookup order for the seller's brand: the Brand Kit
+  OS connector, else the `{BRAND_CONTEXT_DIR}` files (one per kit entity, front matter with
+  source, verified date and provenance default; KNOWN / INFERRED / UNVERIFIED on every fact),
+  else ask. The import path from files to a kit maps each label to the kit's own `basis`.
+  The fourteen skills that said "if the Brand Kit OS connector is available" cite it now.
+- **`references/version-check.md`.** The version check as a three-source fallback chain
+  (raw file, contents API, releases page) with three outcomes: current, update available,
+  unverified. A customer network that blocks raw.githubusercontent.com no longer gets
+  silence. All thirty-one skills cite it; `tests/test_version_check_cited.py` fails on a
+  skill that restates its own.
+- **`scripts/check_workspace.py`** (the shape gate: folders, front matter contract, no
+  identifier in the Project-side summary, no unlabeled number in a brand file) and
+  **`scripts/render_project_instructions.py`** (fills `references/project-instructions-template.md`;
+  the organization's own rules are guided free text with a shape check). Tests in
+  `tests/test_workspace_tools.py`, each guarded property broken on purpose first.
+- **`references/workspace-schema.md`**, the deployment workspace: `_index/`, `runs/`,
+  `audit-log/`, `sequences/`, `research/`, the brand folder, and what never goes in the
+  Project copy.
+- **`BRAND_CONTEXT_DIR`** in instance-config (optional, default `brand`).
+
+### Changed
+- `environment-setup`: the setup report needs the user's explicit yes after the preview,
+  with the host prompt as the second gate, matching `gtm-os-feedback`; the redaction note
+  says what the redactor recognizes by shape and what it cannot.
+- `provision-gtm-engine`: routes to `gtm-onboard` when no workspace exists, and Phase 0
+  writes its extraction into the brand files when the context is file-based rather than
+  scraping twice.
+- Get Started step 2 says `onboard <your company>`; `set up my environment` still works on
+  its own.
+- Scheduled-task failure rule, in the Project instructions template and `gtm-onboard`: on a
+  connector-auth failure a task stops, writes the audit log entry and reports a diagnosis
+  with fixes; it retries once only when a re-run can fix it.
+
 ## [1.16.0] - 2026-11-05
 
 The feedback loop, and the last connector. Upgrading needs no action; the new connector

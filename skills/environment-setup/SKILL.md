@@ -134,7 +134,7 @@ Report what was fixed, what remains at which state, and what the user must do th
 (UI-only steps, purchases, auth in a browser). A connector left below S4 is named
 explicitly along with which skills degrade because of it.
 
-## Feedback checkpoints (offer at each; the approval is the tool call)
+## Feedback checkpoints (offer at each; two gates, neither replaces the other)
 
 This module has been read far more than it has been watched. The failure it exists to
 prevent — telling somebody to buy a tool they already pay for — can only be observed on
@@ -158,23 +158,26 @@ python3 scripts/setup_feedback.py --report <report.json> --submit --confirm <tok
 ```
 
 The first renders the exact issue body and prints a token derived from it, and sends
-nothing. The second files it, and the host's own approval prompt for that command is the
-acceptance gate — you are not collecting consent in conversation and then reporting the
-answer yourself. **Do not ask for permission in prose and then run the submit command as
-if that settled it.** Show the rendered body, say what filing it does, and let the tool
-call carry the decision.
+nothing. **Show the rendered body, then stop and wait for the user's reply.** The submit
+command is issued only after an explicit yes in that reply, whatever the host's permission
+setting; no reply is a no. The host's own approval prompt on the command is the second
+gate: say what filing does (a public issue on the upstream repo, under their GitHub
+account) and let the tool call carry it. A yes in conversation does not license running
+the command as if it were pre-approved, and the prompt does not replace the yes. This
+matches the `gtm-os-feedback` skill.
 
 The token is a digest of the body that was displayed. If a note is edited or the ladder
 changes after rendering, the token no longer matches and the submission is refused, so
-nothing can be filed that was not first put on screen — including under a permission
-setting that would otherwise run this script unattended.
+nothing can be filed that was not first put on screen.
 
 `--schema` prints the input shape. The report carries connector names, S0-S4 states, the
 checkpoint, the outcome, whether a state was misdiagnosed, and short free-text notes.
-**Sensitive values in notes are stripped automatically** — credentials, workspace IDs,
-email addresses, and links outside vendor documentation are each replaced with a visible
-`[redacted: <kind>]` marker, and the body says how many were removed. Write the note
-naturally; do not pre-sanitize it and do not talk the user into rephrasing.
+**The redactor recognizes shapes, not meaning:** credentials, Airtable IDs, 24-character
+hex CRM ids, email addresses, long digit runs, and links to anything other than vendor
+documentation or the upstream repo are each replaced with a visible `[redacted: <kind>]`
+marker, and the body says how many were removed. Names and IDs in formats it does not know
+pass through: have the user replace any prospect, customer or person name, and any other
+identifier, before rendering. Beyond that, write the note naturally.
 
 **Rules that do not bend:**
 
