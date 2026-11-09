@@ -11,9 +11,7 @@ without anything from their instance travelling with it.
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION and compare it to the
-VERSION file at the plugin root. Say an updated version is available only when the remote
-version is newer, then continue. The installed version goes in the report; a defect already
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue. The installed version goes in the report; a defect already
 fixed upstream is still worth filing, with that noted, because it says the update did not
 reach them.
 

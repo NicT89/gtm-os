@@ -9,7 +9,7 @@ Produce a 30-day GTM plan for a target company that reads custom because it IS c
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to the installed VERSION, notify on mismatch, continue.
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
 If the CRM connector is unavailable or a tool call fails, stop and report which capability is missing. Never compose a blueprint from memory of prior records or from guesses; a wrong "fact" in a show-don't-tell email costs more than a delayed send.
 

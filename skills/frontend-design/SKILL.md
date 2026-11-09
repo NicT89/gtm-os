@@ -13,8 +13,7 @@ context step. The design guidance itself is unmodified.
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to the plugin
-root VERSION file, notify on mismatch, continue.
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
 ## Brand context
 

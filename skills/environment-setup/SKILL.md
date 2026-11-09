@@ -14,8 +14,7 @@ the decision flow over it. Read that file before acting; do not work from memory
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to the plugin
-root VERSION file, notify on mismatch, continue.
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
 ## The rule that governs every step
 

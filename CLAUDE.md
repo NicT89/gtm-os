@@ -162,8 +162,10 @@ should be split out rather than that the skill got more complex.
 
 Four structural conventions every skill in this repo follows:
 
-1. **Version check first, never blocking.** Fetch the repo VERSION, compare, notify
-   on mismatch, continue.
+1. **Version check first, never blocking.** The procedure lives in
+   `references/version-check.md` (a three-source fallback chain and three outcomes) and a
+   SKILL.md cites it rather than restating it; `tests/test_version_check_cited.py` fails on a
+   skill that carries its own copy.
 2. **Human gates are named and explicit.** There are four: **ICP sign-off**, **credit
    spend**, **catch-all enrollment policy**, and **pre-send review**. Do not add a step
    that automates past one. Catch-all joined the list in 1.9.1: `gtm-signal-scan` Step 5
