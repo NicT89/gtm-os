@@ -173,7 +173,9 @@ def redact_note(note):
     kinds = []
 
     def swap(kind):
+        """Return a re.sub callback that records `kind` and emits its redaction marker."""
         def _sub(_match):
+            """Replace one match with the marker for `kind`."""
             kinds.append(kind)
             return f"[redacted: {kind}]"
         return _sub
@@ -184,6 +186,7 @@ def redact_note(note):
     # sometimes an @ that the email rule would rewrite into "[redacted: email-address]" —
     # which then leaves a half-mangled link behind instead of removing the destination.
     def _url(match):
+        """Keep an allowlisted link; redact any other."""
         if url_is_publishable(match.group(0)):
             return match.group(0)
         kinds.append("private-link")
@@ -197,6 +200,7 @@ def redact_note(note):
     # escape hatch: a repetitive string is not a credential and mangling it helps nobody.
     for kind, pattern in PATTERNS:
         def _cred(match, kind=kind):
+            """Redact a credential-shaped match unless it is low-entropy filler."""
             if is_low_entropy(match.group(0)):
                 return match.group(0)
             kinds.append("credential")

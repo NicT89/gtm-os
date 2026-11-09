@@ -23,6 +23,7 @@ FRONT = "---\nentity: {entity}\nsource: files\nverified: 2026-11-08\nprovenance_
 
 
 def good_workspace(root):
+    """Lay down a workspace that passes every check, so each test breaks exactly one thing."""
     root = Path(root)
     for d in cw.SCHEMA_DIRS + ["brand"]:
         (root / d).mkdir(parents=True, exist_ok=True)
@@ -38,11 +39,15 @@ def good_workspace(root):
 
 
 class TheWorkspaceGate(unittest.TestCase):
+    """check_workspace.py: a correct workspace passes and each named defect fails."""
+
     def setUp(self):
+        """Fresh passing workspace per test."""
         self.tmp = tempfile.TemporaryDirectory()
         self.root = good_workspace(self.tmp.name)
 
     def tearDown(self):
+        """Remove the temp workspace."""
         self.tmp.cleanup()
 
     def test_a_correct_workspace_passes(self):
@@ -158,6 +163,7 @@ class TheWorkspaceGate(unittest.TestCase):
 
 
 def good_input(**over):
+    """A renderer input that validates, with overrides for the one field a test breaks."""
     d = {
         "company": "Acme", "instance_name": "acme", "field_prefix": "ACME",
         "crm_provider": "apollo",
@@ -172,6 +178,8 @@ def good_input(**over):
 
 
 class TheInstructionsRenderer(unittest.TestCase):
+    """render_project_instructions.py: validation and the paste-block render."""
+
     def test_a_good_input_renders_every_placeholder(self):
         problems, cleaned = rpi.validate(good_input())
         self.assertEqual(problems, [])

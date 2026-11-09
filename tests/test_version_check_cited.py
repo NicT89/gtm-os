@@ -75,6 +75,8 @@ def outcome_rows(text):
 
 
 class TheReferenceHoldsTheChain(unittest.TestCase):
+    """The reference names the three sources in order and the three outcomes with their responses."""
+
     def test_the_numbered_sources_are_exactly_the_three_urls_in_fallback_order(self):
         """Reads the list entries themselves, so a mention of a host in the prose above the
         list cannot satisfy the check, and a source pointing at another repository on the
@@ -93,6 +95,8 @@ class TheReferenceHoldsTheChain(unittest.TestCase):
 
 
 class EverySkillCitesIt(unittest.TestCase):
+    """Each SKILL.md has a version section that cites the reference and restates nothing."""
+
     def test_there_are_skills(self):
         self.assertGreater(len(SKILLS), 20)
 

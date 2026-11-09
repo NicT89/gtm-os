@@ -110,6 +110,7 @@ def front_matter(text):
 
 
 def check_brand_file(path):
+    """Return the shape problems of one brand file: front matter, and a label on every quantity."""
     problems = []
     fm, body = front_matter(path.read_text("utf-8"))
     if fm is None:
