@@ -55,16 +55,21 @@ LABEL_RE = re.compile(r"\b(KNOWN|INFERRED|UNVERIFIED)\b")
 # otherwise; the contract says every fact is labeled anyway.
 NOT_QUANTITY_RES = [
     re.compile(r"https?://\S+"),            # URLs, including the target of a markdown link
-    re.compile(r"\b\d{4}-\d{2}(?:-\d{2})?\b"),  # dates: 2026-11 or 2026-11-08
+    # dates and timestamps: 2026-11, 2026-11-08, 2026-11-08T09:30:00Z, and a bare 09:30
+    re.compile(r"\b\d{4}-\d{2}(?:-\d{2})?(?:T\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?Z?)?\b"),
+    re.compile(r"\b\d{1,2}:\d{2}(?::\d{2})?\b"),
     # versions: v2.1 or 1.17.0. A bare "3.5" is a quantity, not a version, so two dots or
     # a v prefix are required.
     re.compile(r"\bv\d+(?:\.\d+){1,3}\b|\b\d+(?:\.\d+){2,3}\b"),
     re.compile(r"^\d+\.\s"),                 # a list marker at the start of the line
 ]
-# A quantity: an integer or decimal, optionally a fraction (3/4), optionally a unit suffix
-# (%, percent, k/M/B, x), not glued to a word or a path segment.
+# A quantity: an optionally signed integer or decimal, optionally a fraction (3/4),
+# optionally a unit suffix (%, percent, k/m/bn/x in either case), not glued to a word or a
+# path segment. Dates, timestamps, versions and list markers were stripped above, so a
+# hyphen before a digit here is a minus sign or a range, both of which are claims.
 NUMBER_RE = re.compile(
-    r"(?<![\w/.-])\d+(?:[.,]\d+)?(?:/\d+)?(?:\s?%|\s?percent\b|[kKMBb]\b|x\b)?(?![\w/]|[.,]\d)")
+    r"(?<![\w/.])-?\d+(?:[.,]\d+)?(?:/\d+)?"
+    r"(?:\s?%|\s?percent\b|(?:bn|[kKmMBb])\b|x\b)?(?![\w/]|[.,]\d)")
 
 
 def asserts_a_quantity(line):

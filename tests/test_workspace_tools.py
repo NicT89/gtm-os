@@ -91,7 +91,9 @@ class TheWorkspaceGate(unittest.TestCase):
         used to hide them from the audit."""
         for line in ("Customers: 40.", "A 3-day setup for every team.", "Grew 12%, then stalled.",
                      "Conversion is 3.5 percent.", "Customers: 5k.", "Reached 5k users",
-                     "3/4 of teams renew", "Pipeline grew 2.5x last year"):
+                     "3/4 of teams renew", "Pipeline grew 2.5x last year",
+                     "Revenue reached $5m", "Raised 10bn in total", "Revenue changed -5%.",
+                     "Margin moved -2.5 points"):
             with self.subTest(line):
                 (self.root / "brand" / "proof-and-quotes.md").write_text(
                     FRONT.format(entity="proof-and-quotes") + line + "\n")
@@ -103,7 +105,8 @@ class TheWorkspaceGate(unittest.TestCase):
             FRONT.format(entity="products")
             + "1. Launched in 2024-03 per https://example.com/v2.1/notes\n"
             + "2. Second item with no number in it\n"
-            + "3. Shipped on 2026-11-08 with [the notes](https://example.com/release/42) for v1.17.0\n")
+            + "3. Shipped on 2026-11-08 with [the notes](https://example.com/release/42) for v1.17.0\n"
+            + "<!-- refreshed 2026-11-08T09:30:00Z, next at 14:05 -->\n")
         self.assertEqual(cw.check(self.root, "brand", "yes"), [])
 
     def test_a_labeled_number_passes(self):

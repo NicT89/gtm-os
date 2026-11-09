@@ -46,7 +46,8 @@ SOURCE_URLS = [
 # The response each row must carry, as the exact phrase the reference specifies.
 OUTCOME_RESPONSES = {
     "Installed equals current": "gtm os x.y.z, current.",
-    "Current is newer": "a.b.c is available. update the plugin when convenient",
+    "Current is newer": "gtm os x.y.z installed; a.b.c is available. update the plugin when "
+                        "convenient; continuing on x.y.z.",
     "Every source failed": "version check unverified: could not reach",
 }
 
@@ -149,7 +150,8 @@ class TheCheckCanFail(unittest.TestCase):
         text = REFERENCE.read_text("utf-8")
         for old, new in (("Version check unverified:", "Version check skipped:"),
                          ('"GTM OS X.Y.Z, current."', "the current version is unknown."),
-                         ("A.B.C is available.", "A.B.C exists.")):
+                         ("A.B.C is available.", "A.B.C exists."),
+                         ("; continuing on X.Y.Z.", ".")):
             with self.subTest(new):
                 changed = text.replace(old, new)
                 self.assertNotEqual(changed, text)
