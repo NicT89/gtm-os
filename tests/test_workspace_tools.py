@@ -89,7 +89,9 @@ class TheWorkspaceGate(unittest.TestCase):
     def test_a_quantity_before_punctuation_or_a_hyphen_fails(self):
         """'Customers: 40.' and 'a 3-day setup' are claims; the sentence end and the hyphen
         used to hide them from the audit."""
-        for line in ("Customers: 40.", "A 3-day setup for every team.", "Grew 12%, then stalled."):
+        for line in ("Customers: 40.", "A 3-day setup for every team.", "Grew 12%, then stalled.",
+                     "Conversion is 3.5 percent.", "Customers: 5k.", "Reached 5k users",
+                     "3/4 of teams renew", "Pipeline grew 2.5x last year"):
             with self.subTest(line):
                 (self.root / "brand" / "proof-and-quotes.md").write_text(
                     FRONT.format(entity="proof-and-quotes") + line + "\n")

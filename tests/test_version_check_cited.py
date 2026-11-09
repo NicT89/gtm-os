@@ -43,10 +43,11 @@ SOURCE_URLS = [
     "https://api.github.com/repos/NicT89/gtm-os/contents/VERSION",
     "https://github.com/NicT89/gtm-os/releases/latest",
 ]
+# The response each row must carry, as the exact phrase the reference specifies.
 OUTCOME_RESPONSES = {
-    "Installed equals current": "current",
-    "Current is newer": "is available",
-    "Every source failed": "unverified",
+    "Installed equals current": "gtm os x.y.z, current.",
+    "Current is newer": "a.b.c is available. update the plugin when convenient",
+    "Every source failed": "version check unverified: could not reach",
 }
 
 
@@ -146,9 +147,13 @@ class TheCheckCanFail(unittest.TestCase):
 
     def test_a_row_without_its_response_fails_the_check(self):
         text = REFERENCE.read_text("utf-8")
-        changed = text.replace("Version check unverified:", "Version check skipped:")
-        self.assertNotEqual(changed, text)
-        self.assertTrue(outcome_row_problems(changed))
+        for old, new in (("Version check unverified:", "Version check skipped:"),
+                         ('"GTM OS X.Y.Z, current."', "the current version is unknown."),
+                         ("A.B.C is available.", "A.B.C exists.")):
+            with self.subTest(new):
+                changed = text.replace(old, new)
+                self.assertNotEqual(changed, text)
+                self.assertTrue(outcome_row_problems(changed))
 
     def test_a_missing_section_is_caught(self):
         self.assertIsNone(version_section("---\nname: x\n---\n## Step 1\n\ntext\n"))

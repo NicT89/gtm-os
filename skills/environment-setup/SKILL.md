@@ -166,10 +166,11 @@ account) and let the tool call carry it. A yes in conversation does not license 
 the command as if it were pre-approved, and the prompt does not replace the yes. The agent
 cannot see in advance whether the host will prompt (a tool call looks the same either way),
 so it asks: when it requests the yes, it also asks whether this host prompts before shell
-commands run. If the answer is that it does not (an allow rule or a permission mode that
-skips approvals), the second gate does not exist in that session: do not run the submit
-command; hand the user the rendered body and the exact command, and they file it
-themselves. This
+commands run. The agent runs the submit command only on an explicit "yes, it prompts". Any other
+answer (it does not, not sure, no answer, or the user's say-so turns out wrong because the
+command ran with no prompt) means the second gate is not there: hand the user the rendered
+body and the exact command, and they file it themselves. Handing over is always the safe
+default; there is no way to verify the host's setting from inside the session. This
 matches the `gtm-os-feedback` skill.
 
 The token is a digest of the body that was displayed. If a note is edited or the ladder

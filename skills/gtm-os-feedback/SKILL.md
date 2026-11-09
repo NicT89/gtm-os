@@ -95,10 +95,11 @@ what filing does (a public issue on `NicT89/gtm-os`, under their GitHub account)
 the tool call carry it; a yes in conversation does not license running the command as if
 it were pre-approved. The agent cannot see in advance whether the host will prompt (a tool
 call looks the same either way), so when it requests the yes it also asks whether this host
-prompts before shell commands run. If the answer is that it does not (an allow rule or a
-permission mode that skips approvals), the second gate does not exist in that session: do
-not run the submit command; hand the user the rendered body and the exact command, and they
-file it themselves. The token is a digest of the title and body that were displayed: an
+prompts before shell commands run. The agent runs the submit command only on an explicit "yes, it prompts". Any other
+answer (it does not, not sure, no answer, or the user's say-so turns out wrong because the
+command ran with no prompt) means the second gate is not there: hand the user the rendered
+body and the exact command, and they file it themselves. Handing over is always the safe
+default; there is no way to verify the host's setting from inside the session. The token is a digest of the title and body that were displayed: an
 edit after rendering changes it and the submission is refused, so nothing can be filed
 that was not first put on screen.
 

@@ -56,10 +56,15 @@ LABEL_RE = re.compile(r"\b(KNOWN|INFERRED|UNVERIFIED)\b")
 NOT_QUANTITY_RES = [
     re.compile(r"https?://\S+"),            # URLs, including the target of a markdown link
     re.compile(r"\b\d{4}-\d{2}(?:-\d{2})?\b"),  # dates: 2026-11 or 2026-11-08
-    re.compile(r"\bv?\d+(?:\.\d+){1,3}\b"),    # versions: 2.1, v1.17.0
+    # versions: v2.1 or 1.17.0. A bare "3.5" is a quantity, not a version, so two dots or
+    # a v prefix are required.
+    re.compile(r"\bv\d+(?:\.\d+){1,3}\b|\b\d+(?:\.\d+){2,3}\b"),
     re.compile(r"^\d+\.\s"),                 # a list marker at the start of the line
 ]
-NUMBER_RE = re.compile(r"(?<![\w/.-])\d+(?:[.,]\d+)?%?(?![\w/]|[.,]\d)")
+# A quantity: an integer or decimal, optionally a fraction (3/4), optionally a unit suffix
+# (%, percent, k/M/B, x), not glued to a word or a path segment.
+NUMBER_RE = re.compile(
+    r"(?<![\w/.-])\d+(?:[.,]\d+)?(?:/\d+)?(?:\s?%|\s?percent\b|[kKMBb]\b|x\b)?(?![\w/]|[.,]\d)")
 
 
 def asserts_a_quantity(line):
