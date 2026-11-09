@@ -19,10 +19,11 @@ Run the check in the plugin root's `references/version-check.md` (three sources 
 
 ## Step 1: Context
 
-If the Brand Kit OS connector is available, pull the product, ICP and persona context from
-it before asking anything. Without it the skill degrades to asking the user; to wire it, use
-the `environment-setup` skill and the plugin root's references/environment-setup.md. Do not
-ask for anything the context already answers.
+Pull product, ICP and persona context in the order the plugin root's
+`references/brand-context.md` gives: the Brand Kit OS connector, else the `{BRAND_CONTEXT_DIR}`
+files (products, audiences, personas), else ask the user for only what the task needs. To
+wire the connector, use the `environment-setup` skill. Do not ask for anything the context
+already answers.
 
 Establish:
 

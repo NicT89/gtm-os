@@ -81,6 +81,7 @@ OPTIONAL_KEYS = {
     # Ships naming a default file, like the scoring config. Without the file the scan
     # cannot assign plays and routes the operator to the play-builder skill.
     "PLAYS_FILE",
+    "BRAND_CONTEXT_DIR",
     # The standard routing fields every play writes. Optional so an existing deployment
     # keeps validating on upgrade; play-builder creates them at onboarding.
     "APOLLO_CF_ACCOUNT_PLAY",
@@ -168,7 +169,7 @@ GROUPS = [
     ),
     (
         "Scoring config and plays",
-        lambda k: k in ("SCORING_CONFIG_FILE", "PLAYS_FILE"),
+        lambda k: k in ("SCORING_CONFIG_FILE", "PLAYS_FILE", "BRAND_CONTEXT_DIR"),
         "gtm-signal-scan Step 2 scoring by script. Without the file, the scan scores by "
         "hand against SKILL.md's tables and labels every score `manual`; the demo's "
         "--config mode reports it as a blocking finding.",
@@ -176,6 +177,9 @@ GROUPS = [
         "exclusions, scoring rules (including play_fit points per play) and tier cutoffs, "
         "decided at provisioning. "
         "examples/demo/scoring.demo.json shows the shape; its values are illustrative. "
+        "BRAND_CONTEXT_DIR names the folder of brand files gtm-onboard writes when the Brand Kit "
+        "OS connector is absent (references/brand-context.md); with the connector present it is "
+        "not read. "
         "PLAYS_FILE names the plays file the play-builder skill writes; without it the scan "
         "cannot assign plays.",
     ),

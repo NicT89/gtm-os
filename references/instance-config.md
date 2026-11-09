@@ -147,6 +147,14 @@ and `references/plays.md` explains why each play's criteria are free text judged
 rather than options chosen from a list. Without the file, `gtm-signal-scan` stops at play
 assignment and routes to `play-builder`.
 
+### `BRAND_CONTEXT_DIR`
+
+The folder, next to `instance-config.json`, holding the seller's brand context as files
+when the Brand Kit OS connector is absent. Defaults to `brand`. `gtm-onboard` writes it from
+the site scrape and the brand interview, `scripts/check_workspace.py` checks its shape, and
+`references/brand-context.md` is the lookup order every composing skill follows (connector
+first, these files second, ask third). With the connector present the folder is not read.
+
 ### The Play fields
 
 `APOLLO_CF_ACCOUNT_PLAY`, `APOLLO_CF_ACCOUNT_PLAY_ASSIGNED_ON`, `APOLLO_CF_CONTACT_PLAY` and
