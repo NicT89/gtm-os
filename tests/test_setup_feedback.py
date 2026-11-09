@@ -79,6 +79,29 @@ class TheHappyPathWorks(unittest.TestCase):
         self.assertIn("gtm-os:setup-feedback:v1", body)
         self.assertIn("| apollo | S3 |", body)
 
+    def test_the_version_check_outcome_reaches_the_body(self):
+        """A reader must be able to tell whether the version was verified as current."""
+        body = body_for(good_report(version_check="update-available"))
+        self.assertIn("version check: update-available", body)
+        body = body_for(good_report())
+        self.assertIn("version check: not recorded", body)
+
+    def test_each_valid_version_check_outcome_reaches_the_body(self):
+        """A narrower allowlist would reject current or unverified without this failing."""
+        for outcome in ("current", "update-available", "unverified"):
+            with self.subTest(outcome):
+                self.assertIn(f"version check: {outcome}", body_for(good_report(version_check=outcome)))
+
+    def test_a_non_string_version_check_is_rejected_not_crashed(self):
+        for bad in ([], {}, 3):
+            with self.subTest(repr(bad)):
+                problems, _ = validate(good_report(version_check=bad))
+                self.assertTrue(any("version_check" in p for p in problems), problems)
+
+    def test_an_unknown_version_check_outcome_is_rejected(self):
+        problems, _ = validate(good_report(version_check="probably fine"))
+        self.assertTrue(any("version_check" in p for p in problems), problems)
+
     def test_a_clean_note_survives_untouched(self):
         """Redaction must not mangle ordinary prose, or nobody will trust the output."""
         note = "It stalled at the schema probe and never said which base it wanted."

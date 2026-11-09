@@ -184,6 +184,13 @@ its report. See [scraping-playbook.md](scraping-playbook.md).
 
 None of these block a run. Each skill states the degradation when one is absent.
 
+**At onboarding, every connector above and every required one is a strong recommendation,
+not a requirement.** `gtm-onboard` says what each adds and what the engine does without it,
+and the user connects it or declines it. A decline is recorded in the workspace's
+`_index/instance.md` with the fallback that deployment runs on, and no skill nags about it
+afterwards; running this skill again is how a decision changes. Brand Kit OS is recommended
+in the same terms, and `references/brand-context.md` is what the engine reads without it.
+
 | Connector | What it adds | Absent behavior |
 |---|---|---|
 | **CB Insights** | Funding stage, named investors, commercial maturity | Those three `APOLLO_CF_ACCOUNT_CBI_*` / `NAMED_INVESTORS` keys stay empty; the validator permits it. Funding comes from primary sources instead. |

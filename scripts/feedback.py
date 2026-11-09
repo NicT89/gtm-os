@@ -56,7 +56,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from setup_feedback import (  # noqa: E402
-    CONNECTORS, MAX_NOTE_CHARS, STATES, UPSTREAM, redact_note, submit, token_for,
+    CONNECTORS, MAX_NOTE_CHARS, STATES, UPSTREAM, VERSION_CHECK_OUTCOMES, redact_note,
+    submit, token_for,
 )
 
 MARKER = "<!-- gtm-os:feedback:v1 -->"
@@ -123,6 +124,13 @@ def validate(report):
         problems.append("plugin_version must look like x.y.z")
     cleaned["plugin_version"] = version
 
+    # Outcome of the version check (references/version-check.md); optional, never guessed.
+    version_check = report.get("version_check", "not recorded")
+    if not isinstance(version_check, str) or version_check not in VERSION_CHECK_OUTCOMES:
+        problems.append(f"version_check must be one of {sorted(VERSION_CHECK_OUTCOMES)}")
+        version_check = None
+    cleaned["version_check"] = version_check
+
     surface = report.get("surface", "other")
     if not isinstance(surface, str) or surface not in SURFACES:
         problems.append(f"surface must be one of {sorted(SURFACES)}")
@@ -186,7 +194,8 @@ def render(cleaned):
     lines = [MARKER, "",
              f"**Kind:** {kind}  ",
              f"**Target:** `{cleaned['target']}`  ",
-             f"**Plugin version:** {cleaned['plugin_version']}  ",
+             f"**Plugin version:** {cleaned['plugin_version']} "
+             f"(version check: {cleaned['version_check']})  ",
              f"**Surface:** {cleaned['surface']}", ""]
     if cleaned["connectors"]:
         lines += ["**Connectors at the time:**", ""]
@@ -230,6 +239,7 @@ def main():
             "kind": sorted(KINDS),
             "target": "a skill directory name, or one of " + ", ".join(sorted(AREAS)),
             "plugin_version": "x.y.z",
+            "version_check": sorted(VERSION_CHECK_OUTCOMES - {"not recorded"}),
             "surface": sorted(SURFACES),
             "connectors": [{"name": sorted(CONNECTORS), "state": sorted(STATES)}],
             "title": f"one line, <= {MAX_TITLE_CHARS} chars",

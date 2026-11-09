@@ -88,6 +88,9 @@ OPTIONAL_KEYS = {
     # Ships naming a default file, like the scoring config. Without the file the scan
     # cannot assign plays and routes the operator to the play-builder skill.
     "PLAYS_FILE",
+    # Ships naming the default folder. Empty means the same default; the folder itself
+    # only exists on a deployment that runs without the Brand Kit OS connector.
+    "BRAND_CONTEXT_DIR",
     # The standard routing fields every play writes. Optional so an existing deployment
     # keeps validating on upgrade; play-builder creates them at onboarding.
     "APOLLO_CF_ACCOUNT_PLAY",

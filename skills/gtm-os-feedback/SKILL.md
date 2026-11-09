@@ -11,9 +11,7 @@ without anything from their instance travelling with it.
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION and compare it to the
-VERSION file at the plugin root. Say an updated version is available only when the remote
-version is newer, then continue. The installed version goes in the report; a defect already
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue. The installed version goes in the report; a defect already
 fixed upstream is still worth filing, with that noted, because it says the update did not
 reach them.
 
@@ -95,7 +93,13 @@ reply after the body was shown: without it the submit command is never issued, w
 the host's permission setting. Second, the host's own approval prompt on the command: say
 what filing does (a public issue on `NicT89/gtm-os`, under their GitHub account) and let
 the tool call carry it; a yes in conversation does not license running the command as if
-it were pre-approved. The token is a digest of the title and body that were displayed: an
+it were pre-approved. The agent cannot see in advance whether the host will prompt (a tool
+call looks the same either way), so when it requests the yes it also asks whether this host
+prompts before shell commands run. The agent runs the submit command only on an explicit "yes, it prompts". Any other
+answer (it does not, not sure, no answer, or the user's say-so turns out wrong because the
+command ran with no prompt) means the second gate is not there: hand the user the rendered
+body and the exact command, and they file it themselves. Handing over is always the safe
+default; there is no way to verify the host's setting from inside the session. The token is a digest of the title and body that were displayed: an
 edit after rendering changes it and the submission is refused, so nothing can be filed
 that was not first put on screen.
 
