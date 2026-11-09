@@ -86,6 +86,12 @@ class TheHappyPathWorks(unittest.TestCase):
         body = body_for(good_report())
         self.assertIn("version check: not recorded", body)
 
+    def test_each_valid_version_check_outcome_reaches_the_body(self):
+        """A narrower allowlist would reject current or unverified without this failing."""
+        for outcome in ("current", "update-available", "unverified"):
+            with self.subTest(outcome):
+                self.assertIn(f"version check: {outcome}", body_for(good_report(version_check=outcome)))
+
     def test_a_non_string_version_check_is_rejected_not_crashed(self):
         for bad in ([], {}, 3):
             with self.subTest(repr(bad)):
