@@ -93,10 +93,12 @@ reply after the body was shown: without it the submit command is never issued, w
 the host's permission setting. Second, the host's own approval prompt on the command: say
 what filing does (a public issue on `NicT89/gtm-os`, under their GitHub account) and let
 the tool call carry it; a yes in conversation does not license running the command as if
-it were pre-approved. If the host runs shell commands without prompting (an allow rule or
-a permission mode that skips approvals), the second gate does not exist in that session:
-do not run the submit command; hand the user the rendered body and the exact command, and
-they file it themselves. The token is a digest of the title and body that were displayed: an
+it were pre-approved. The agent cannot see in advance whether the host will prompt (a tool
+call looks the same either way), so when it requests the yes it also asks whether this host
+prompts before shell commands run. If the answer is that it does not (an allow rule or a
+permission mode that skips approvals), the second gate does not exist in that session: do
+not run the submit command; hand the user the rendered body and the exact command, and they
+file it themselves. The token is a digest of the title and body that were displayed: an
 edit after rendering changes it and the submission is refused, so nothing can be filed
 that was not first put on screen.
 

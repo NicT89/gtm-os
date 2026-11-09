@@ -38,6 +38,34 @@ def numbered_sources(text):
     return re.findall(r"^   \d\. `(https://[^`]+)`", text, re.M)
 
 
+SOURCE_URLS = [
+    "https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION",
+    "https://api.github.com/repos/NicT89/gtm-os/contents/VERSION",
+    "https://github.com/NicT89/gtm-os/releases/latest",
+]
+OUTCOME_RESPONSES = {
+    "Installed equals current": "current",
+    "Current is newer": "is available",
+    "Every source failed": "unverified",
+}
+
+
+def source_order_problems(text):
+    """Empty when the numbered sources are exactly SOURCE_URLS, in that order."""
+    urls = numbered_sources(text)
+    return [] if urls == SOURCE_URLS else [f"sources are {urls}, expected {SOURCE_URLS}"]
+
+
+def outcome_row_problems(text):
+    """Empty when every outcome row is present and carries its own response phrase."""
+    rows = outcome_rows(text)
+    problems = [f"missing outcome row: {k}" for k in OUTCOME_RESPONSES if k not in rows]
+    for outcome, phrase in OUTCOME_RESPONSES.items():
+        if outcome in rows and phrase not in rows[outcome].lower():
+            problems.append(f"row {outcome!r} does not say {phrase!r}")
+    return problems
+
+
 def outcome_rows(text):
     """{outcome: response} from the outcome table, so each row is checked against its own cell."""
     rows = re.findall(r"^\| ([^|]+?) \| ([^|]+?) \|$", text, re.M)
@@ -45,25 +73,14 @@ def outcome_rows(text):
 
 
 class TheReferenceHoldsTheChain(unittest.TestCase):
-    def test_the_numbered_sources_are_in_fallback_order(self):
+    def test_the_numbered_sources_are_exactly_the_three_urls_in_fallback_order(self):
         """Reads the list entries themselves, so a mention of a host in the prose above the
-        list cannot satisfy the order check."""
-        urls = numbered_sources(REFERENCE.read_text("utf-8"))
-        self.assertEqual(len(urls), 3, urls)
-        for url, host in zip(urls, RESTATEMENTS):
-            self.assertIn(host, url, f"source out of order: {urls}")
+        list cannot satisfy the check, and a source pointing at another repository on the
+        same host fails it."""
+        self.assertEqual(source_order_problems(REFERENCE.read_text("utf-8")), [])
 
     def test_each_outcome_row_carries_its_response(self):
-        rows = outcome_rows(REFERENCE.read_text("utf-8"))
-        expected = {
-            "Installed equals current": "current",
-            "Current is newer": "is available",
-            "Every source failed": "unverified",
-        }
-        self.assertEqual(set(rows), set(expected), rows)
-        for outcome, phrase in expected.items():
-            with self.subTest(outcome):
-                self.assertIn(phrase, rows[outcome].lower())
+        self.assertEqual(outcome_row_problems(REFERENCE.read_text("utf-8")), [])
 
     def test_the_reference_says_a_failed_fetch_is_not_a_tool_failure(self):
         """gtm-blueprint stops on a failed tool call; the reference must carve the fetch out
@@ -101,18 +118,37 @@ class TheCheckCanFail(unittest.TestCase):
         self.assertNotIn(CITATION, body)
         self.assertTrue(any(n in text for n in RESTATEMENTS))
 
-    def test_a_reordered_source_list_is_caught(self):
-        text = ("2. Fetch the current version, trying each source in order:\n"
-                "   1. `https://api.github.com/repos/x/contents/VERSION` (JSON)\n"
-                "   2. `https://raw.githubusercontent.com/x/main/VERSION` (plain text)\n"
-                "   3. `https://github.com/NicT89/gtm-os/releases/latest`\n")
-        urls = numbered_sources(text)
-        self.assertEqual(len(urls), 3)
-        self.assertNotIn(RESTATEMENTS[0], urls[0])
+    def test_a_reordered_source_list_fails_the_check(self):
+        """The same check the real test runs, on a fixture with sources 1 and 2 swapped."""
+        text = REFERENCE.read_text("utf-8")
+        lines = text.splitlines(True)
+        i = next(k for k, l in enumerate(lines) if l.startswith(f"   1. `{SOURCE_URLS[0]}`"))
+        j = next(k for k, l in enumerate(lines) if l.startswith(f"   2. `{SOURCE_URLS[1]}`"))
+        lines[i], lines[j] = lines[j], lines[i]
+        swapped = "".join(lines)
+        self.assertNotEqual(swapped, text)
+        self.assertEqual(source_order_problems(text), [])
+        self.assertTrue(source_order_problems(swapped))
 
-    def test_a_dropped_outcome_row_is_caught(self):
-        text = "| Outcome | Say |\n|---|---|\n| Installed equals current | current. |\n| Current is newer | A.B.C is available. |\n"
-        self.assertNotIn("Every source failed", outcome_rows(text))
+    def test_a_source_in_another_repository_fails_the_check(self):
+        text = REFERENCE.read_text("utf-8")
+        other = text.replace("NicT89/gtm-os/main/VERSION", "someone-else/gtm-os/main/VERSION")
+        self.assertNotEqual(other, text)
+        self.assertTrue(source_order_problems(other))
+
+    def test_a_dropped_outcome_row_fails_the_check(self):
+        text = REFERENCE.read_text("utf-8")
+        lines = [l for l in text.splitlines(True) if not l.startswith("| Every source failed |")]
+        dropped = "".join(lines)
+        self.assertNotEqual(dropped, text)
+        self.assertEqual(outcome_row_problems(text), [])
+        self.assertTrue(any("missing outcome row" in p for p in outcome_row_problems(dropped)))
+
+    def test_a_row_without_its_response_fails_the_check(self):
+        text = REFERENCE.read_text("utf-8")
+        changed = text.replace("Version check unverified:", "Version check skipped:")
+        self.assertNotEqual(changed, text)
+        self.assertTrue(outcome_row_problems(changed))
 
     def test_a_missing_section_is_caught(self):
         self.assertIsNone(version_section("---\nname: x\n---\n## Step 1\n\ntext\n"))

@@ -53,6 +53,12 @@ FALLBACKS = {
 PREFIX_RE = re.compile(r"^[A-Z][A-Z0-9]{1,11}$")
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,39}$")
 PLACEHOLDER_RE = re.compile(r"\{\{([A-Z_]+)\}\}")
+# A folder name: no separators, no backtick (it is rendered inside a code span), no newline.
+DIR_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
+# Single-line values that are rendered into prose or a code span. The organization's rules
+# are the one multi-line field, by design; they are the organization's own text.
+SINGLE_LINE = ("company", "instance_name", "field_prefix", "crm_provider", "brand_context",
+               "brand_context_dir", "instance_config_path")
 
 
 def validate(data):
@@ -68,6 +74,15 @@ def validate(data):
         if not isinstance(v, str) or not v.strip():
             problems.append(f"{key} is required")
         out[key] = v.strip() if isinstance(v, str) else v
+    for key in SINGLE_LINE:
+        v = out.get(key)
+        if isinstance(v, str) and ("\n" in v or "\r" in v):
+            problems.append(f"{key} must be a single line; a newline would add directives "
+                            "to the rendered instructions")
+    if out.get("brand_context_dir") and not DIR_RE.match(out["brand_context_dir"]):
+        problems.append("brand_context_dir must be a plain folder name (letters, digits, . _ -)")
+    if out.get("instance_config_path") and "`" in out["instance_config_path"]:
+        problems.append("instance_config_path must not contain a backtick")
     if out.get("field_prefix") and not PREFIX_RE.match(out["field_prefix"]):
         problems.append("field_prefix must be 2 to 12 upper-case letters or digits")
     if out.get("instance_name") and not SLUG_RE.match(out["instance_name"]):

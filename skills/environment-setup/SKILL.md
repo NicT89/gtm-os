@@ -163,10 +163,13 @@ command is issued only after an explicit yes in that reply, whatever the host's 
 setting; no reply is a no. The host's own approval prompt on the command is the second
 gate: say what filing does (a public issue on the upstream repo, under their GitHub
 account) and let the tool call carry it. A yes in conversation does not license running
-the command as if it were pre-approved, and the prompt does not replace the yes. If the
-host runs shell commands without prompting (an allow rule or a permission mode that skips
-approvals), the second gate does not exist in that session: do not run the submit command;
-hand the user the rendered body and the exact command, and they file it themselves. This
+the command as if it were pre-approved, and the prompt does not replace the yes. The agent
+cannot see in advance whether the host will prompt (a tool call looks the same either way),
+so it asks: when it requests the yes, it also asks whether this host prompts before shell
+commands run. If the answer is that it does not (an allow rule or a permission mode that
+skips approvals), the second gate does not exist in that session: do not run the submit
+command; hand the user the rendered body and the exact command, and they file it
+themselves. This
 matches the `gtm-os-feedback` skill.
 
 The token is a digest of the body that was displayed. If a note is edited or the ladder

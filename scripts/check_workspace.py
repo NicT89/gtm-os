@@ -48,10 +48,25 @@ LABELS = {"KNOWN", "INFERRED", "UNVERIFIED"}
 # "yes" and "not-applicable" pass; "no" fails. See the module docstring, item 5.
 PASTED_STATES = {"yes", "no", "not-applicable"}
 LABEL_RE = re.compile(r"\b(KNOWN|INFERRED|UNVERIFIED)\b")
-# A line that asserts a quantity: a digit run (one digit counts: "3 days" is a claim) not
-# inside a date, a version, a list marker ("1.") or a markdown link/URL. Deliberately loose;
-# the contract says every fact is labeled anyway.
-NUMBER_RE = re.compile(r"(?<![\w/.-])\d+(?:[.,]\d+)?%?(?![\w/.-])")
+# A line that asserts a quantity. One digit counts ("3 days" is a claim), and so does a
+# quantity that ends a sentence ("Customers: 40.") or starts a hyphenated word ("a 3-day
+# setup"). NOT_QUANTITY_RES strip the shapes that carry digits without asserting anything
+# (URLs and links, dates, versions, list markers) before NUMBER_RE runs. Deliberately loose
+# otherwise; the contract says every fact is labeled anyway.
+NOT_QUANTITY_RES = [
+    re.compile(r"https?://\S+"),            # URLs, including the target of a markdown link
+    re.compile(r"\b\d{4}-\d{2}(?:-\d{2})?\b"),  # dates: 2026-11 or 2026-11-08
+    re.compile(r"\bv?\d+(?:\.\d+){1,3}\b"),    # versions: 2.1, v1.17.0
+    re.compile(r"^\d+\.\s"),                 # a list marker at the start of the line
+]
+NUMBER_RE = re.compile(r"(?<![\w/.-])\d+(?:[.,]\d+)?%?(?![\w/]|[.,]\d)")
+
+
+def asserts_a_quantity(line):
+    """True when the line carries a digit run that reads as a quantity."""
+    for rx in NOT_QUANTITY_RES:
+        line = rx.sub(" ", line)
+    return bool(NUMBER_RE.search(line))
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Shapes that are resolved identifiers and must never reach the Project summary.
 ID_RES = [
@@ -104,7 +119,7 @@ def check_brand_file(path):
         stripped = line.strip()
         if not stripped or stripped.startswith("#") or stripped.startswith("|--"):
             continue
-        if NUMBER_RE.search(stripped) and not LABEL_RE.search(stripped):
+        if asserts_a_quantity(stripped) and not LABEL_RE.search(stripped):
             problems.append(f"{path.name}:{n}: a number with no KNOWN/INFERRED/UNVERIFIED label")
     return problems
 

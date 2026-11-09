@@ -235,9 +235,10 @@ def validate(report):
     # above was verified as current. Optional: an older caller that omits it is recorded as
     # "not recorded", never guessed.
     version_check = report.get("version_check", "not recorded")
-    if version_check not in VERSION_CHECK_OUTCOMES:
+    if not isinstance(version_check, str) or version_check not in VERSION_CHECK_OUTCOMES:
         problems.append(f"version_check must be one of {sorted(VERSION_CHECK_OUTCOMES)}, "
                         f"got {version_check!r}")
+        version_check = None
 
     connectors = report.get("connectors") or []
     if not isinstance(connectors, list) or not connectors:

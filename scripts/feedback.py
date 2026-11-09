@@ -126,8 +126,9 @@ def validate(report):
 
     # Outcome of the version check (references/version-check.md); optional, never guessed.
     version_check = report.get("version_check", "not recorded")
-    if version_check not in VERSION_CHECK_OUTCOMES:
+    if not isinstance(version_check, str) or version_check not in VERSION_CHECK_OUTCOMES:
         problems.append(f"version_check must be one of {sorted(VERSION_CHECK_OUTCOMES)}")
+        version_check = None
     cleaned["version_check"] = version_check
 
     surface = report.get("surface", "other")

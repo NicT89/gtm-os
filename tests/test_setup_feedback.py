@@ -86,6 +86,12 @@ class TheHappyPathWorks(unittest.TestCase):
         body = body_for(good_report())
         self.assertIn("version check: not recorded", body)
 
+    def test_a_non_string_version_check_is_rejected_not_crashed(self):
+        for bad in ([], {}, 3):
+            with self.subTest(repr(bad)):
+                problems, _ = validate(good_report(version_check=bad))
+                self.assertTrue(any("version_check" in p for p in problems), problems)
+
     def test_an_unknown_version_check_outcome_is_rejected(self):
         problems, _ = validate(good_report(version_check="probably fine"))
         self.assertTrue(any("version_check" in p for p in problems), problems)
