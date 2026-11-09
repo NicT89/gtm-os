@@ -111,7 +111,8 @@ class TheWorkspaceGate(unittest.TestCase):
             + "1. Launched in 2024-03 per https://example.com/v2.1/notes\n"
             + "2. Second item with no number in it\n"
             + "3. Shipped on 2026-11-08 with [the notes](https://example.com/release/42) for v1.17.0\n"
-            + "<!-- refreshed 2026-11-08T09:30:00Z, next at 14:05 -->\n")
+            + "<!-- refreshed 2026-11-08T09:30:00Z, next at 14:05 -->\n"
+            + "4. See [the notes](brand/release-5.md), plays-2.json and research/q3-2026/brief.md\n")
         self.assertEqual(cw.check(self.root, "brand", "yes"), [])
 
     def test_a_labeled_number_passes(self):
