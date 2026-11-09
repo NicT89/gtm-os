@@ -11,7 +11,9 @@ Produce a 30-day GTM plan for a target company that reads custom because it IS c
 
 Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
-If the CRM connector is unavailable or a tool call fails, stop and report which capability is missing. Never compose a blueprint from memory of prior records or from guesses; a wrong "fact" in a show-don't-tell email costs more than a delayed send.
+## Stop rule
+
+If the CRM connector is unavailable or a tool call in the steps below fails, stop and report which capability is missing (a failed version fetch above is not such a failure; the check never blocks). Never compose a blueprint from memory of prior records or from guesses; a wrong "fact" in a show-don't-tell email costs more than a delayed send.
 
 ## Modes
 
