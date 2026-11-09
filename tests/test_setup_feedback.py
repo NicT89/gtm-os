@@ -79,6 +79,17 @@ class TheHappyPathWorks(unittest.TestCase):
         self.assertIn("gtm-os:setup-feedback:v1", body)
         self.assertIn("| apollo | S3 |", body)
 
+    def test_the_version_check_outcome_reaches_the_body(self):
+        """A reader must be able to tell whether the version was verified as current."""
+        body = body_for(good_report(version_check="update-available"))
+        self.assertIn("version check: update-available", body)
+        body = body_for(good_report())
+        self.assertIn("version check: not recorded", body)
+
+    def test_an_unknown_version_check_outcome_is_rejected(self):
+        problems, _ = validate(good_report(version_check="probably fine"))
+        self.assertTrue(any("version_check" in p for p in problems), problems)
+
     def test_a_clean_note_survives_untouched(self):
         """Redaction must not mangle ordinary prose, or nobody will trust the output."""
         note = "It stalled at the schema probe and never said which base it wanted."

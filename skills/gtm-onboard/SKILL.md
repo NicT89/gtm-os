@@ -38,20 +38,23 @@ the working directory (Claude Code); a Project, when attached, receives copies o
 
 When a Project is attached: collect the inputs `scripts/render_project_instructions.py`
 names (company, instance name, field prefix, CRM provider, connector states from Step 0,
-brand context source, the path to `instance-config.json`, and the organization's own rules
-in their words), render, and show the block. **The user pastes it; the skill waits.** Confirm
+brand context source, `brand_context_dir` (the configured `{BRAND_CONTEXT_DIR}`, default
+`brand`), the path to `instance-config.json`, and the organization's own rules in their
+words), render, and show the block. **The user pastes it; the skill waits.** Confirm
 through `project_info` that the instructions field is no longer empty before continuing,
-and pass that result to the audit in Step 3. No Project: skip, and say the same rules live
-in the workspace's `_index/overview.md` instead.
+and pass `yes` (or `no`) to the audit in Step 3. No Project: skip, say the same rules live
+in the workspace's `_index/overview.md` instead, and pass `not-applicable` to the audit.
 
 ## Step 3: Workspace, then the audit gate
 
+If `{BRAND_CONTEXT_DIR}` is empty or unset, use `brand` for it throughout this sequence.
 Create the folders and `_index/` files in `references/workspace-schema.md`, write
 `_index/instance.md` (states, fallbacks, paths; never an identifier), and the ten brand
-files with front matter and empty bodies. Then:
+files with front matter and empty bodies (with the Brand Kit OS connector on, their
+`source` is `brand-kit-os` and they stay empty). Then:
 
 ```bash
-python3 <plugin root>/scripts/check_workspace.py --workspace . --brand-dir {BRAND_CONTEXT_DIR} --instructions-pasted yes|no --json
+python3 <plugin root>/scripts/check_workspace.py --workspace . --brand-dir {BRAND_CONTEXT_DIR} --instructions-pasted yes|no|not-applicable --json
 ```
 
 Exit 1 stops the sequence; fix what it names and run it again. Record the passing JSON in
@@ -60,7 +63,7 @@ Exit 1 stops the sequence; fix what it names and run it again. Record the passin
 ## Step 4: Brand context
 
 With the Brand Kit OS connector: `get_agent_briefing`, record the kit in `_index/instance.md`,
-and leave the brand folder empty with `source: brand-kit-os` in each file's front matter.
+and leave the ten brand files empty with `source: brand-kit-os` in each file's front matter.
 Without it: state the Firecrawl credit count, scrape the site as `provision-gtm-engine`
 Phase 0 does, and write what the site states into `company-profile`, `products`,
 `audiences` and `proof-and-quotes`, each fact KNOWN with its URL or INFERRED with the

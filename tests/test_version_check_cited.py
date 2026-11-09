@@ -31,16 +31,46 @@ def version_section(text):
     return m.group(1) if m else None
 
 
-class TheReferenceHoldsTheChain(unittest.TestCase):
-    def test_the_reference_names_all_three_sources_in_order(self):
-        text = REFERENCE.read_text("utf-8")
-        positions = [text.index(h) for h in RESTATEMENTS]
-        self.assertEqual(positions, sorted(positions), "sources are not in fallback order")
+def numbered_sources(text):
+    """The URLs of the nested numbered list entries (three-space indent), in document order.
 
-    def test_the_reference_names_the_three_outcomes(self):
+    Only list entries qualify; a host named in a paragraph is not a source."""
+    return re.findall(r"^   \d\. `(https://[^`]+)`", text, re.M)
+
+
+def outcome_rows(text):
+    """{outcome: response} from the outcome table, so each row is checked against its own cell."""
+    rows = re.findall(r"^\| ([^|]+?) \| ([^|]+?) \|$", text, re.M)
+    return {k.strip(): v.strip() for k, v in rows if k.strip() not in ("Outcome", "---")}
+
+
+class TheReferenceHoldsTheChain(unittest.TestCase):
+    def test_the_numbered_sources_are_in_fallback_order(self):
+        """Reads the list entries themselves, so a mention of a host in the prose above the
+        list cannot satisfy the order check."""
+        urls = numbered_sources(REFERENCE.read_text("utf-8"))
+        self.assertEqual(len(urls), 3, urls)
+        for url, host in zip(urls, RESTATEMENTS):
+            self.assertIn(host, url, f"source out of order: {urls}")
+
+    def test_each_outcome_row_carries_its_response(self):
+        rows = outcome_rows(REFERENCE.read_text("utf-8"))
+        expected = {
+            "Installed equals current": "current",
+            "Current is newer": "is available",
+            "Every source failed": "unverified",
+        }
+        self.assertEqual(set(rows), set(expected), rows)
+        for outcome, phrase in expected.items():
+            with self.subTest(outcome):
+                self.assertIn(phrase, rows[outcome].lower())
+
+    def test_the_reference_says_a_failed_fetch_is_not_a_tool_failure(self):
+        """gtm-blueprint stops on a failed tool call; the reference must carve the fetch out
+        of that rule, or the first skill a blocked network meets will stop."""
         text = REFERENCE.read_text("utf-8")
-        for word in ("current", "available", "unverified"):
-            self.assertIn(word, text.lower())
+        self.assertIn("never blocks", text)
+        self.assertIn("is not a tool failure", text)
 
 
 class EverySkillCitesIt(unittest.TestCase):
@@ -70,6 +100,19 @@ class TheCheckCanFail(unittest.TestCase):
         body = version_section(text)
         self.assertNotIn(CITATION, body)
         self.assertTrue(any(n in text for n in RESTATEMENTS))
+
+    def test_a_reordered_source_list_is_caught(self):
+        text = ("2. Fetch the current version, trying each source in order:\n"
+                "   1. `https://api.github.com/repos/x/contents/VERSION` (JSON)\n"
+                "   2. `https://raw.githubusercontent.com/x/main/VERSION` (plain text)\n"
+                "   3. `https://github.com/NicT89/gtm-os/releases/latest`\n")
+        urls = numbered_sources(text)
+        self.assertEqual(len(urls), 3)
+        self.assertNotIn(RESTATEMENTS[0], urls[0])
+
+    def test_a_dropped_outcome_row_is_caught(self):
+        text = "| Outcome | Say |\n|---|---|\n| Installed equals current | current. |\n| Current is newer | A.B.C is available. |\n"
+        self.assertNotIn("Every source failed", outcome_rows(text))
 
     def test_a_missing_section_is_caught(self):
         self.assertIsNone(version_section("---\nname: x\n---\n## Step 1\n\ntext\n"))

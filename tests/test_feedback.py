@@ -66,6 +66,17 @@ class TheHappyPathWorks(unittest.TestCase):
         for _key, prompt in KINDS["bug"]:
             self.assertIn(f"### {prompt}", body)
 
+    def test_the_version_check_outcome_reaches_the_body(self):
+        """A reader must be able to tell whether the version was verified as current."""
+        body = body_for(good_report(version_check="update-available"))
+        self.assertIn("version check: update-available", body)
+        body = body_for(good_report())
+        self.assertIn("version check: not recorded", body)
+
+    def test_an_unknown_version_check_outcome_is_rejected(self):
+        problems, _ = validate(good_report(version_check="probably fine"))
+        self.assertTrue(any("version_check" in p for p in problems), problems)
+
     def test_each_kind_renders_its_own_sections(self):
         for kind, sections in KINDS.items():
             with self.subTest(kind):

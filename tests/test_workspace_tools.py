@@ -65,6 +65,13 @@ class TheWorkspaceGate(unittest.TestCase):
             FRONT.format(entity="products").replace("source: files", "source: guess"))
         self.assertTrue(any("source must be" in p for p in cw.check(self.root, "brand", "yes")))
 
+    def test_a_quoted_front_matter_value_is_accepted(self):
+        """`source: "files"` is the same value as `source: files`; YAML allows both."""
+        (self.root / "brand" / "products.md").write_text(
+            FRONT.format(entity="products").replace("source: files", 'source: "files"')
+            .replace("provenance_default: UNVERIFIED", "provenance_default: 'UNVERIFIED'"))
+        self.assertEqual(cw.check(self.root, "brand", "yes"), [])
+
     def test_a_number_without_a_label_fails(self):
         """The invented-number class: a quantity nobody sourced."""
         (self.root / "brand" / "proof-and-quotes.md").write_text(
@@ -72,18 +79,53 @@ class TheWorkspaceGate(unittest.TestCase):
         problems = cw.check(self.root, "brand", "yes")
         self.assertTrue(any("no KNOWN/INFERRED/UNVERIFIED label" in p for p in problems), problems)
 
+    def test_a_single_digit_quantity_without_a_label_fails(self):
+        """'Reduced onboarding to 3 days' is a claim too; one digit must not slip past."""
+        (self.root / "brand" / "proof-and-quotes.md").write_text(
+            FRONT.format(entity="proof-and-quotes") + "Reduced onboarding to 3 days.\n")
+        problems = cw.check(self.root, "brand", "yes")
+        self.assertTrue(any("no KNOWN/INFERRED/UNVERIFIED label" in p for p in problems), problems)
+
+    def test_list_markers_dates_and_links_are_not_quantities(self):
+        (self.root / "brand" / "products.md").write_text(
+            FRONT.format(entity="products")
+            + "1. Launched in 2024-03 per https://example.com/v2.1/notes\n"
+            + "2. Second item with no number in it\n")
+        self.assertEqual(cw.check(self.root, "brand", "yes"), [])
+
     def test_a_labeled_number_passes(self):
         (self.root / "brand" / "proof-and-quotes.md").write_text(
             FRONT.format(entity="proof-and-quotes") + "Customers cut cost by 50%. KNOWN (https://example.com/case)\n")
         self.assertEqual(cw.check(self.root, "brand", "yes"), [])
 
-    def test_a_resolved_id_in_the_instance_summary_fails(self):
-        airtable = "app" + "Qx7Lm2Np9Rk4Wz1Ab"[:14]
-        (self.root / "_index" / "instance.md").write_text(f"# Instance\n\n- Posts base: {airtable}\n")
-        self.assertTrue(any("resolved identifier" in p for p in cw.check(self.root, "brand", "yes")))
+    def test_each_resolved_id_shape_in_the_instance_summary_fails(self):
+        """One input per pattern in ID_RES, so dropping any one of them fails here."""
+        samples = {
+            "airtable-id": "app" + "Qx7Lm2Np9Rk4Wz1Ab"[:14],
+            "hex-id": "".join("0123456789abcdef"[(i * 7) % 16] for i in range(24)),
+            "digit-run": "".join(str((i * 3) % 10) for i in range(11)),
+        }
+        self.assertEqual(set(samples), {kind for kind, _ in cw.ID_RES})
+        for kind, value in samples.items():
+            with self.subTest(kind):
+                (self.root / "_index" / "instance.md").write_text(f"# Instance\n\n- Ref: {value}\n")
+                problems = cw.check(self.root, "brand", "yes")
+                self.assertTrue(any(f"({kind})" in p for p in problems), problems)
+
+    def test_a_path_in_the_instance_summary_passes(self):
+        (self.root / "_index" / "instance.md").write_text(
+            "# Instance\n\n- instance-config.json: /work/acme-2026/instance-config.json\n")
+        self.assertEqual(cw.check(self.root, "brand", "yes"), [])
 
     def test_unconfirmed_instructions_fail(self):
         self.assertTrue(any("instructions" in p for p in cw.check(self.root, "brand", "no")))
+
+    def test_the_no_project_path_passes(self):
+        """Cowork with a folder and no Project skips the paste gate; the audit must not fail it."""
+        self.assertEqual(cw.check(self.root, "brand", "not-applicable"), [])
+
+    def test_an_unknown_pasted_state_fails(self):
+        self.assertTrue(any("instructions-pasted" in p for p in cw.check(self.root, "brand", "maybe")))
 
     def test_the_cli_exit_codes(self):
         proc = subprocess.run([sys.executable, str(REPO_ROOT / "scripts" / "check_workspace.py"),
@@ -121,6 +163,16 @@ class TheInstructionsRenderer(unittest.TestCase):
         self.assertIn("hubspot: declined; fallback:", text)
         self.assertIn("brand/", text)
         self.assertIn("never quoted in outbound", text)
+
+    def test_a_placeholder_inside_a_value_is_preserved_not_filled(self):
+        """An organization rule may quote a merge token of its own; it must survive verbatim."""
+        rules = ("Outbound templates always carry {{FIRST_NAME}} as the greeting token. "
+                 "We write Acme, never ACME, in prose. Pricing is never quoted in outbound.")
+        problems, cleaned = rpi.validate(good_input(organization_rules=rules, company="{{INSTANCE_NAME}}"))
+        self.assertEqual(problems, [])
+        text = rpi.render(cleaned)
+        self.assertIn("{{FIRST_NAME}}", text)
+        self.assertIn("{{INSTANCE_NAME}}", text, "a value was re-scanned and filled")
 
     def test_only_the_paste_block_is_output(self):
         _, cleaned = rpi.validate(good_input())

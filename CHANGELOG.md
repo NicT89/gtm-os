@@ -46,8 +46,18 @@ action; a deployment already running keeps its workspace and nothing moves.
   `audit-log/`, `sequences/`, `research/`, the brand folder, and what never goes in the
   Project copy.
 - **`BRAND_CONTEXT_DIR`** in instance-config (optional, default `brand`).
+- **`version_check`** in both issue schemas (`scripts/feedback.py`, `scripts/setup_feedback.py`):
+  the outcome of the version check next to the installed version, so a reader knows whether
+  the reported version was verified as current; omitted renders "not recorded".
 
 ### Changed
+- `check_workspace.py`: `--instructions-pasted not-applicable` for the no-Project path, a
+  single digit counts as a quantity, quoted front-matter scalars are read as their value;
+  the brand folder is always present (with the connector on its files carry
+  `source: brand-kit-os`). The renderer fills only the template's own placeholders, in one
+  pass, so a value that quotes a merge token survives verbatim.
+- Both feedback skills: when the host runs commands without prompting, the submit command
+  is not run; the user files the rendered issue themselves.
 - `environment-setup`: the setup report needs the user's explicit yes after the preview,
   with the host prompt as the second gate, matching `gtm-os-feedback`; the redaction note
   says what the redactor recognizes by shape and what it cannot.

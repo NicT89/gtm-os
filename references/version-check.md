@@ -16,7 +16,10 @@ shipped last week.
 
 1. Read the installed version: the `VERSION` file at the plugin root.
 2. Fetch the current version, trying each source in order and stopping at the first that
-   returns a version string:
+   returns a version string. Give each fetch a short deadline (about ten seconds where the
+   fetch tool accepts one; otherwise do not wait on a stalled connection) and count a
+   timeout as that source failing, so a blocked host costs seconds, not the minutes a
+   host's default fetch timeout can hold a skill for:
    1. `https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION` (plain text)
    2. `https://api.github.com/repos/NicT89/gtm-os/contents/VERSION` (JSON; the `content`
       field is base64)
@@ -37,10 +40,15 @@ than `main` means a development clone and is reported as current.
 
 It never blocks, never retries beyond the three sources, never asks the user to fix their
 network, and never claims a version it did not read. "Unverified" is a complete and
-acceptable outcome; the skill carries on with what is installed.
+acceptable outcome; the skill carries on with what is installed. A failed version fetch
+is not a tool failure in the sense a skill's own stop rules mean (`gtm-blueprint` stops
+when a CRM call fails, for instance): those rules govern the skill's work, and this check
+is finished, with outcome "unverified", before that work starts.
 
-## Where the installed version is recorded
+## Where the outcome is recorded
 
-Skills that produce a report or file an issue (`gtm-os-feedback`, `environment-setup`'s
-setup report, every run report) record the installed version and the check's outcome, so a
-reader knows whether the run was on current code.
+Skills that produce a report or file an issue record the installed version and the check's
+outcome, so a reader knows whether the run was on current code. The two issue schemas carry
+it as `version_check` (`current`, `update-available` or `unverified`; `scripts/feedback.py
+--schema` and `scripts/setup_feedback.py --schema`), and a report that omits it renders
+"not recorded" rather than a guess. A run report under `runs/` names both in its header.

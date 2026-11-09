@@ -11,8 +11,9 @@ Project carries copies.
 
 ```
 instance-config.json   the resolved config; filesystem only, never in the Project
-{BRAND_CONTEXT_DIR}/   brand context as files (references/brand-context.md); absent when the
-                       Brand Kit OS connector is on and nothing was ever imported from files
+{BRAND_CONTEXT_DIR}/   brand context as files (references/brand-context.md); always present.
+                       With the Brand Kit OS connector on, the ten files carry
+                       `source: brand-kit-os` and empty bodies, and are not read
 _index/                the small set of files every session reads first
   instance.md          instance name, prefix, CRM provider, connector states and fallbacks,
                        brand context source, the PATH to instance-config.json. No IDs.
@@ -57,5 +58,6 @@ script verifies the shape of each before the first pass and again after the seco
 
 It does not read content for quality, does not call any connector, does not confirm the
 Project instructions by itself (the agent confirms through `project_info` and passes
-`--instructions-pasted yes|no`), and does not touch `instance-config.json` beyond noting
+`--instructions-pasted yes|no`, or `not-applicable` when no Project is attached and the
+rules live in `_index/overview.md`), and does not touch `instance-config.json` beyond noting
 its path. It is a shape gate, like `check_plays.py`.

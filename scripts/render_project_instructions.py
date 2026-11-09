@@ -52,6 +52,7 @@ FALLBACKS = {
 }
 PREFIX_RE = re.compile(r"^[A-Z][A-Z0-9]{1,11}$")
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,39}$")
+PLACEHOLDER_RE = re.compile(r"\{\{([A-Z_]+)\}\}")
 
 
 def validate(data):
@@ -129,10 +130,13 @@ def render(cleaned):
     # block alone.
     marker = "<!-- paste-block -->"
     body = template.split(marker, 1)[1] if marker in template else template
-    for k, v in fields.items():
-        body = body.replace("{{" + k + "}}", v)
-    leftover = re.findall(r"\{\{[A-Z_]+\}\}", body)
+    # One pass over the TEMPLATE's placeholders only. A value is never re-scanned, so a
+    # company called "{{X}}" or an organization rule that quotes a merge token of its own
+    # ("{{FIRST_NAME}}" in an outbound template) is preserved verbatim rather than filled
+    # or rejected. The leftover check therefore runs on the template, before substitution.
+    leftover = [m.group(0) for m in PLACEHOLDER_RE.finditer(body) if m.group(1) not in fields]
     assert not leftover, f"template placeholders not filled: {leftover}"
+    body = PLACEHOLDER_RE.sub(lambda m: fields[m.group(1)], body)
     return body.strip()
 
 

@@ -19,12 +19,14 @@ What it checks
    (KNOWN | INFERRED | UNVERIFIED), and `README.md` is present.
 4. Every line in a brand file that asserts a number carries one of the three labels.
    A number without a label is the "invented number" class the repo forbids, so it fails.
-5. `--instructions-pasted yes|no` is recorded as an input, not detected: the agent confirms
-   it through project_info and passes it in. "no" is a failure.
+5. `--instructions-pasted yes|no|not-applicable` is recorded as an input, not detected: the
+   agent confirms it through project_info and passes it in. "no" is a failure;
+   "not-applicable" is the no-Project path (Cowork folder or Claude Code with no Project
+   attached), where the rules live in `_index/overview.md` instead, and passes.
 
 Usage:
     python3 scripts/check_workspace.py --workspace <dir> [--brand-dir brand] \\
-        --instructions-pasted yes|no [--json]
+        --instructions-pasted yes|no|not-applicable [--json]
 
 Exit code 0 = pass, 1 = one or more failures, 2 = usage error.
 """
@@ -43,10 +45,13 @@ BRAND_FILES = [
 ]
 SOURCES = {"files", "brand-kit-os"}
 LABELS = {"KNOWN", "INFERRED", "UNVERIFIED"}
+# "yes" and "not-applicable" pass; "no" fails. See the module docstring, item 5.
+PASTED_STATES = {"yes", "no", "not-applicable"}
 LABEL_RE = re.compile(r"\b(KNOWN|INFERRED|UNVERIFIED)\b")
-# A line that asserts a quantity: a digit run of 2+ not inside a date, a version or a
-# markdown link/URL. Deliberately loose; the contract says every fact is labeled anyway.
-NUMBER_RE = re.compile(r"(?<![\w/.-])\d{2,}(?:[.,]\d+)?%?(?![\w/.-])")
+# A line that asserts a quantity: a digit run (one digit counts: "3 days" is a claim) not
+# inside a date, a version, a list marker ("1.") or a markdown link/URL. Deliberately loose;
+# the contract says every fact is labeled anyway.
+NUMBER_RE = re.compile(r"(?<![\w/.-])\d+(?:[.,]\d+)?%?(?![\w/.-])")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Shapes that are resolved identifiers and must never reach the Project summary.
 ID_RES = [
@@ -54,6 +59,13 @@ ID_RES = [
     ("hex-id", re.compile(r"\b[0-9a-f]{24}\b")),
     ("digit-run", re.compile(r"\b\d{9,}\b")),
 ]
+
+
+def unquote(value):
+    """Strip one pair of matching quotes: `source: "files"` is the same value as `source: files`."""
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
 
 
 def front_matter(text):
@@ -68,7 +80,7 @@ def front_matter(text):
     for line in block.splitlines():
         if ":" in line:
             k, v = line.split(":", 1)
-            fm[k.strip()] = v.split("#", 1)[0].strip()
+            fm[k.strip()] = unquote(v.split("#", 1)[0].strip())
     return fm, text[end + 4:]
 
 
@@ -126,7 +138,9 @@ def check(workspace, brand_dir, instructions_pasted):
                 problems.append(f"missing {brand_dir}/{name}")
             else:
                 problems.extend(f"{brand_dir}/{x}" for x in check_brand_file(p))
-    if instructions_pasted != "yes":
+    if instructions_pasted not in PASTED_STATES:
+        problems.append(f"--instructions-pasted must be one of {sorted(PASTED_STATES)}")
+    elif instructions_pasted == "no":
         problems.append("project instructions not confirmed pasted (project_info shows them empty, "
                         "or the agent did not confirm)")
     return problems
@@ -138,8 +152,9 @@ def main():
     parser.add_argument("--workspace", required=True, help="The deployment workspace root.")
     parser.add_argument("--brand-dir", default="brand",
                         help="The brand folder name ({BRAND_CONTEXT_DIR}); default brand.")
-    parser.add_argument("--instructions-pasted", choices=["yes", "no"], required=True,
-                        help="Whether project_info confirmed the Project instructions are set.")
+    parser.add_argument("--instructions-pasted", choices=sorted(PASTED_STATES), required=True,
+                        help="yes: project_info confirmed the Project instructions are set; "
+                             "no: it did not; not-applicable: no Project is attached.")
     parser.add_argument("--json", action="store_true", help="Emit JSON.")
     args = parser.parse_args()
 

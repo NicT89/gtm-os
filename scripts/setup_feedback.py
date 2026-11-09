@@ -157,6 +157,9 @@ def url_is_publishable(raw):
 
 MAX_NOTE_CHARS = 600
 MAX_NOTES = 12
+# Outcomes of the version check in references/version-check.md, plus the value a report
+# carries when the caller did not pass one.
+VERSION_CHECK_OUTCOMES = {"current", "update-available", "unverified", "not recorded"}
 TRUNCATED = " […truncated]"
 
 
@@ -228,6 +231,14 @@ def validate(report):
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         problems.append(f"plugin_version must be x.y.z, got {version!r}")
 
+    # The outcome of references/version-check.md, so a reader can tell whether the version
+    # above was verified as current. Optional: an older caller that omits it is recorded as
+    # "not recorded", never guessed.
+    version_check = report.get("version_check", "not recorded")
+    if version_check not in VERSION_CHECK_OUTCOMES:
+        problems.append(f"version_check must be one of {sorted(VERSION_CHECK_OUTCOMES)}, "
+                        f"got {version_check!r}")
+
     connectors = report.get("connectors") or []
     if not isinstance(connectors, list) or not connectors:
         problems.append("connectors must be a non-empty list")
@@ -275,6 +286,7 @@ def validate(report):
     cleaned = {
         "checkpoint": checkpoint,
         "plugin_version": version,
+        "version_check": version_check,
         "connectors": cleaned_connectors,
         "outcome": outcome,
         "misdiagnosed_a_state": misdiagnosed,
@@ -296,7 +308,8 @@ def render(cleaned):
         "Filed by the `environment-setup` skill, with the tester's approval.",
         "",
         f"- **Checkpoint:** {cleaned['checkpoint']} — {at}",
-        f"- **Plugin version:** {cleaned['plugin_version']}",
+        f"- **Plugin version:** {cleaned['plugin_version']} (version check: "
+        f"{cleaned['version_check']})",
         f"- **Outcome:** {cleaned['outcome']}",
     ]
 
@@ -379,6 +392,7 @@ def main():
         print(json.dumps({
             "checkpoint": sorted(CHECKPOINTS),
             "plugin_version": "x.y.z",
+            "version_check": sorted(VERSION_CHECK_OUTCOMES - {"not recorded"}),
             "connectors": [{"name": sorted(CONNECTORS), "state": sorted(STATES)}],
             "outcome": ["continued", "stalled", "abandoned"],
             "misdiagnosed_a_state": [True, False, None],
