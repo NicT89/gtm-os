@@ -56,7 +56,9 @@ LABEL_RE = re.compile(r"\b(KNOWN|INFERRED|UNVERIFIED)\b")
 NOT_QUANTITY_RES = [
     re.compile(r"https?://\S+"),            # URLs, including the target of a markdown link
     re.compile(r"\]\([^)\s]+\)"),             # any markdown link target, including a relative path
-    re.compile(r"(?=\S*[A-Za-z])\S+/\S+"),   # a bare path with a letter in it: brand/release-5.md (not 3/4)
+    # a bare path: a segment with a letter in it before the slash (brand/release-5.md), so a
+    # fraction (3/4) or a fraction with a unit (3/4-day) is left for the quantity check
+    re.compile(r"(?<!\S)[^\s/]*[A-Za-z][^\s/]*/\S+"),
     re.compile(r"\S+\.(?:md|json|py|js|txt|csv|html|pdf|ya?ml)\b"),  # a bare file name
     # dates and timestamps: 2026-11, 2026-11-08, 2026-11-08T09:30:00Z, and a bare 09:30
     re.compile(r"\b\d{4}-\d{2}(?:-\d{2})?(?:T\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?Z?)?\b"),

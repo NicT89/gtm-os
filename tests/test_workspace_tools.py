@@ -98,7 +98,7 @@ class TheWorkspaceGate(unittest.TestCase):
                      "Conversion is 3.5 percent.", "Customers: 5k.", "Reached 5k users",
                      "3/4 of teams renew", "Pipeline grew 2.5x last year",
                      "Revenue reached $5m", "Raised 10bn in total", "Revenue changed -5%.",
-                     "Margin moved -2.5 points"):
+                     "Margin moved -2.5 points", "A 3/4-day setup."):
             with self.subTest(line):
                 (self.root / "brand" / "proof-and-quotes.md").write_text(
                     FRONT.format(entity="proof-and-quotes") + line + "\n")
