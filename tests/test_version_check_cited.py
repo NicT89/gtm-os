@@ -107,6 +107,14 @@ class EverySkillCitesIt(unittest.TestCase):
                 self.assertIsNotNone(body, "no '## Version check' section")
                 self.assertIn(CITATION, body)
 
+    def test_no_version_section_tells_the_skill_to_stop(self):
+        """The reference never blocks; a version section that says to stop would contradict it."""
+        for skill in SKILLS:
+            with self.subTest(skill.parent.name):
+                body = version_section(skill.read_text("utf-8")) or ""
+                self.assertNotRegex(body.lower(), r"\b(stop|halt|abort|block)\b",
+                                    "version section tells the skill to stop")
+
     def test_no_skill_restates_a_fetch_source(self):
         for skill in SKILLS:
             with self.subTest(skill.parent.name):
@@ -160,6 +168,11 @@ class TheCheckCanFail(unittest.TestCase):
                 changed = text.replace(old, new)
                 self.assertNotEqual(changed, text)
                 self.assertTrue(outcome_row_problems(changed))
+
+    def test_a_stopping_version_section_is_caught(self):
+        text = "---\nname: x\n---\n## Version check\n\nRun references/version-check.md; if every source fails, stop.\n## Next\n"
+        import re as _re
+        self.assertRegex(version_section(text).lower(), r"\b(stop|halt|abort|block)\b")
 
     def test_a_missing_section_is_caught(self):
         self.assertIsNone(version_section("---\nname: x\n---\n## Step 1\n\ntext\n"))

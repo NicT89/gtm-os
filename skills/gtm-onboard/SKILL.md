@@ -77,8 +77,10 @@ label. Say once that the files are the fallback and the connector is the live ve
 The stack audit (Apollo context center, fields, labels, sequences; HubSpot scopes,
 pipelines, properties, source tags) ships as its own skill in a later release. Until it
 exists, write "stack audit: not built in this version, skipped" to the audit log and say
-so. Then hand off to `provision-gtm-engine` Phase 0, which reads `company-profile.md` rather
-than scraping twice. Gate 1 (ICP sign-off) is that skill's and is unchanged.
+so. Then hand off to `provision-gtm-engine` Phase 0. Without Brand Kit OS, Phase 0 reads the
+brand files Step 4 wrote rather than scraping twice; with the connector, the files are empty
+by design and Phase 0 runs its own site research and takes brand context from the connector.
+Gate 1 (ICP sign-off) is that skill's and is unchanged.
 
 ## Step 6: Scheduled tasks, last and paused
 
