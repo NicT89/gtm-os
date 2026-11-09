@@ -132,7 +132,9 @@ class TheWorkspaceGate(unittest.TestCase):
                                "--workspace", str(self.root), "--instructions-pasted", "yes", "--json"],
                               capture_output=True, text=True)
         self.assertEqual(proc.returncode, 0, proc.stdout)
-        self.assertEqual(json.loads(proc.stdout)["verdict"], "PASS")
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["verdict"], "PASS")
+        self.assertEqual(out["instructions_pasted"], "yes", "the audit log must record the state judged")
         proc = subprocess.run([sys.executable, str(REPO_ROOT / "scripts" / "check_workspace.py"),
                                "--workspace", str(self.root), "--instructions-pasted", "no"],
                               capture_output=True, text=True)

@@ -163,7 +163,8 @@ def main():
     if args.json:
         print(json.dumps({"verdict": verdict, "problems": problems,
                           "workspace": str(Path(args.workspace).resolve()),
-                          "brand_dir": args.brand_dir}, indent=2))
+                          "brand_dir": args.brand_dir,
+                          "instructions_pasted": args.instructions_pasted}, indent=2))
     else:
         print(f"{verdict}: {len(problems)} problem(s)")
         for p in problems:

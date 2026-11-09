@@ -16,10 +16,13 @@ shipped last week.
 
 1. Read the installed version: the `VERSION` file at the plugin root.
 2. Fetch the current version, trying each source in order and stopping at the first that
-   returns a version string. Give each fetch a short deadline (about ten seconds where the
-   fetch tool accepts one; otherwise do not wait on a stalled connection) and count a
-   timeout as that source failing, so a blocked host costs seconds, not the minutes a
-   host's default fetch timeout can hold a skill for:
+   returns a version string. Give each fetch a ten-second deadline and count a timeout as
+   that source failing, so a blocked host costs seconds, not the minutes a host's default
+   fetch timeout can hold a skill for. The deadline is enforceable only where a tool takes
+   one: with a shell, fetch through it (`curl -sS --max-time 10 <url>`, or the host's
+   equivalent) rather than through a fetch tool that has no timeout option. Without a
+   shell, use the fetch tool and accept its own timeout; the check still never blocks on
+   the outcome, only on the wait:
    1. `https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION` (plain text)
    2. `https://api.github.com/repos/NicT89/gtm-os/contents/VERSION` (JSON; the `content`
       field is base64)
