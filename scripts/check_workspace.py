@@ -17,8 +17,11 @@ What it checks
 3. Every file in the brand folder has YAML front matter with `entity`, `source`
    (files | brand-kit-os), `verified` (YYYY-MM-DD) and `provenance_default`
    (KNOWN | INFERRED | UNVERIFIED), and `README.md` is present.
-4. Every line in a brand file that asserts a number carries one of the three labels.
-   A number without a label is the "invented number" class the repo forbids, so it fails.
+4. Every line in a brand file that asserts a number carries one of the three labels,
+   headings included. A number without a label is the "invented number" class the repo
+   forbids, so it fails. The check is per line: the contract (brand-context.md) is one fact
+   per line, and a line carrying two facts and one label is a writing error this script
+   cannot see.
 5. `--instructions-pasted yes|no|not-applicable` is recorded as an input, not detected: the
    agent confirms it through project_info and passes it in. "no" is a failure;
    "not-applicable" is the no-Project path (Cowork folder or Claude Code with no Project
@@ -56,9 +59,10 @@ LABEL_RE = re.compile(r"\b(KNOWN|INFERRED|UNVERIFIED)\b")
 NOT_QUANTITY_RES = [
     re.compile(r"https?://\S+"),            # URLs, including the target of a markdown link
     re.compile(r"\]\([^)\s]+\)"),             # any markdown link target, including a relative path
-    # a bare path: a segment with a letter in it before the slash (brand/release-5.md), so a
-    # fraction (3/4) or a fraction with a unit (3/4-day) is left for the quantity check
-    re.compile(r"(?<!\S)[^\s/]*[A-Za-z][^\s/]*/\S+"),
+    # a bare path: the segment before the slash starts with a letter, dot or tilde
+    # (brand/release-5.md, ./brand/x, ~/work/y), so a fraction (3/4), a fraction with a unit
+    # (3/4-day) or a pair of quantities ($5k/$10k) is left for the quantity check
+    re.compile(r"(?<!\S)[A-Za-z.~][^\s/]*/\S+"),
     re.compile(r"\S+\.(?:md|json|py|js|txt|csv|html|pdf|ya?ml)\b"),  # a bare file name
     # dates and timestamps: 2026-11, 2026-11-08, 2026-11-08T09:30:00Z, and a bare 09:30
     re.compile(r"\b\d{4}-\d{2}(?:-\d{2})?(?:T\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?Z?)?\b"),
@@ -73,7 +77,7 @@ NOT_QUANTITY_RES = [
 # path segment. Dates, timestamps, versions and list markers were stripped above, so a
 # hyphen before a digit here is a minus sign or a range, both of which are claims.
 NUMBER_RE = re.compile(
-    r"(?<![\w/.])-?\d+(?:[.,]\d+)?(?:/\d+)?"
+    r"(?<![\w/.])-?\$?\d+(?:[.,]\d+)?(?:/\$?\d+)?"
     r"(?:\s?%|\s?percent\b|(?:bn|[kKmMBb])\b|x\b)?(?![\w/]|[.,]\d)")
 
 
@@ -133,7 +137,7 @@ def check_brand_file(path):
         return problems
     for n, line in enumerate(body.splitlines(), 1):
         stripped = line.strip()
-        if not stripped or stripped.startswith("#") or stripped.startswith("|--"):
+        if not stripped or stripped.startswith("|--"):
             continue
         if asserts_a_quantity(stripped) and not LABEL_RE.search(stripped):
             problems.append(f"{path.name}:{n}: a number with no KNOWN/INFERRED/UNVERIFIED label")

@@ -59,8 +59,11 @@ provenance_default: UNVERIFIED   # the label a line gets when it carries none
 
 and every fact in the body carries a label: **KNOWN** (with a URL, or a named person and
 date for interview answers), **INFERRED** (from what, in one clause) or **UNVERIFIED**.
-`scripts/check_workspace.py` fails a file with no front matter or an unknown `source`, and
-a line that asserts a number with no label; it does not judge content.
+**One fact per line, label at the end of the line.** The check is per line: a line that
+carries two facts and one label passes on the label it has, so two facts on one line is a
+writing error the audit cannot see. `scripts/check_workspace.py` fails a file with no front
+matter or an unknown `source`, and a line (headings included) that asserts a number with no
+label; it does not judge content.
 
 These are the same three labels `evidence-register` uses, so a brand fact can be cited in
 a report with no translation.

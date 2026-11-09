@@ -98,7 +98,8 @@ class TheWorkspaceGate(unittest.TestCase):
                      "Conversion is 3.5 percent.", "Customers: 5k.", "Reached 5k users",
                      "3/4 of teams renew", "Pipeline grew 2.5x last year",
                      "Revenue reached $5m", "Raised 10bn in total", "Revenue changed -5%.",
-                     "Margin moved -2.5 points", "A 3/4-day setup."):
+                     "Margin moved -2.5 points", "A 3/4-day setup.",
+                     "Revenue was $5k/$10k across the two cohorts", "## 50% faster setup"):
             with self.subTest(line):
                 (self.root / "brand" / "proof-and-quotes.md").write_text(
                     FRONT.format(entity="proof-and-quotes") + line + "\n")
@@ -112,7 +113,8 @@ class TheWorkspaceGate(unittest.TestCase):
             + "2. Second item with no number in it\n"
             + "3. Shipped on 2026-11-08 with [the notes](https://example.com/release/42) for v1.17.0\n"
             + "<!-- refreshed 2026-11-08T09:30:00Z, next at 14:05 -->\n"
-            + "4. See [the notes](brand/release-5.md), plays-2.json and research/q3-2026/brief.md\n")
+            + "4. See [the notes](brand/release-5.md), plays-2.json and research/q3-2026/brief.md\n"
+            + "## Products\n5. Also ./brand/x-2.md and ~/work/y-3/z.md\n")
         self.assertEqual(cw.check(self.root, "brand", "yes"), [])
 
     def test_a_labeled_number_passes(self):
