@@ -118,6 +118,16 @@ class TheWorkspaceGate(unittest.TestCase):
             + "## Products\n5. Also ./brand/x-2.md and ~/work/y-3/z.md\n")
         self.assertEqual(cw.check(self.root, "brand", "yes"), [])
 
+    def test_a_numbered_heading_is_a_list_marker_not_a_quantity(self):
+        """'## 1. Positioning' is the same section number as '1. Positioning'; a quantity
+        in the heading text after the marker is still caught."""
+        (self.root / "brand" / "products.md").write_text(
+            FRONT.format(entity="products") + "## 1. Positioning\n### 2. Products\n")
+        self.assertEqual(cw.check(self.root, "brand", "yes"), [])
+        (self.root / "brand" / "products.md").write_text(
+            FRONT.format(entity="products") + "## 1. 50% faster setup\n")
+        self.assertTrue(cw.check(self.root, "brand", "yes"))
+
     def test_a_labeled_number_passes(self):
         (self.root / "brand" / "proof-and-quotes.md").write_text(
             FRONT.format(entity="proof-and-quotes") + "Customers cut cost by 50%. KNOWN (https://example.com/case)\n")

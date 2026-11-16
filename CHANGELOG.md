@@ -12,6 +12,24 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.17.1] - 2026-11-16
+
+A fix to the workspace audit from a post-merge review of 1.17.0. Upgrading needs no action.
+
+### Fixed
+- **A numbered heading in a brand file no longer fails the workspace audit.** 1.17.0 began
+  checking headings for unlabeled numbers, but the list-marker exclusion only matched at
+  the start of a line, so `1. Positioning` passed and `## 1. Positioning` failed the
+  `gtm-onboard` Step 3 gate. The marker is now recognised after a heading marker; a
+  quantity in the heading text (`## 1. 50% faster setup`) is still caught. Regression test
+  shown failing on 1.17.0.
+- An unused import in `tests/test_version_check_cited.py` removed.
+
+### Review note
+- Four 1.17.0 commits (cc7248a, 4a9020e, f514363, 8a41c9e) shipped without a CodeRabbit
+  pass: hosted reviews had auto-paused on the branch and the PR merged before a re-run.
+  They were reviewed by hand after merge; this release carries the one defect found.
+
 ## [1.17.0] - 2026-11-08
 
 Onboarding as a front door, and brand context without the connector. Upgrading needs no
