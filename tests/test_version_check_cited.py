@@ -171,7 +171,6 @@ class TheCheckCanFail(unittest.TestCase):
 
     def test_a_stopping_version_section_is_caught(self):
         text = "---\nname: x\n---\n## Version check\n\nRun references/version-check.md; if every source fails, stop.\n## Next\n"
-        import re as _re
         self.assertRegex(version_section(text).lower(), r"\b(stop|halt|abort|block)\b")
 
     def test_a_missing_section_is_caught(self):
