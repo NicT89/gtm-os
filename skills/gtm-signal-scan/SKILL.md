@@ -9,7 +9,7 @@ Weekly sourcing run: signal search, scoring, tiered enrichment, record creation,
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION and compare to the VERSION file at the plugin root. If they differ, tell the user an updated playbook version is available from the repo, then continue with the run.
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
 ## Instance variables (confirm on first run, then reuse)
 

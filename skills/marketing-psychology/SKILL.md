@@ -11,8 +11,7 @@ Sibling skills it names that this plugin does not ship live in that repo.
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to the plugin
-root VERSION file, notify on mismatch, continue.
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
 ## Numbers in what you produce
 
@@ -36,7 +35,7 @@ The detailed playbook lives in `references/`. Read each file at the step named h
 
 ## How to Use This Skill
 
-**Check for product context first:** if the Brand Kit OS connector is available, pull the product, ICP, persona and voice context from it before asking anything. Without it the skill degrades to asking the user; to wire it, use the `environment-setup` skill and the plugin root's references/environment-setup.md. Do not ask for anything that context already answers.
+**Check for product context first**, in the order the plugin root's `references/brand-context.md` gives: the Brand Kit OS connector, else the `{BRAND_CONTEXT_DIR}` files (voice-and-expression, personas, products, governance for this skill), else ask the user for only what the task needs. To wire the connector, use the `environment-setup` skill. Do not ask for anything that context already answers.
 
 Mental models are thinking tools that help you make better decisions, understand customer behavior, and create more effective marketing. When helping users:
 

@@ -9,9 +9,11 @@ Produce a 30-day GTM plan for a target company that reads custom because it IS c
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to the installed VERSION, notify on mismatch, continue.
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
-If the CRM connector is unavailable or a tool call fails, stop and report which capability is missing. Never compose a blueprint from memory of prior records or from guesses; a wrong "fact" in a show-don't-tell email costs more than a delayed send.
+## Stop rule
+
+If the CRM connector is unavailable or a tool call in the steps below fails, stop and report which capability is missing (a failed version fetch above is not such a failure; the check never blocks). Never compose a blueprint from memory of prior records or from guesses; a wrong "fact" in a show-don't-tell email costs more than a delayed send.
 
 ## Modes
 
@@ -23,7 +25,7 @@ If the CRM connector is unavailable or a tool call fails, stop and report which 
 
 Read `instance-config.json` in your working folder (resolution order in the plugin root's `references/instance-config.md`) and resolve every `{KEY}` in this skill. If the file is missing or a needed key is empty, STOP and point the user at the plugin root's `references/instance-config.md`. Never guess a field ID: writing a composed blueprint into the wrong custom field is silent and hard to undo.
 
-- Seller context source: Brand Kit OS brand kit (canonical) if connected, else the CRM's own context center, else a company-context document the user names.
+- Seller context source, in the order the plugin root's `references/brand-context.md` gives: the Brand Kit OS kit (canonical) if connected, else the `{BRAND_CONTEXT_DIR}` files (company-profile, products, personas, competitors, proof-and-quotes), else the CRM's own context center, else a company-context document the user names.
 - CRM: `{CRM_PROVIDER}`. Blueprint field `{APOLLO_CF_CONTACT_BLUEPRINT}`, opener field `{APOLLO_CF_CONTACT_OPENER}`; write via the CRM's contact-update call using typed custom fields.
 - Field prefix: `{INSTANCE_FIELD_PREFIX}` — the deployment's shorthand, used in field labels and merge tokens. The blueprint merge token is `{{contact.<prefix> Blueprint}}` and the opener is `{{contact.<prefix> Opener}}`, with `<prefix>` resolved from that key.
 - Field provenance map: `references/field-provenance.md`. That file is a per-deployment artifact — rebuild it from the CRM's field inventory during provisioning.

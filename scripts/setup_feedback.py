@@ -157,6 +157,9 @@ def url_is_publishable(raw):
 
 MAX_NOTE_CHARS = 600
 MAX_NOTES = 12
+# Outcomes of the version check in references/version-check.md, plus the value a report
+# carries when the caller did not pass one.
+VERSION_CHECK_OUTCOMES = {"current", "update-available", "unverified", "not recorded"}
 TRUNCATED = " […truncated]"
 
 
@@ -170,7 +173,9 @@ def redact_note(note):
     kinds = []
 
     def swap(kind):
+        """Return a re.sub callback that records `kind` and emits its redaction marker."""
         def _sub(_match):
+            """Replace one match with the marker for `kind`."""
             kinds.append(kind)
             return f"[redacted: {kind}]"
         return _sub
@@ -181,6 +186,7 @@ def redact_note(note):
     # sometimes an @ that the email rule would rewrite into "[redacted: email-address]" —
     # which then leaves a half-mangled link behind instead of removing the destination.
     def _url(match):
+        """Keep an allowlisted link; redact any other."""
         if url_is_publishable(match.group(0)):
             return match.group(0)
         kinds.append("private-link")
@@ -194,6 +200,7 @@ def redact_note(note):
     # escape hatch: a repetitive string is not a credential and mangling it helps nobody.
     for kind, pattern in PATTERNS:
         def _cred(match, kind=kind):
+            """Redact a credential-shaped match unless it is low-entropy filler."""
             if is_low_entropy(match.group(0)):
                 return match.group(0)
             kinds.append("credential")
@@ -227,6 +234,15 @@ def validate(report):
     version = str(report.get("plugin_version", "")).strip()
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         problems.append(f"plugin_version must be x.y.z, got {version!r}")
+
+    # The outcome of references/version-check.md, so a reader can tell whether the version
+    # above was verified as current. Optional: an older caller that omits it is recorded as
+    # "not recorded", never guessed.
+    version_check = report.get("version_check", "not recorded")
+    if not isinstance(version_check, str) or version_check not in VERSION_CHECK_OUTCOMES:
+        problems.append(f"version_check must be one of {sorted(VERSION_CHECK_OUTCOMES)}, "
+                        f"got {version_check!r}")
+        version_check = None
 
     connectors = report.get("connectors") or []
     if not isinstance(connectors, list) or not connectors:
@@ -275,6 +291,7 @@ def validate(report):
     cleaned = {
         "checkpoint": checkpoint,
         "plugin_version": version,
+        "version_check": version_check,
         "connectors": cleaned_connectors,
         "outcome": outcome,
         "misdiagnosed_a_state": misdiagnosed,
@@ -296,7 +313,8 @@ def render(cleaned):
         "Filed by the `environment-setup` skill, with the tester's approval.",
         "",
         f"- **Checkpoint:** {cleaned['checkpoint']} — {at}",
-        f"- **Plugin version:** {cleaned['plugin_version']}",
+        f"- **Plugin version:** {cleaned['plugin_version']} (version check: "
+        f"{cleaned['version_check']})",
         f"- **Outcome:** {cleaned['outcome']}",
     ]
 
@@ -379,6 +397,7 @@ def main():
         print(json.dumps({
             "checkpoint": sorted(CHECKPOINTS),
             "plugin_version": "x.y.z",
+            "version_check": sorted(VERSION_CHECK_OUTCOMES - {"not recorded"}),
             "connectors": [{"name": sorted(CONNECTORS), "state": sorted(STATES)}],
             "outcome": ["continued", "stalled", "abandoned"],
             "misdiagnosed_a_state": [True, False, None],

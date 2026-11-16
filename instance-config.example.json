@@ -89,6 +89,7 @@
   "GTM_ORG_ID": "",
   "GTM_MCP_CUSTOMER_ID": "",
   "BRAND_KIT_OS_ID": "",
+  "BRAND_CONTEXT_DIR": "brand",
   "HUBSPOT_PORTAL_MAP_FILE": "",
   "OUTCOME_FALLBACK": ""
 }

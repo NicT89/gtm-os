@@ -30,10 +30,12 @@ once the plugin is installed.
 **2. Set it up.** In a working directory of your own — not a clone of this repo — say:
 
 ```
-set up my environment
+onboard <your company>
 ```
 
-The `environment-setup` skill drives it, and it diagnoses what you already have before it
+The `gtm-onboard` skill runs the whole sequence: connectors, the workspace, brand context,
+then the first company brief. Its first step is the `environment-setup` skill, which you can
+also run on its own with `set up my environment`. It diagnoses what you already have before it
 suggests anything, because **not set up almost never means not owned**. The usual
 situation is that you own the tool and have simply never shaped it for this engine.
 Diagnosis costs almost nothing: every probe is a read-only call except the Firecrawl one,
@@ -97,6 +99,7 @@ deployment value to a `{KEY}` first so none of your resolved IDs ever leave your
 | `play-builder` | Defines your plays (which accounts go to which list, sequence and persona) in your own words, and builds the Apollo fields, lists and inactive sequences each one needs |
 | `gtm-os-demo` | The offline demo: the real decision logic over synthetic accounts, no connectors, no credits. Run it first, and again with your config before the first live scan |
 | `gtm-os-feedback` | Files a bug, feature request or skill feedback upstream as a redacted issue you approve before it is sent; without `gh` it hands you the body and the right form |
+| `gtm-onboard` | The front door for a new deployment: connectors (strong recommendations, declines recorded), session mode, Project instructions to paste, the workspace and its audit, brand context from Brand Kit OS or from provenance-labeled files, hand-off to `provision-gtm-engine`, scheduled tasks last after a live-fire run |
 | `pmf-five-gate-playbook` | Runs the product-fit exercise for any customer or project: scores segments on Pull, Prove, Pay, Use, Keep, builds the reverse ICP from the customer base, discovers buyer paths from evidence, and keeps an open-questions log |
 | `evidence-register` | Builds the evidence behind a report: highlighted web screenshots with evidence IDs, breadcrumbs for internal sources, a claim ledger, and an engagement question database |
 | `gtm-intelligence-report` | Produces the versioned GTM intelligence report PDF: label-first findings (KNOWN, INFERRED, UNVERIFIED), segments and reverse ICP, competitive landscape, five-gate plan, 30/60/90 plan, and evidence appendices generated from the engagement database |
@@ -171,8 +174,9 @@ below is the reference stack.
 - **Brand Kit OS** (optional, recommended) — supplies structured brand voice, positioning,
   and audience data as the seller-side context that `gtm-blueprint` and the content skills
   compose against. Declared in `.mcp.json`, so it appears on the Connectors tab with the
-  rest. Without it, `gtm-blueprint` falls back to your CRM's context center or a document
-  you name, and the content skills ask you for the context.
+  rest. Without it, `gtm-onboard` builds the same context as files in your workspace, one
+  per kit entity with provenance on every fact, and every skill reads those
+  (`references/brand-context.md`); connect the kit later and the files import into it.
 - **Google Drive / Box / OneDrive** (optional) — file home for briefs and audit logs.
   A local folder works too.
 - **HubSpot** (generic CRM) — supported with native schema discovery: the engine maps your

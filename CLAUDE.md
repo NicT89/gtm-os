@@ -37,10 +37,12 @@ once the plugin is installed.
 **2. Set it up.** In a working directory of your own — not a clone of this repo — say:
 
 ```
-set up my environment
+onboard <your company>
 ```
 
-The `environment-setup` skill drives it, and it diagnoses what you already have before it
+The `gtm-onboard` skill runs the whole sequence: connectors, the workspace, brand context,
+then the first company brief. Its first step is the `environment-setup` skill, which you can
+also run on its own with `set up my environment`. It diagnoses what you already have before it
 suggests anything, because **not set up almost never means not owned**. The usual
 situation is that you own the tool and have simply never shaped it for this engine.
 Diagnosis costs almost nothing: every probe is a read-only call except the Firecrawl one,
@@ -162,8 +164,10 @@ should be split out rather than that the skill got more complex.
 
 Four structural conventions every skill in this repo follows:
 
-1. **Version check first, never blocking.** Fetch the repo VERSION, compare, notify
-   on mismatch, continue.
+1. **Version check first, never blocking.** The procedure lives in
+   `references/version-check.md` (a three-source fallback chain and three outcomes) and a
+   SKILL.md cites it rather than restating it; `tests/test_version_check_cited.py` fails on a
+   skill that carries its own copy.
 2. **Human gates are named and explicit.** There are four: **ICP sign-off**, **credit
    spend**, **catch-all enrollment policy**, and **pre-send review**. Do not add a step
    that automates past one. Catch-all joined the list in 1.9.1: `gtm-signal-scan` Step 5

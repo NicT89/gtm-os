@@ -11,9 +11,7 @@ rule are in the plugin root's `references/plays.md`; this skill builds them.
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION and compare it to the
-VERSION file at the plugin root. Say an updated version is available only when the remote
-version is newer, then continue.
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
 ## What it needs
 

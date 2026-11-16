@@ -13,14 +13,14 @@ context step. The design guidance itself is unmodified.
 
 ## Version check (run first, never block)
 
-Fetch https://raw.githubusercontent.com/NicT89/gtm-os/main/VERSION, compare to the plugin
-root VERSION file, notify on mismatch, continue.
+Run the check in the plugin root's `references/version-check.md` (three sources in order, three outcomes, never blocks) and continue.
 
 ## Brand context
 
-If the Brand Kit OS connector is available, pull the brand's palette, typography, logo
-assets and voice from it and treat them as the brief's constraints. Without it the skill
-works from the brief alone; to wire it, use the `environment-setup` skill.
+Pull the brand's palette, typography, logo assets and voice in the order the plugin root's
+`references/brand-context.md` gives: the Brand Kit OS connector, else the `{BRAND_CONTEXT_DIR}`
+files (visual-identity when present, voice-and-expression), else the brief alone. Treat what
+is found as the brief's constraints. To wire the connector, use the `environment-setup` skill.
 
 Approach this as the design lead at a design studio known for giving every client a distinct visual identity that is not mistaken for anyone else's. This client has already rejected proposals that felt cliché or templated, and is paying for a distinctive point of view: make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take aesthetic risk if justified.
 
