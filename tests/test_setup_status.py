@@ -11,6 +11,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -211,6 +212,38 @@ class Classification(unittest.TestCase):
         vault_block = out.getvalue().split("Research Vault (optional)", 1)[1]
         vault_block = vault_block.split("\n\n", 1)[0]
         self.assertNotIn("if you use it", vault_block)
+
+
+class CheckBeforeBuild(unittest.TestCase):
+    """Advice that tells someone to build or create must first tell them to look.
+
+    The setup module rests on "not set up does not mean not owned": a blank key usually
+    means nobody recorded the ID, not that the object is missing. 1.14.1 fixed the Apollo,
+    Airtable and Vault lines; the HubSpot line still opened with "Build the portal map"
+    until 1.17.1. This pins the rule for every group, including ones added later.
+    """
+
+    BUILD = re.compile(r"\b(build|create|creating)\b", re.I)
+
+    def offenders(self, groups):
+        """Groups whose how-to-close text builds or creates without checking first."""
+        return [g[0] for g in groups
+                if self.BUILD.search(g[3]) and not g[3].startswith("CHECK BEFORE")]
+
+    def test_every_build_instruction_checks_first(self):
+        """Every group that says build or create opens with CHECK BEFORE."""
+        self.assertEqual(self.offenders(status.GROUPS), [])
+
+    def test_the_pre_fix_hubspot_line_is_caught(self):
+        """The rule fails on the HubSpot line as it read before this fix."""
+        old = ("HubSpot and outcomes", None, "",
+               "Build the portal map per references/hubspot-adapter.md.")
+        self.assertEqual(self.offenders([old]), ["HubSpot and outcomes"])
+
+    def test_advice_with_no_build_step_is_left_alone(self):
+        """Groups that only ask for a value, such as a prefix, are not forced to check."""
+        plain = ("Instance identity", None, "", "Pick a short prefix once and record it.")
+        self.assertEqual(self.offenders([plain]), [])
 
 
 class Errors(unittest.TestCase):

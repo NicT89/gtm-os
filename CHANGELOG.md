@@ -12,6 +12,23 @@ section of this file — see MAINTAINING.md for how that extraction works.
 
 ## [Unreleased]
 
+## [1.17.1] - 2026-11-24
+
+One fix to the setup report. Upgrading needs no action beyond re-running the install flow.
+
+### Fixed
+
+- **The HubSpot line in `scripts/setup_status.py` still told people to build first.** It
+  opened with "Build the portal map", the same build-first framing 1.14.1 removed from the
+  Apollo, Airtable and Vault lines. It now says CHECK BEFORE YOU BUILD: look for a portal map
+  that was already captured and re-run discovery only if the portal changed since its
+  `captured_on` date, and list the engine's custom properties with `search_properties`
+  before creating any, since they often already exist under your own naming. Capturing a new
+  map is still one read-only discovery pass.
+- **The rule now has a test.** `tests/test_setup_status.py` fails if any group's
+  how-to-close advice says build or create without first saying CHECK BEFORE, so a group
+  added later cannot reintroduce it.
+
 ## [1.17.0] - 2026-11-08
 
 Onboarding as a front door, and brand context without the connector. Upgrading needs no

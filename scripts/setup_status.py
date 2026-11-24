@@ -195,7 +195,12 @@ GROUPS = [
         lambda k: k in ("HUBSPOT_PORTAL_MAP_FILE", "OUTCOME_FALLBACK"),
         "HubSpot writes (the pre-sync check needs the portal map) and outcome records the "
         "CRM cannot hold.",
-        "Build the portal map per references/hubspot-adapter.md. Set OUTCOME_FALLBACK to "
+        "CHECK BEFORE YOU BUILD: look next to instance-config.json for a portal map that "
+        "was already captured; if one exists, record its filename and re-run discovery "
+        "only if the portal has changed since its captured_on date. The engine's custom "
+        "properties very often already exist under your own naming, so list them with "
+        "search_properties before creating any. Only if no map exists, capture one per "
+        "references/hubspot-adapter.md; discovery is read-only. Set OUTCOME_FALLBACK to "
         "airtable or sqlite only if your CRM cannot take outcome writes "
         "(references/outcomes.md).",
     ),
